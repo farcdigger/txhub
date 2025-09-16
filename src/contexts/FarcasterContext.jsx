@@ -53,16 +53,9 @@ export const FarcasterProvider = ({ children }) => {
         
         console.log('Farcaster detection result:', isInFarcasterApp)
         
-        // Manual override for testing (check URL parameter)
-        const urlParams = new URLSearchParams(window.location.search)
-        const forceFarcaster = urlParams.get('farcaster') === 'true'
-        
-        if (forceFarcaster) {
-          console.log('Manual Farcaster mode enabled via URL parameter')
-          setIsInFarcaster(true)
-        } else {
-          setIsInFarcaster(isInFarcasterApp)
-        }
+        // Force Farcaster mode for Farcaster-only app
+        console.log('Forcing Farcaster mode for Farcaster-only app')
+        setIsInFarcaster(true)
 
         if (isInFarcasterApp) {
           // Get user context if available
@@ -85,10 +78,10 @@ export const FarcasterProvider = ({ children }) => {
     initializeFarcaster()
   }, [])
 
-  // Call ready() when interface is fully loaded - as per Farcaster docs
+  // Call ready() when interface is fully loaded - Farcaster Only
   useEffect(() => {
     const callReady = async () => {
-      if (isInitialized && isInFarcaster) {
+      if (isInitialized) {
         try {
           console.log('Attempting to call sdk.actions.ready()...')
           
@@ -102,7 +95,7 @@ export const FarcasterProvider = ({ children }) => {
           
           // Wait for React components to be fully rendered
           console.log('Waiting for React components to render...')
-          await new Promise(resolve => setTimeout(resolve, 300))
+          await new Promise(resolve => setTimeout(resolve, 500))
           
           // Call ready to hide splash screen
           console.log('Calling sdk.actions.ready()...')
@@ -120,13 +113,13 @@ export const FarcasterProvider = ({ children }) => {
     }
 
     // Call ready after a short delay to ensure all components are rendered
-    const timer = setTimeout(callReady, 200)
+    const timer = setTimeout(callReady, 300)
     return () => clearTimeout(timer)
-  }, [isInitialized, isInFarcaster])
+  }, [isInitialized])
 
   // Additional ready() call as backup
   useEffect(() => {
-    if (isInitialized && isInFarcaster) {
+    if (isInitialized) {
       const backupTimer = setTimeout(async () => {
         try {
           console.log('Backup ready() call...')
@@ -139,7 +132,7 @@ export const FarcasterProvider = ({ children }) => {
 
       return () => clearTimeout(backupTimer)
     }
-  }, [isInitialized, isInFarcaster])
+  }, [isInitialized])
 
   const sendTransaction = async (transaction) => {
     if (!isInFarcaster) {

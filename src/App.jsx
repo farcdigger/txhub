@@ -21,49 +21,79 @@ import './styles/index.css'
 
 const queryClient = new QueryClient()
 
-// AppContent component to handle Farcaster loading state
+// AppContent component - Farcaster Only
 function AppContent() {
-  const [showScrollTop, setShowScrollTop] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
   const { isInitialized, isInFarcaster } = useFarcaster()
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      setIsScrolled(scrollTop > 100)
-      setShowScrollTop(scrollTop > 150) // Header ve XP gizlendikten sonra göster
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    })
+  // Show loading state while initializing
+  if (!isInitialized) {
+    return <SkeletonLoader />
   }
 
-  // Show loading state only in Farcaster while initializing
-  if (isInFarcaster && !isInitialized) {
-    return <SkeletonLoader />
+  // If not in Farcaster, show message
+  if (!isInFarcaster) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        textAlign: 'center',
+        padding: '20px'
+      }}>
+        <div style={{
+          width: '100px',
+          height: '100px',
+          borderRadius: '25px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '32px',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <span style={{ fontSize: '48px' }}>🎮</span>
+        </div>
+        <h1 style={{ 
+          fontSize: '32px', 
+          fontWeight: 'bold',
+          marginBottom: '16px'
+        }}>
+          BaseHub
+        </h1>
+        <p style={{ 
+          fontSize: '18px',
+          opacity: 0.9,
+          marginBottom: '24px',
+          maxWidth: '400px'
+        }}>
+          This app is designed exclusively for Farcaster. Please open it through Farcaster to play games and earn XP!
+        </p>
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.1)',
+          padding: '16px 24px',
+          borderRadius: '12px',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <p style={{ fontSize: '14px', opacity: 0.8 }}>
+            Open in Farcaster to start playing!
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <Router>
-      <div className={`App ${isInFarcaster ? 'farcaster-app' : ''}`}>
-        {!isInFarcaster && <Header />}
-        {!isInFarcaster && <XPDisplay />}
-        {isInFarcaster && <FarcasterXPDisplay />}
-        <main 
-          className={`container ${isInFarcaster ? 'farcaster-main' : ''}`}
-          style={{ 
-            paddingTop: isInFarcaster ? '20px' : (isScrolled ? '20px' : '200px'), 
-            paddingBottom: '40px',
-            transition: 'padding-top 0.3s ease'
-          }}
-        >
+      <div className="App farcaster-app">
+        <FarcasterXPDisplay />
+        <main className="container farcaster-main">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/gm" element={<GMGame />} />
@@ -74,42 +104,6 @@ function AppContent() {
             <Route path="/leaderboard" element={<Leaderboard />} />
           </Routes>
         </main>
-        
-        {/* Scroll to Top Button */}
-        {showScrollTop && (
-          <button 
-            onClick={scrollToTop}
-            className="scroll-to-top"
-            style={{
-              position: 'fixed',
-              bottom: '30px',
-              right: '30px',
-              width: '50px',
-              height: '50px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 20px rgba(102, 126, 234, 0.3)',
-              transition: 'all 0.3s ease',
-              zIndex: 1000
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-2px) scale(1.1)'
-              e.target.style.boxShadow = '0 12px 24px rgba(102, 126, 234, 0.4)'
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0) scale(1)'
-              e.target.style.boxShadow = '0 8px 20px rgba(102, 126, 234, 0.3)'
-            }}
-          >
-            <ChevronUp size={24} />
-          </button>
-        )}
       </div>
     </Router>
   )
