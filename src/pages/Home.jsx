@@ -383,30 +383,6 @@ const Home = () => {
             })}
           </div>
 
-          <div style={{ 
-            textAlign: 'center', 
-            marginTop: '32px',
-            padding: '20px',
-            background: 'rgba(102, 126, 234, 0.1)',
-            borderRadius: '12px',
-            border: '1px solid rgba(102, 126, 234, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '18px', 
-              fontWeight: 'bold', 
-              marginBottom: '8px',
-              color: '#1f2937'
-            }}>
-              🚀 Built for Farcaster
-            </h3>
-            <p style={{ 
-              color: '#6b7280',
-              fontSize: '14px',
-              margin: 0
-            }}>
-              This mini app is designed to work seamlessly within the Farcaster ecosystem
-            </p>
-          </div>
         </div>
       </div>
 
