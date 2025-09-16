@@ -8,18 +8,7 @@ export const addXP = async (walletAddress, xpAmount) => {
     return
   }
 
-  console.log('🎯 Adding XP:', { walletAddress, xpAmount })
-
-  // If Supabase is not configured, use localStorage for development
-  if (!supabase) {
-    console.log('⚠️ Using localStorage for development')
-    const xpKey = `xp_${walletAddress}`
-    const currentXP = parseInt(localStorage.getItem(xpKey) || '0')
-    const newXP = currentXP + xpAmount
-    localStorage.setItem(xpKey, newXP.toString())
-    console.log(`✅ Added ${xpAmount} XP to ${walletAddress}. Total: ${newXP}`)
-    return newXP
-  }
+  console.log('🎯 Adding XP to Supabase:', { walletAddress, xpAmount })
 
   try {
     console.log('📊 Checking if player exists in Supabase...')
@@ -97,25 +86,13 @@ export const addXP = async (walletAddress, xpAmount) => {
     }
   } catch (error) {
     console.error('❌ Error in addXP:', error)
-    // Fallback to localStorage if Supabase fails
-    const xpKey = `xp_${walletAddress}`
-    const currentXP = parseInt(localStorage.getItem(xpKey) || '0')
-    const newXP = currentXP + xpAmount
-    localStorage.setItem(xpKey, newXP.toString())
-    console.log(`🔄 Fallback: Added ${xpAmount} XP to ${walletAddress}. Total: ${newXP}`)
-    return newXP
+    throw error
   }
 }
 
 // Get XP for user's wallet address
 export const getXP = async (walletAddress) => {
   if (!walletAddress) return 0
-  
-  // If Supabase is not configured, use localStorage
-  if (!supabase) {
-    const xpKey = `xp_${walletAddress}`
-    return parseInt(localStorage.getItem(xpKey) || '0')
-  }
   
   try {
     const { data: player, error } = await supabase
@@ -130,24 +107,12 @@ export const getXP = async (walletAddress) => {
     return player?.total_xp || 0
   } catch (error) {
     console.error('❌ Error in getXP:', error)
-    // Fallback to localStorage
-    const xpKey = `xp_${walletAddress}`
-    return parseInt(localStorage.getItem(xpKey) || '0')
+    return 0
   }
 }
 
 // Get leaderboard (top 10 players)
 export const getLeaderboard = async () => {
-  // If Supabase is not configured, return mock data for development
-  if (!supabase) {
-    console.log('⚠️ Using mock leaderboard for development')
-    return [
-      { wallet_address: '0xDemo1...', total_xp: 1000, token_balance: 10000, level: 10, total_transactions: 50 },
-      { wallet_address: '0xDemo2...', total_xp: 750, token_balance: 7500, level: 7, total_transactions: 35 },
-      { wallet_address: '0xDemo3...', total_xp: 500, token_balance: 5000, level: 5, total_transactions: 25 },
-    ]
-  }
-
   try {
     console.log('🏆 Fetching leaderboard from Supabase...')
     const { data: players, error } = await supabase
@@ -173,16 +138,42 @@ export const getLeaderboard = async () => {
     return playersWithTokens
   } catch (error) {
     console.error('❌ Error in getLeaderboard:', error)
-    // Return mock data as fallback
-    return [
-      { wallet_address: '0xFallback...', total_xp: 100, token_balance: 1000, level: 1, total_transactions: 5 }
-    ]
+    return []
   }
 }
 
 // Calculate tokens from XP (1 XP = 10 BHUP)
 export const calculateTokens = (xp) => {
   return Math.floor(xp * 10)
+}
+
+// Record transaction in Supabase
+export const recordTransaction = async (walletAddress, gameType, xpEarned, transactionHash) => {
+  if (!walletAddress || !gameType || !xpEarned) return
+
+  try {
+    console.log('📝 Recording transaction to Supabase:', { walletAddress, gameType, xpEarned, transactionHash })
+    
+    const { error } = await supabase
+      .from('transactions')
+      .insert([{
+        wallet_address: walletAddress,
+        game_type: gameType,
+        xp_earned: xpEarned,
+        transaction_hash: transactionHash,
+        created_at: new Date().toISOString()
+      }])
+
+    if (error) {
+      console.error('❌ Error recording transaction:', error)
+      throw error
+    }
+
+    console.log('✅ Transaction recorded successfully')
+  } catch (error) {
+    console.error('❌ Error in recordTransaction:', error)
+    // Don't throw error - this is not critical for user experience
+  }
 }
 
 // Add bonus XP for winning games

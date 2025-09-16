@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAccount, useWriteContract } from 'wagmi'
 import { waitForTransactionReceipt } from 'wagmi/actions'
 import { useFarcaster } from '../contexts/FarcasterContext'
-import { addXP, addBonusXP } from '../utils/xpUtils'
+import { addXP, addBonusXP, recordTransaction } from '../utils/xpUtils'
 import { getCurrentConfig, getContractAddress, GAS_CONFIG, GAME_CONFIG } from '../config/base'
 import { parseEther } from 'viem'
 import { config } from '../config/wagmi'
@@ -69,9 +69,10 @@ export const useTransactions = () => {
         
         try {
           await addXP(address, 10) // GM gives 10 XP
-          console.log('✅ XP added after confirmation')
+          await recordTransaction(address, 'GM_GAME', 10, txHash) // Record transaction
+          console.log('✅ XP added and transaction recorded after confirmation')
         } catch (xpError) {
-          console.error('Error adding XP:', xpError)
+          console.error('Error adding XP or recording transaction:', xpError)
         }
         
         return { 
@@ -139,9 +140,10 @@ export const useTransactions = () => {
         
         try {
           await addXP(address, 10) // GN gives 10 XP
-          console.log('✅ XP added after confirmation')
+          await recordTransaction(address, 'GN_GAME', 10, txHash) // Record transaction
+          console.log('✅ XP added and transaction recorded after confirmation')
         } catch (xpError) {
-          console.error('Error adding XP:', xpError)
+          console.error('Error adding XP or recording transaction:', xpError)
         }
         
         return { 
@@ -218,13 +220,14 @@ export const useTransactions = () => {
         
         console.log('🎲 Flip result AFTER confirmation:', { selectedSide, actualResult, playerWon })
         
-        try {
-          await addBonusXP(address, 'flip', playerWon)
-          const xpEarned = playerWon ? 10 + 500 : 10
-          console.log(`✅ XP added after confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+               try {
+                 await addBonusXP(address, 'flip', playerWon)
+                 const xpEarned = playerWon ? 10 + 500 : 10
+                 await recordTransaction(address, 'FLIP_GAME', xpEarned, txHash) // Record transaction
+                 console.log(`✅ XP added and transaction recorded: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+               } catch (xpError) {
+                 console.error('Error adding XP or recording transaction:', xpError)
+               }
         
         return { 
           txHash, 
@@ -300,13 +303,14 @@ export const useTransactions = () => {
         
         console.log('🎲 Lucky Number result AFTER confirmation:', { guess, winningNumber, playerWon })
         
-        try {
-          await addBonusXP(address, 'luckynumber', playerWon)
-          const xpEarned = playerWon ? 10 + 1000 : 10
-          console.log(`✅ XP added after confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+               try {
+                 await addBonusXP(address, 'luckynumber', playerWon)
+                 const xpEarned = playerWon ? 10 + 1000 : 10
+                 await recordTransaction(address, 'LUCKY_NUMBER', xpEarned, txHash) // Record transaction
+                 console.log(`✅ XP added and transaction recorded: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+               } catch (xpError) {
+                 console.error('Error adding XP or recording transaction:', xpError)
+               }
         
         return { 
           txHash, 
@@ -383,13 +387,14 @@ export const useTransactions = () => {
         
         console.log('🎲 Dice Roll result AFTER confirmation:', { guess, dice1, dice2, diceTotal, playerWon })
         
-        try {
-          await addBonusXP(address, 'diceroll', playerWon)
-          const xpEarned = playerWon ? 10 + 1500 : 10
-          console.log(`✅ XP added after confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+               try {
+                 await addBonusXP(address, 'diceroll', playerWon)
+                 const xpEarned = playerWon ? 10 + 1500 : 10
+                 await recordTransaction(address, 'DICE_ROLL', xpEarned, txHash) // Record transaction
+                 console.log(`✅ XP added and transaction recorded: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+               } catch (xpError) {
+                 console.error('Error adding XP or recording transaction:', xpError)
+               }
         
         return { 
           txHash, 
