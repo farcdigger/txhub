@@ -2,9 +2,9 @@
   "name": "BaseHub",
   "description": "Play games and earn XP on Base network through Farcaster",
   "version": "1.0.0",
-  "icon": "/icon.png",
+  "icon": "/icon.svg",
   "splash": {
-    "image": "/splash.png",
+    "image": "/splash.svg",
     "backgroundColor": "#667eea"
   },
   "permissions": [
@@ -44,12 +44,12 @@
   "tags": ["base", "ethereum", "games", "tokens", "farcaster"],
   "author": {
     "name": "BaseHub Team",
-    "url": "https://base.org"
+    "url": "https://github.com/ereyli/basehub"
   },
-  "homepage": "https://base.org",
+  "homepage": "https://github.com/ereyli/basehub",
   "repository": {
     "type": "git",
-    "url": "https://github.com/base-games/farcaster-app"
+    "url": "https://github.com/ereyli/basehub"
   },
   "license": "MIT"
 }

@@ -225,10 +225,23 @@ npm run serve
 ```
 
 ### Farcaster Mini App
-1. Build the application: `npm run build`
-2. Deploy to your hosting provider
-3. Submit to Farcaster Mini App store
-4. Configure manifest.json for your domain
+
+#### Prerequisites:
+1. **Enable Developer Mode** in Farcaster:
+   - Go to [https://farcaster.xyz/~/settings/developer-tools](https://farcaster.xyz/~/settings/developer-tools)
+   - Toggle on "Developer Mode"
+
+2. **Deploy to Vercel** (or your hosting provider)
+
+3. **Create Mini App Manifest**:
+   - Use Farcaster Developer Tools
+   - Upload your deployed app URL
+   - Configure manifest.json settings
+
+4. **Test in Farcaster**:
+   - Preview your mini app
+   - Test all features
+   - Submit for approval
 
 ## 🔮 Future Enhancements
 
