@@ -8,6 +8,7 @@ import { config } from './config/wagmi'
 import Header from './components/Header'
 import XPDisplay from './components/XPDisplay'
 import FarcasterXPDisplay from './components/FarcasterXPDisplay'
+import SkeletonLoader from './components/SkeletonLoader'
 import Home from './pages/Home'
 import GMGame from './pages/GMGame'
 import GNGame from './pages/GNGame'
@@ -46,25 +47,7 @@ function AppContent() {
 
   // Show loading state only in Farcaster while initializing
   if (isInFarcaster && !isInitialized) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white'
-      }}>
-        <Loader2 size={48} className="animate-spin" />
-        <h2 style={{ marginTop: '24px', fontSize: '24px', fontWeight: 'bold' }}>
-          Loading BaseHub...
-        </h2>
-        <p style={{ marginTop: '8px', opacity: 0.8 }}>
-          Preparing your gaming experience
-        </p>
-      </div>
-    )
+    return <SkeletonLoader />
   }
 
   return (

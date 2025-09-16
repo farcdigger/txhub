@@ -85,7 +85,7 @@ export const FarcasterProvider = ({ children }) => {
     initializeFarcaster()
   }, [])
 
-  // Separate effect to call ready() when app is fully loaded
+  // Call ready() when interface is fully loaded - as per Farcaster docs
   useEffect(() => {
     const callReady = async () => {
       if (isInitialized && isInFarcaster) {
@@ -97,18 +97,22 @@ export const FarcasterProvider = ({ children }) => {
             })
           }
           
-          // Minimal delay to avoid jitter - as per documentation
-          await new Promise(resolve => setTimeout(resolve, 100))
+          // Wait for React components to be fully rendered
+          // This prevents jitter and content reflowing
+          await new Promise(resolve => setTimeout(resolve, 200))
           
+          // Only call ready when interface is truly ready
           await sdk.actions.ready()
-          console.log('Farcaster splash screen hidden - app is ready')
+          console.log('Farcaster splash screen hidden - interface is ready')
         } catch (err) {
           console.error('Failed to call ready:', err)
         }
       }
     }
 
-    callReady()
+    // Call ready after a short delay to ensure all components are rendered
+    const timer = setTimeout(callReady, 100)
+    return () => clearTimeout(timer)
   }, [isInitialized, isInFarcaster])
 
   const sendTransaction = async (transaction) => {
