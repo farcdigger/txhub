@@ -4,6 +4,7 @@ import { useTransactions } from '../hooks/useTransactions'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { useSupabase } from '../hooks/useSupabase'
 import EmbedMeta from '../components/EmbedMeta'
+import BackButton from '../components/BackButton'
 import { Sun, Send, Star, CheckCircle, ExternalLink, Coins } from 'lucide-react'
 
 const GMGame = () => {
@@ -63,6 +64,9 @@ const GMGame = () => {
         description="Say GM and earn 10 XP! Always wins. Play now on BaseHub!"
         buttonText="Say GM"
       />
+      
+      <BackButton />
+      
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <div 
           className="game-icon"

@@ -4,6 +4,7 @@ import { useTransactions } from '../hooks/useTransactions'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { useSupabase } from '../hooks/useSupabase'
 import EmbedMeta from '../components/EmbedMeta'
+import BackButton from '../components/BackButton'
 import { Dice6, Send, Star, CheckCircle, ExternalLink, Coins, TrendingUp, TrendingDown } from 'lucide-react'
 
 const DiceRollGame = () => {
@@ -78,6 +79,9 @@ const DiceRollGame = () => {
         description="Roll two dice and win XP! 1/36 chance to win 1500 bonus XP. Play now on BaseHub!"
         buttonText="Play Dice Roll"
       />
+      
+      <BackButton />
+      
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <div 
           className="game-icon"

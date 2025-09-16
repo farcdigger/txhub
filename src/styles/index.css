@@ -358,6 +358,47 @@ body {
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+.home-button {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 8px;
+  padding: 6px;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-button:hover {
+  background: rgba(124, 58, 237, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Back Button Styles */
+.back-button {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 20px !important;
+  font-size: 14px !important;
+  color: #6b7280 !important;
+  transition: all 0.2s ease !important;
+}
+
+.back-button:hover {
+  background: rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
+  color: #374151 !important;
+}
+
 /* Not Connected State */
 .farcaster-xp-display.not-connected {
   background: linear-gradient(145deg, rgba(103, 118, 234, 0.95), rgba(118, 75, 162, 0.9));

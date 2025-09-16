@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { getLeaderboard } from '../utils/xpUtils'
 import EmbedMeta from '../components/EmbedMeta'
+import BackButton from '../components/BackButton'
 import { Trophy, Medal, Award, Users, TrendingUp, RefreshCw } from 'lucide-react'
 
 const Leaderboard = () => {
@@ -95,6 +96,9 @@ const Leaderboard = () => {
         description="Check out the top players on BaseHub! See who has the most XP and compete for the top spot!"
         buttonText="View Leaderboard"
       />
+      
+      <BackButton />
+      
       <style>
         {`
           @keyframes spin {

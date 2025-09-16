@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
 import { useAccount } from 'wagmi'
+import { useNavigate } from 'react-router-dom'
 import { useTransactions } from '../hooks/useTransactions'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { useSupabase } from '../hooks/useSupabase'
 import EmbedMeta from '../components/EmbedMeta'
+import BackButton from '../components/BackButton'
 import { Target, Send, Star, CheckCircle, ExternalLink, Coins, TrendingUp, TrendingDown } from 'lucide-react'
 
 const LuckyNumberGame = () => {
   const { isConnected, address } = useAccount()
+  const navigate = useNavigate()
   const { sendLuckyNumberTransaction, isLoading, error } = useTransactions()
   const { isInFarcaster } = useFarcaster()
   const { calculateTokens } = useSupabase()
@@ -53,6 +56,8 @@ const LuckyNumberGame = () => {
   if (!isConnected) {
     return (
       <div className="card">
+        <BackButton />
+        
         <div style={{ textAlign: 'center', padding: '40px' }}>
           <Target size={48} style={{ color: '#8b5cf6', marginBottom: '16px' }} />
           <h2 style={{ 
@@ -78,6 +83,9 @@ const LuckyNumberGame = () => {
         description="Pick a number 1-10 and win XP! 10% chance to win 1000 bonus XP. Play now on BaseHub!"
         buttonText="Play Lucky Number"
       />
+      
+      <BackButton />
+      
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <div 
           className="game-icon"
