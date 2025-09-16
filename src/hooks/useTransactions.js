@@ -27,9 +27,9 @@ export const useTransactions = () => {
     try {
       const contractAddress = getContractAddress('GM_GAME')
       
-      console.log('📡 Step 1: Sending GM transaction to blockchain...')
+      console.log('📡 Sending GM transaction to blockchain...')
       
-      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
+      // Send transaction to blockchain
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -43,27 +43,56 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
+      console.log('✅ GM transaction sent! Hash:', txHash)
       
-      // Step 2: Wait for REAL blockchain confirmation
-      const receipt = await waitForTransactionReceipt(config, {
-        hash: txHash,
-        confirmations: 1, // Wait for at least 1 confirmation
-      })
+      // In Farcaster environment, we trust the transaction once we get the hash
+      // since Farcaster wallet handles the confirmation UI
+      if (isInFarcaster) {
+        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
+        try {
+          await addXP(address, 10) // GM gives 10 XP
+          console.log('✅ XP added successfully in Farcaster mode')
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+        return txHash
+      }
       
-      console.log('✅ Step 3: GM transaction CONFIRMED on blockchain!', receipt)
-      
-      // Step 3: ONLY NOW add XP after real confirmation
+      // For regular web (non-Farcaster), wait for confirmation
+      console.log('⏳ Non-Farcaster mode - waiting for blockchain confirmation...')
       try {
-        await addXP(address, 10) // GM gives 10 XP
-        console.log('✅ XP added successfully AFTER blockchain confirmation')
-      } catch (xpError) {
-        console.error('Error adding XP:', xpError)
-        // Don't throw error here, transaction was successful
+        const receipt = await Promise.race([
+          waitForTransactionReceipt(config, {
+            hash: txHash,
+            confirmations: 1,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000)
+          )
+        ])
+        
+        console.log('✅ Transaction confirmed!', receipt)
+        
+        try {
+          await addXP(address, 10) // GM gives 10 XP
+          console.log('✅ XP added after confirmation')
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+      } catch (confirmError) {
+        console.warn('⚠️ Confirmation failed, but transaction was sent:', confirmError.message)
+        // Still award XP since transaction was submitted successfully
+        try {
+          await addXP(address, 10)
+          console.log('✅ XP added despite confirmation timeout')
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
       }
       
       return txHash
     } catch (err) {
+      console.error('❌ Transaction failed:', err)
       setError(err.message)
       throw err
     } finally {
@@ -82,9 +111,9 @@ export const useTransactions = () => {
     try {
       const contractAddress = getContractAddress('GN_GAME')
       
-      console.log('📡 Step 1: Sending GN transaction to blockchain...')
+      console.log('📡 Sending GN transaction to blockchain...')
       
-      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
+      // Send transaction to blockchain
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -98,27 +127,55 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
+      console.log('✅ GN transaction sent! Hash:', txHash)
       
-      // Step 2: Wait for REAL blockchain confirmation
-      const receipt = await waitForTransactionReceipt(config, {
-        hash: txHash,
-        confirmations: 1, // Wait for at least 1 confirmation
-      })
+      // In Farcaster environment, award XP after successful transaction submission
+      if (isInFarcaster) {
+        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
+        try {
+          await addXP(address, 10) // GN gives 10 XP
+          console.log('✅ XP added successfully in Farcaster mode')
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+        return txHash
+      }
       
-      console.log('✅ Step 3: GN transaction CONFIRMED on blockchain!', receipt)
-      
-      // Step 3: ONLY NOW add XP after real confirmation
+      // For regular web (non-Farcaster), wait for confirmation
+      console.log('⏳ Non-Farcaster mode - waiting for blockchain confirmation...')
       try {
-        await addXP(address, 10) // GN gives 10 XP
-        console.log('✅ XP added successfully AFTER blockchain confirmation')
-      } catch (xpError) {
-        console.error('Error adding XP:', xpError)
-        // Don't throw error here, transaction was successful
+        const receipt = await Promise.race([
+          waitForTransactionReceipt(config, {
+            hash: txHash,
+            confirmations: 1,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000)
+          )
+        ])
+        
+        console.log('✅ Transaction confirmed!', receipt)
+        
+        try {
+          await addXP(address, 10) // GN gives 10 XP
+          console.log('✅ XP added after confirmation')
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+      } catch (confirmError) {
+        console.warn('⚠️ Confirmation failed, but transaction was sent:', confirmError.message)
+        // Still award XP since transaction was submitted successfully
+        try {
+          await addXP(address, 10)
+          console.log('✅ XP added despite confirmation timeout')
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
       }
       
       return txHash
     } catch (err) {
+      console.error('❌ Transaction failed:', err)
       setError(err.message)
       throw err
     } finally {
@@ -141,9 +198,9 @@ export const useTransactions = () => {
       // Encode the function call: playFlip(uint8 choice) where 0=Heads, 1=Tails
       const choice = selectedSide === 'heads' ? 0 : 1
       
-      console.log('📡 Step 1: Sending Flip transaction to blockchain...')
+      console.log('📡 Sending Flip transaction to blockchain...')
       
-      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
+      // Send transaction to blockchain
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -157,33 +214,69 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
+      console.log('✅ Flip transaction sent! Hash:', txHash)
       
-      // Step 2: Wait for REAL blockchain confirmation
-      const receipt = await waitForTransactionReceipt(config, {
-        hash: txHash,
-        confirmations: 1, // Wait for at least 1 confirmation
-      })
-      
-      console.log('✅ Step 3: Flip transaction CONFIRMED on blockchain!', receipt)
-      
-      // Step 3: Generate game result ONLY after confirmation
+      // Generate game result immediately after transaction submission
       const actualResult = Math.random() < 0.5 ? 'heads' : 'tails'
       const playerWon = (selectedSide === 'heads' && actualResult === 'heads') || 
                        (selectedSide === 'tails' && actualResult === 'tails')
       
-      console.log('🎲 Game result AFTER confirmation:', { selectedSide, actualResult, playerWon })
+      console.log('🎲 Game result:', { selectedSide, actualResult, playerWon })
       
-      // Step 4: Add XP ONLY after blockchain confirmation
-      try {
-        await addBonusXP(address, 'flip', playerWon)
-        const xpEarned = playerWon ? 10 + 500 : 10 // Base + bonus or just base
-        console.log(`✅ XP added AFTER confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
-      } catch (xpError) {
-        console.error('Error adding XP:', xpError)
+      // In Farcaster environment, award XP immediately after transaction submission
+      if (isInFarcaster) {
+        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
+        try {
+          await addBonusXP(address, 'flip', playerWon)
+          const xpEarned = playerWon ? 10 + 500 : 10
+          console.log(`✅ XP added successfully in Farcaster mode: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+        
+        return { 
+          txHash, 
+          playerChoice: selectedSide, 
+          result: actualResult, 
+          isWin: playerWon,
+          xpEarned: playerWon ? 510 : 10
+        }
       }
       
-      // Return game result for UI display (ONLY after confirmation)
+      // For regular web (non-Farcaster), wait for confirmation
+      console.log('⏳ Non-Farcaster mode - waiting for blockchain confirmation...')
+      try {
+        const receipt = await Promise.race([
+          waitForTransactionReceipt(config, {
+            hash: txHash,
+            confirmations: 1,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000)
+          )
+        ])
+        
+        console.log('✅ Transaction confirmed!', receipt)
+        
+        try {
+          await addBonusXP(address, 'flip', playerWon)
+          const xpEarned = playerWon ? 10 + 500 : 10
+          console.log(`✅ XP added after confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+      } catch (confirmError) {
+        console.warn('⚠️ Confirmation failed, but transaction was sent:', confirmError.message)
+        // Still award XP since transaction was submitted successfully
+        try {
+          await addBonusXP(address, 'flip', playerWon)
+          const xpEarned = playerWon ? 10 + 500 : 10
+          console.log(`✅ XP added despite confirmation timeout: ${xpEarned}`)
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+      }
+      
       return { 
         txHash, 
         playerChoice: selectedSide, 
@@ -212,9 +305,9 @@ export const useTransactions = () => {
 
       const contractAddress = getContractAddress('LUCKY_NUMBER')
       
-      console.log('📡 Step 1: Sending Lucky Number transaction to blockchain...')
+      console.log('📡 Sending Lucky Number transaction to blockchain...')
       
-      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
+      // Send transaction to blockchain
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -228,32 +321,53 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
+      console.log('✅ Lucky Number transaction sent! Hash:', txHash)
       
-      // Step 2: Wait for REAL blockchain confirmation
-      const receipt = await waitForTransactionReceipt(config, {
-        hash: txHash,
-        confirmations: 1, // Wait for at least 1 confirmation
-      })
-      
-      console.log('✅ Step 3: Lucky Number transaction CONFIRMED on blockchain!', receipt)
-      
-      // Step 3: Generate game result ONLY after confirmation
+      // Generate game result immediately after transaction submission
       const winningNumber = Math.floor(Math.random() * 10) + 1
       const playerWon = guess === winningNumber
       
-      console.log('🎲 Lucky Number result AFTER confirmation:', { guess, winningNumber, playerWon })
+      console.log('🎲 Lucky Number result:', { guess, winningNumber, playerWon })
       
-      // Step 4: Add XP ONLY after blockchain confirmation
+      // In Farcaster environment, award XP immediately after transaction submission
+      if (isInFarcaster) {
+        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
+        try {
+          await addBonusXP(address, 'luckynumber', playerWon)
+          const xpEarned = playerWon ? 10 + 1000 : 10
+          console.log(`✅ XP added successfully in Farcaster mode: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+        
+        return { 
+          txHash, 
+          playerGuess: guess, 
+          winningNumber, 
+          isWin: playerWon,
+          xpEarned: playerWon ? 1010 : 10
+        }
+      }
+      
+      // For regular web, try confirmation with timeout fallback
+      try {
+        await Promise.race([
+          waitForTransactionReceipt(config, { hash: txHash, confirmations: 1 }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
+        ])
+        console.log('✅ Transaction confirmed!')
+      } catch (error) {
+        console.warn('⚠️ Confirmation timeout, but awarding XP anyway:', error.message)
+      }
+      
       try {
         await addBonusXP(address, 'luckynumber', playerWon)
-        const xpEarned = playerWon ? 10 + 1000 : 10 // Base + bonus or just base
-        console.log(`✅ XP added AFTER confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        const xpEarned = playerWon ? 10 + 1000 : 10
+        console.log(`✅ XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
       } catch (xpError) {
         console.error('Error adding XP:', xpError)
       }
       
-      // Return game result for UI display (ONLY after confirmation)
       return { 
         txHash, 
         playerGuess: guess, 
@@ -281,9 +395,9 @@ export const useTransactions = () => {
 
       const contractAddress = getContractAddress('DICE_ROLL')
       
-      console.log('📡 Step 1: Sending Dice Roll transaction to blockchain...')
+      console.log('📡 Sending Dice Roll transaction to blockchain...')
       
-      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
+      // Send transaction to blockchain
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -297,34 +411,57 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
+      console.log('✅ Dice Roll transaction sent! Hash:', txHash)
       
-      // Step 2: Wait for REAL blockchain confirmation
-      const receipt = await waitForTransactionReceipt(config, {
-        hash: txHash,
-        confirmations: 1, // Wait for at least 1 confirmation
-      })
-      
-      console.log('✅ Step 3: Dice Roll transaction CONFIRMED on blockchain!', receipt)
-      
-      // Step 3: Generate game result ONLY after confirmation
+      // Generate game result immediately after transaction submission
       const dice1 = Math.floor(Math.random() * 6) + 1
       const dice2 = Math.floor(Math.random() * 6) + 1
       const diceTotal = dice1 + dice2
       const playerWon = guess === diceTotal
       
-      console.log('🎲 Dice Roll result AFTER confirmation:', { guess, dice1, dice2, diceTotal, playerWon })
+      console.log('🎲 Dice Roll result:', { guess, dice1, dice2, diceTotal, playerWon })
       
-      // Step 4: Add XP ONLY after blockchain confirmation
+      // In Farcaster environment, award XP immediately after transaction submission
+      if (isInFarcaster) {
+        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
+        try {
+          await addBonusXP(address, 'diceroll', playerWon)
+          const xpEarned = playerWon ? 10 + 1500 : 10
+          console.log(`✅ XP added successfully in Farcaster mode: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        } catch (xpError) {
+          console.error('Error adding XP:', xpError)
+        }
+        
+        return { 
+          txHash, 
+          playerGuess: guess, 
+          dice1,
+          dice2,
+          diceTotal, 
+          isWin: playerWon,
+          xpEarned: playerWon ? 1510 : 10
+        }
+      }
+      
+      // For regular web, try confirmation with timeout fallback
+      try {
+        await Promise.race([
+          waitForTransactionReceipt(config, { hash: txHash, confirmations: 1 }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
+        ])
+        console.log('✅ Transaction confirmed!')
+      } catch (error) {
+        console.warn('⚠️ Confirmation timeout, but awarding XP anyway:', error.message)
+      }
+      
       try {
         await addBonusXP(address, 'diceroll', playerWon)
-        const xpEarned = playerWon ? 10 + 1500 : 10 // Base + bonus or just base
-        console.log(`✅ XP added AFTER confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        const xpEarned = playerWon ? 10 + 1500 : 10
+        console.log(`✅ XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
       } catch (xpError) {
         console.error('Error adding XP:', xpError)
       }
       
-      // Return game result for UI display (ONLY after confirmation)
       return { 
         txHash, 
         playerGuess: guess, 
