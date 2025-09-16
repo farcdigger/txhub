@@ -32,9 +32,6 @@ export const FarcasterProvider = ({ children }) => {
           } catch (userError) {
             console.log('User context not available:', userError)
           }
-
-          // Initialize the SDK
-          await sdk.actions.ready()
         }
 
         setIsInitialized(true)
@@ -47,6 +44,24 @@ export const FarcasterProvider = ({ children }) => {
 
     initializeFarcaster()
   }, [])
+
+  // Separate effect to call ready() when app is fully loaded
+  useEffect(() => {
+    const callReady = async () => {
+      if (isInitialized && isInFarcaster) {
+        try {
+          // Small delay to ensure UI is fully rendered
+          await new Promise(resolve => setTimeout(resolve, 100))
+          await sdk.actions.ready()
+          console.log('Farcaster splash screen hidden')
+        } catch (err) {
+          console.error('Failed to call ready:', err)
+        }
+      }
+    }
+
+    callReady()
+  }, [isInitialized, isInFarcaster])
 
   const sendTransaction = async (transaction) => {
     if (!isInFarcaster) {
