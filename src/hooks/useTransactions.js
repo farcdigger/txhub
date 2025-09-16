@@ -10,7 +10,7 @@ import { config } from '../config/wagmi'
 export const useTransactions = () => {
   const { isInFarcaster } = useFarcaster()
   const { address, chainId } = useAccount()
-  const { writeContract } = useWriteContract()
+  const { writeContractAsyncAsync, data: txData } = useWriteContract()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -30,7 +30,7 @@ export const useTransactions = () => {
       console.log('📡 Sending GM transaction to blockchain...')
       
       // Send transaction to blockchain
-      const txHash = await writeContract({
+      const txHash = await writeContractAsyncAsync({
         address: contractAddress,
         abi: [{
           name: 'sendGM',
@@ -106,7 +106,7 @@ export const useTransactions = () => {
       console.log('📡 Sending GN transaction to blockchain...')
       
       // Send transaction to blockchain
-      const txHash = await writeContract({
+      const txHash = await writeContractAsync({
         address: contractAddress,
         abi: [{
           name: 'sendGN',
@@ -180,7 +180,7 @@ export const useTransactions = () => {
       console.log('📡 Sending Flip transaction to blockchain...')
       
       // Send transaction to blockchain
-      const txHash = await writeContract({
+      const txHash = await writeContractAsync({
         address: contractAddress,
         abi: [{
           name: 'playFlip',
@@ -263,7 +263,7 @@ export const useTransactions = () => {
       console.log('📡 Sending Lucky Number transaction to blockchain...')
       
       // Send transaction to blockchain
-      const txHash = await writeContract({
+      const txHash = await writeContractAsync({
         address: contractAddress,
         abi: [{
           name: 'guessLuckyNumber',
@@ -344,7 +344,7 @@ export const useTransactions = () => {
       console.log('📡 Sending Dice Roll transaction to blockchain...')
       
       // Send transaction to blockchain
-      const txHash = await writeContract({
+      const txHash = await writeContractAsync({
         address: contractAddress,
         abi: [{
           name: 'rollDice',
