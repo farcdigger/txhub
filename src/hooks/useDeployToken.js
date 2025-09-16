@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAccount, useWriteContract } from 'wagmi'
 import { waitForTransactionReceipt, sendTransaction } from 'wagmi/actions'
-import { parseEther, encodeFunctionData } from 'viem'
+import { parseEther, encodeAbiParameters, parseAbiParameters } from 'viem'
 import { config } from '../config/wagmi'
 import { addXP, recordTransaction } from '../utils/xpUtils'
 
@@ -380,9 +380,18 @@ export const useDeployToken = () => {
       // Now deploy the actual ERC20 contract
       console.log('🚀 Deploying ERC20 contract...')
       
-      // Use sendTransaction with raw bytecode (constructor params will be hardcoded in bytecode)
+      // Manually encode constructor parameters
+      const constructorData = encodeAbiParameters(
+        parseAbiParameters('string name, string symbol, uint256 initialSupply'),
+        [name, symbol, BigInt(initialSupply)]
+      )
+      
+      // Combine bytecode with constructor data
+      const deployData = ERC20_BYTECODE + constructorData.slice(2) // Remove '0x' from constructor data
+      
+      // Use sendTransaction with encoded bytecode
       const deployTxHash = await sendTransaction(config, {
-        data: ERC20_BYTECODE,
+        data: deployData,
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)
