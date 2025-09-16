@@ -26,7 +26,7 @@ const BackButton = ({ style = {} }) => {
       }}
     >
       <ArrowLeft size={16} />
-      Ana Sayfa
+      Home
     </button>
   )
 }
