@@ -3,7 +3,7 @@ import { base, baseSepolia } from 'wagmi/chains'
 import { farcasterMiniApp as miniAppConnector } from '@farcaster/miniapp-wagmi-connector'
 import { injected, metaMask, walletConnect } from 'wagmi/connectors'
 
-// Create Wagmi config with multiple connectors
+// Create Wagmi config optimized for Farcaster-only app
 export const config = createConfig({
   chains: [base, baseSepolia],
   transports: {
@@ -11,11 +11,12 @@ export const config = createConfig({
     [baseSepolia.id]: http(),
   },
   connectors: [
-    // Farcaster Mini App connector (priority for Farcaster)
+    // Farcaster Mini App connector (primary for Farcaster-only app)
     miniAppConnector(),
-    // Web3 connectors for web usage
-    injected(),
-    metaMask(),
+    // Fallback connectors (minimal set to avoid conflicts)
+    injected({
+      target: 'metaMask', // Prefer MetaMask over generic injected
+    }),
     // Only add WalletConnect if project ID is provided
     ...(import.meta.env.VITE_WALLETCONNECT_PROJECT_ID && import.meta.env.VITE_WALLETCONNECT_PROJECT_ID !== 'your-project-id' 
       ? [walletConnect({

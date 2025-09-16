@@ -57,14 +57,13 @@ export const FarcasterProvider = ({ children }) => {
         console.log('Forcing Farcaster mode for Farcaster-only app')
         setIsInFarcaster(true)
 
-        if (isInFarcasterApp) {
-          // Get user context if available
-          try {
-            const userContext = await sdk.context.getUser()
-            setUser(userContext)
-          } catch (userError) {
-            console.log('User context not available:', userError)
-          }
+        // Try to get user context if available
+        try {
+          const userContext = await sdk.context.getUser()
+          setUser(userContext)
+          console.log('✅ User context loaded:', userContext)
+        } catch (userError) {
+          console.log('⚠️ User context not available (this is normal in some cases):', userError.message)
         }
 
         setIsInitialized(true)
@@ -83,37 +82,42 @@ export const FarcasterProvider = ({ children }) => {
     const callReady = async () => {
       if (isInitialized) {
         try {
-          console.log('Attempting to call sdk.actions.ready()...')
+          console.log('🚀 Attempting to call sdk.actions.ready()...')
           
           // Wait for DOM to be fully ready
           if (document.readyState === 'loading') {
-            console.log('DOM still loading, waiting for DOMContentLoaded...')
+            console.log('⏳ DOM still loading, waiting for DOMContentLoaded...')
             await new Promise(resolve => {
               document.addEventListener('DOMContentLoaded', resolve)
             })
           }
           
           // Wait for React components to be fully rendered
-          console.log('Waiting for React components to render...')
-          await new Promise(resolve => setTimeout(resolve, 500))
+          console.log('⏳ Waiting for React components to render...')
+          await new Promise(resolve => setTimeout(resolve, 800))
           
           // Call ready to hide splash screen
-          console.log('Calling sdk.actions.ready()...')
+          console.log('📞 Calling sdk.actions.ready()...')
           await sdk.actions.ready()
-          console.log('✅ Farcaster splash screen hidden - interface is ready')
+          console.log('✅ Farcaster splash screen hidden - interface is ready!')
         } catch (err) {
           console.error('❌ Failed to call ready:', err)
           // Try again after a delay
-          setTimeout(() => {
-            console.log('Retrying sdk.actions.ready()...')
-            sdk.actions.ready().catch(console.error)
-          }, 1000)
+          setTimeout(async () => {
+            try {
+              console.log('🔄 Retrying sdk.actions.ready()...')
+              await sdk.actions.ready()
+              console.log('✅ Retry successful!')
+            } catch (retryErr) {
+              console.error('❌ Retry failed:', retryErr)
+            }
+          }, 1500)
         }
       }
     }
 
     // Call ready after a short delay to ensure all components are rendered
-    const timer = setTimeout(callReady, 300)
+    const timer = setTimeout(callReady, 500)
     return () => clearTimeout(timer)
   }, [isInitialized])
 
@@ -122,13 +126,13 @@ export const FarcasterProvider = ({ children }) => {
     if (isInitialized) {
       const backupTimer = setTimeout(async () => {
         try {
-          console.log('Backup ready() call...')
+          console.log('🔄 Backup ready() call...')
           await sdk.actions.ready()
-          console.log('✅ Backup ready() call successful')
+          console.log('✅ Backup ready() call successful!')
         } catch (err) {
           console.error('❌ Backup ready() call failed:', err)
         }
-      }, 2000)
+      }, 3000)
 
       return () => clearTimeout(backupTimer)
     }

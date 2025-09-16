@@ -4,13 +4,29 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co'
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
 
-console.log('Supabase config:', { 
-  supabaseUrl, 
-  supabaseKey: supabaseKey ? 'Key provided' : 'No key',
-  isConfigured: supabaseUrl !== 'https://your-project.supabase.co' && supabaseKey !== 'your-anon-key'
-})
+// Check if Supabase is properly configured
+const isConfigured = supabaseUrl !== 'https://your-project.supabase.co' && supabaseKey !== 'your-anon-key'
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+if (isConfigured) {
+  console.log('✅ Supabase configured successfully')
+} else {
+  console.warn('⚠️ Supabase not configured - using fallback localStorage')
+}
+
+// Create Supabase client with singleton pattern to avoid multiple instances
+let supabaseInstance = null
+
+export const supabase = (() => {
+  if (!supabaseInstance && isConfigured) {
+    supabaseInstance = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: false, // Disable session persistence to avoid multiple instances
+        autoRefreshToken: false
+      }
+    })
+  }
+  return supabaseInstance
+})()
 
 // Database table names
 export const TABLES = {
