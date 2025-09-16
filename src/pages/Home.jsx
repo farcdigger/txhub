@@ -1,0 +1,657 @@
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { useWallet } from '../hooks/useWallet'
+import { getLeaderboard } from '../utils/xpUtils'
+import { useTransactions } from '../hooks/useTransactions'
+import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp } from 'lucide-react'
+
+const Home = () => {
+  const { isConnected } = useWallet()
+  const { sendGMTransaction, sendGNTransaction, isLoading: transactionLoading } = useTransactions()
+  const [leaderboard, setLeaderboard] = useState([])
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false)
+
+  // Load leaderboard
+  useEffect(() => {
+    const loadLeaderboard = async () => {
+      try {
+        setLeaderboardLoading(true)
+        console.log('Loading leaderboard for home page...')
+        const data = await getLeaderboard()
+        console.log('Home page leaderboard data:', data)
+        setLeaderboard(data)
+      } catch (error) {
+        console.error('Error loading leaderboard:', error)
+      } finally {
+        setLeaderboardLoading(false)
+      }
+    }
+
+    loadLeaderboard()
+    // Refresh every 10 seconds
+    const interval = setInterval(loadLeaderboard, 10000)
+    return () => clearInterval(interval)
+  }, [])
+
+
+  const formatAddress = (address) => {
+    if (!address) return ''
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  // Direct transaction functions for GM and GN
+  const handleGMClick = async (e) => {
+    e.preventDefault()
+    if (!isConnected) {
+      alert('Please connect your wallet first')
+      return
+    }
+    try {
+      await sendGMTransaction('GM from BaseHub! 🎮')
+    } catch (error) {
+      console.error('GM transaction failed:', error)
+    }
+  }
+
+  const handleGNClick = async (e) => {
+    e.preventDefault()
+    if (!isConnected) {
+      alert('Please connect your wallet first')
+      return
+    }
+    try {
+      await sendGNTransaction('GN from BaseHub! 🌙')
+    } catch (error) {
+      console.error('GN transaction failed:', error)
+    }
+  }
+
+  const getRankIcon = (rank) => {
+    switch (rank) {
+      case 1:
+        return <Trophy size={20} style={{ color: '#FFD700' }} />
+      case 2:
+        return <Medal size={20} style={{ color: '#C0C0C0' }} />
+      case 3:
+        return <Award size={20} style={{ color: '#CD7F32' }} />
+      default:
+        return <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#6b7280' }}>#{rank}</span>
+    }
+  }
+
+  const games = [
+    {
+      id: 'gm',
+      title: 'GM Game',
+      description: 'Send a GM message to earn XP',
+      icon: <MessageSquare size={32} />,
+      path: '/gm',
+      color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      xpReward: '10 XP',
+      bonusXP: null
+    },
+    {
+      id: 'gn',
+      title: 'GN Game',
+      description: 'Send a GN message to earn XP',
+      icon: <MessageSquare size={32} />,
+      path: '/gn',
+      color: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+      xpReward: '10 XP',
+      bonusXP: null
+    },
+    {
+      id: 'flip',
+      title: 'Coin Flip',
+      description: 'Flip a coin and earn XP',
+      icon: <Coins size={32} />,
+      path: '/flip',
+      color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      xpReward: '10 XP',
+      bonusXP: '+500 XP (Win)'
+    },
+    {
+      id: 'lucky',
+      title: 'Lucky Number',
+      description: 'Guess 1-10 and earn XP',
+      icon: <Dice1 size={32} />,
+      path: '/lucky',
+      color: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+      xpReward: '10 XP',
+      bonusXP: '+1000 XP (Win)'
+    },
+    {
+      id: 'dice',
+      title: 'Dice Roll',
+      description: 'Roll dice and earn XP',
+      icon: <Dice6 size={32} />,
+      path: '/dice',
+      color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      xpReward: '10 XP',
+      bonusXP: '+1500 XP (Win)'
+    },
+  ]
+
+  return (
+    <div className="home">
+      <div className="welcome-section">
+        <div className="card">
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{ 
+              fontSize: '48px', 
+              marginBottom: '16px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              🎮
+            </div>
+            <h1 style={{ 
+              fontSize: '32px', 
+              fontWeight: 'bold', 
+              marginBottom: '8px',
+              color: '#1f2937'
+            }}>
+              Welcome to BaseHub
+            </h1>
+            <p style={{ 
+              fontSize: '18px', 
+              color: '#6b7280',
+              marginBottom: '24px'
+            }}>
+              Play games and earn XP on the Base network through Farcaster
+            </p>
+            
+            {!isConnected && (
+              <div style={{
+                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                border: '1px solid #f59e0b',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '24px'
+              }}>
+                <p style={{ color: '#92400e', margin: 0 }}>
+                  💡 Connect your wallet to start playing and earning XP!
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="games-grid">
+            {games.map((game) => {
+              // For GM and GN, use direct transaction buttons
+              if (game.id === 'gm' || game.id === 'gn') {
+                return (
+                  <button
+                    key={game.id}
+                    onClick={game.id === 'gm' ? handleGMClick : handleGNClick}
+                    disabled={!isConnected || transactionLoading}
+                    className="game-card"
+                    style={{ 
+                      textDecoration: 'none',
+                      border: 'none',
+                      cursor: isConnected && !transactionLoading ? 'pointer' : 'not-allowed',
+                      opacity: isConnected && !transactionLoading ? 1 : 0.6
+                    }}
+                  >
+                  <div 
+                    className="game-icon"
+                    style={{ background: game.color }}
+                  >
+                    {game.icon}
+                  </div>
+                  
+                  {/* XP Reward Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '20px',
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: '#059669',
+                    border: '1px solid rgba(5, 150, 105, 0.2)',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    {game.xpReward}
+                  </div>
+
+                  {/* Bonus XP Badge */}
+                  {game.bonusXP && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '12px',
+                      left: '12px',
+                      background: 'rgba(255, 215, 0, 0.95)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '20px',
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      color: '#92400e',
+                      border: '1px solid rgba(146, 64, 14, 0.2)',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}>
+                      {game.bonusXP}
+                    </div>
+                  )}
+
+                  <h3 style={{ 
+                    fontSize: '20px', 
+                    fontWeight: 'bold', 
+                    marginBottom: '8px',
+                    color: '#1f2937'
+                  }}>
+                    {game.title}
+                  </h3>
+                  <p style={{ 
+                    color: '#6b7280',
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }}>
+                    {transactionLoading ? 'Sending...' : game.description}
+                  </p>
+                  </button>
+                )
+              }
+              
+              // For other games, use Link
+              return (
+                <Link 
+                  key={game.id} 
+                  to={game.path} 
+                  className="game-card"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div 
+                    className="game-icon"
+                    style={{ background: game.color }}
+                  >
+                    {game.icon}
+                  </div>
+                  
+                  {/* XP Reward Badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '20px',
+                    padding: '4px 8px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    color: '#059669',
+                    border: '1px solid rgba(5, 150, 105, 0.2)',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    {game.xpReward}
+                  </div>
+
+                  {/* Bonus XP Badge */}
+                  {game.bonusXP && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '12px',
+                      left: '12px',
+                      background: 'rgba(255, 215, 0, 0.95)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '20px',
+                      padding: '4px 8px',
+                      fontSize: '11px',
+                      fontWeight: 'bold',
+                      color: '#92400e',
+                      border: '1px solid rgba(146, 64, 14, 0.2)',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}>
+                      {game.bonusXP}
+                    </div>
+                  )}
+
+                  <h3 style={{ 
+                    fontSize: '20px', 
+                    fontWeight: 'bold', 
+                    marginBottom: '8px',
+                    color: '#1f2937'
+                  }}>
+                    {game.title}
+                  </h3>
+                  <p style={{ 
+                    color: '#6b7280',
+                    fontSize: '14px',
+                    lineHeight: '1.5'
+                  }}>
+                    {game.description}
+                  </p>
+                </Link>
+              )
+            })}
+          </div>
+
+          <div style={{ 
+            textAlign: 'center', 
+            marginTop: '32px',
+            padding: '20px',
+            background: 'rgba(102, 126, 234, 0.1)',
+            borderRadius: '12px',
+            border: '1px solid rgba(102, 126, 234, 0.2)'
+          }}>
+            <h3 style={{ 
+              fontSize: '18px', 
+              fontWeight: 'bold', 
+              marginBottom: '8px',
+              color: '#1f2937'
+            }}>
+              🚀 Built for Farcaster
+            </h3>
+            <p style={{ 
+              color: '#6b7280',
+              fontSize: '14px',
+              margin: 0
+            }}>
+              This mini app is designed to work seamlessly within the Farcaster ecosystem
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Leaderboard Section */}
+      {true && (
+        <div style={{ marginTop: '32px' }}>
+          <div className="card">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ 
+                fontSize: '32px', 
+                marginBottom: '12px',
+                background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                🏆
+              </div>
+              <h2 style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold', 
+                marginBottom: '8px',
+                color: '#1f2937'
+              }}>
+                Top Players by XP
+              </h2>
+              <p style={{ 
+                color: '#6b7280',
+                fontSize: '14px'
+              }}>
+                See who's leading the BaseHub leaderboard
+              </p>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              {leaderboard.length > 0 ? leaderboard.slice(0, 5).map((player, index) => (
+                <div
+                  key={player.wallet_address}
+                  className="leaderboard-item"
+                  style={{
+                    background: index < 3 ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+                    border: index < 3 ? '1px solid rgba(255, 215, 0, 0.3)' : '1px solid rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  <div className="rank-icon" style={{ 
+                    background: index < 3 ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)'
+                  }}>
+                    {getRankIcon(index + 1)}
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px',
+                      marginBottom: '2px'
+                    }}>
+                      <span style={{ 
+                        fontWeight: 'bold', 
+                        fontSize: '14px',
+                        color: '#1f2937'
+                      }}>
+                        {formatAddress(player.wallet_address)}
+                      </span>
+                      {index < 3 && (
+                        <span style={{
+                          background: index === 0 ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' : 
+                                     index === 1 ? 'linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%)' :
+                                     'linear-gradient(135deg, #CD7F32 0%, #B8860B 100%)',
+                          color: 'white',
+                          padding: '1px 6px',
+                          borderRadius: '8px',
+                          fontSize: '8px',
+                          fontWeight: 'bold'
+                        }}>
+                          TOP {index + 1}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div style={{ 
+                      display: 'flex', 
+                      gap: '12px',
+                      fontSize: '12px',
+                      color: '#6b7280'
+                    }}>
+                      <span>Level {player.level}</span>
+                      <span>{player.total_xp} XP</span>
+                    </div>
+                  </div>
+
+                  <div style={{ 
+                    textAlign: 'right',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <Star size={14} style={{ color: '#FFD700' }} />
+                    <span style={{ 
+                      fontWeight: 'bold',
+                      color: '#FFD700',
+                      fontSize: '14px'
+                    }}>
+                      {player.total_xp}
+                    </span>
+                  </div>
+                </div>
+              )) : (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: '#6b7280'
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
+                  <h3 style={{ 
+                    fontSize: '18px', 
+                    fontWeight: 'bold', 
+                    marginBottom: '8px',
+                    color: '#374151'
+                  }}>
+                    No Players Yet
+                  </h3>
+                  <p style={{ fontSize: '14px', margin: 0 }}>
+                    Be the first to play and earn XP!
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {leaderboard.length > 5 && (
+              <div style={{ 
+                textAlign: 'center',
+                padding: '12px',
+                background: 'rgba(102, 126, 234, 0.1)',
+                borderRadius: '8px',
+                border: '1px solid rgba(102, 126, 234, 0.2)'
+              }}>
+                <p style={{ 
+                  color: '#6b7280',
+                  fontSize: '12px',
+                  margin: 0
+                }}>
+                  And {leaderboard.length - 5} more players...
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default Home
+
+// Modern CSS Styles
+const styles = `
+  .home {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+  }
+
+  .welcome-section {
+    margin-bottom: 40px;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  }
+
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  .game-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .game-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .game-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 20px 20px 0 0;
+  }
+
+  .game-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+  }
+
+  .game-card:hover .game-icon {
+    transform: scale(1.1) rotate(5deg);
+  }
+
+  .leaderboard-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .leaderboard-item:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateX(5px);
+  }
+
+  .rank-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 14px;
+  }
+
+  .loading {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 768px) {
+    .games-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    
+    .card {
+      padding: 20px;
+    }
+    
+    .game-card {
+      padding: 20px;
+    }
+  }
+`
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style')
+  styleSheet.textContent = styles
+  document.head.appendChild(styleSheet)
+}

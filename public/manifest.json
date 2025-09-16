@@ -1,0 +1,55 @@
+{
+  "name": "BaseHub",
+  "description": "Play games and earn XP on Base network through Farcaster",
+  "version": "1.0.0",
+  "icon": "/icon.png",
+  "splash": {
+    "image": "/splash.png",
+    "backgroundColor": "#667eea"
+  },
+  "permissions": [
+    "ethereum",
+    "notifications"
+  ],
+  "supportedChains": [
+    {
+      "chainId": 8453,
+      "name": "Base",
+      "rpcUrl": "https://mainnet.base.org",
+      "blockExplorerUrl": "https://basescan.org",
+      "nativeCurrency": {
+        "name": "Ethereum",
+        "symbol": "ETH",
+        "decimals": 18
+      }
+    },
+    {
+      "chainId": 84532,
+      "name": "Base Sepolia",
+      "rpcUrl": "https://sepolia.base.org",
+      "blockExplorerUrl": "https://sepolia.basescan.org",
+      "nativeCurrency": {
+        "name": "Ethereum",
+        "symbol": "ETH",
+        "decimals": 18
+      }
+    }
+  ],
+  "features": [
+    "wallet",
+    "transactions",
+    "notifications"
+  ],
+  "categories": ["games", "defi", "social"],
+  "tags": ["base", "ethereum", "games", "tokens", "farcaster"],
+  "author": {
+    "name": "BaseHub Team",
+    "url": "https://base.org"
+  },
+  "homepage": "https://base.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/base-games/farcaster-app"
+  },
+  "license": "MIT"
+}

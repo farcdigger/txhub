@@ -1,0 +1,84 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import "./GameToken.sol";
+
+contract LuckyNumber {
+    GameToken public gameToken;
+    address public owner;
+    
+    uint256 public constant GAME_FEE = 0.000005 ether; // 0.000005 ETH fee
+    uint256 public constant BASE_XP = 10; // Base XP for playing
+    uint256 public constant WIN_BONUS_XP = 1000; // Massive bonus XP for winning
+    
+    mapping(address => uint256) public playerLuckyCount;
+    mapping(address => uint256) public lastLuckyTime;
+    
+    event LuckyNumberGuessed(address indexed player, uint256 guess, uint256 result, bool won, uint256 xpEarned);
+    
+    constructor(address _gameToken) {
+        gameToken = GameToken(_gameToken);
+        owner = msg.sender;
+    }
+    
+    // Guess a lucky number (1-10) and earn tokens
+    function guessLuckyNumber(uint256 guess) external payable {
+        require(msg.value >= GAME_FEE, "Insufficient fee");
+        require(guess >= 1 && guess <= 10, "Guess must be between 1 and 10");
+        
+        // Prevent spam (1 guess per minute)
+        require(
+            block.timestamp >= lastLuckyTime[msg.sender] + 60,
+            "Wait 1 minute between guesses"
+        );
+        
+        // Generate random number (1-10)
+        uint256 result = (uint256(keccak256(abi.encodePacked(
+            block.timestamp,
+            block.prevrandao,
+            msg.sender,
+            block.number
+        ))) % 10) + 1;
+        
+        bool won = (guess == result);
+        uint256 xpEarned = BASE_XP;
+        
+        if (won) {
+            // Add bonus XP for winning
+            xpEarned += WIN_BONUS_XP;
+        }
+        
+        // Update player stats
+        playerLuckyCount[msg.sender]++;
+        lastLuckyTime[msg.sender] = block.timestamp;
+        
+        // Send fee to owner
+        payable(owner).transfer(GAME_FEE);
+        
+        // Refund excess ETH
+        if (msg.value > GAME_FEE) {
+            payable(msg.sender).transfer(msg.value - GAME_FEE);
+        }
+        
+        emit LuckyNumberGuessed(msg.sender, guess, result, won, xpEarned);
+    }
+    
+    // Get player stats
+    function getPlayerStats(address player) external view returns (
+        uint256 luckyCount,
+        uint256 lastLucky,
+        uint256 tokenBalance
+    ) {
+        return (
+            playerLuckyCount[player],
+            lastLuckyTime[player],
+            gameToken.balanceOf(player)
+        );
+    }
+    
+    // Withdraw contract balance (only owner)
+    function withdraw() external {
+        require(msg.sender == owner, "Only owner");
+        payable(owner).transfer(address(this).balance);
+    }
+}

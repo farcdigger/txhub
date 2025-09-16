@@ -1,0 +1,44 @@
+{
+  "name": "basehub-farcaster-app",
+  "version": "1.0.0",
+  "description": "BaseHub - Play games and earn XP on Base network through Farcaster",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "http-server dist -p 3000",
+    "compile": "hardhat compile",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network baseSepolia",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network base",
+    "deploy:local": "hardhat run scripts/deploy.js --network hardhat"
+  },
+  "dependencies": {
+    "@farcaster/miniapp-sdk": "latest",
+    "@supabase/supabase-js": "^2.57.4",
+    "@tanstack/react-query": "^4.36.1",
+    "ethers": "^6.8.1",
+    "lucide-react": "^0.294.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.1",
+    "viem": "^1.19.9",
+    "wagmi": "^1.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "http-server": "^14.1.1",
+    "vite": "^5.0.8"
+  },
+  "keywords": [
+    "farcaster",
+    "mini-app",
+    "base",
+    "ethereum",
+    "games"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
