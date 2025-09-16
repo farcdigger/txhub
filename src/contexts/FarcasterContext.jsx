@@ -90,29 +90,55 @@ export const FarcasterProvider = ({ children }) => {
     const callReady = async () => {
       if (isInitialized && isInFarcaster) {
         try {
+          console.log('Attempting to call sdk.actions.ready()...')
+          
           // Wait for DOM to be fully ready
           if (document.readyState === 'loading') {
+            console.log('DOM still loading, waiting for DOMContentLoaded...')
             await new Promise(resolve => {
               document.addEventListener('DOMContentLoaded', resolve)
             })
           }
           
           // Wait for React components to be fully rendered
-          // This prevents jitter and content reflowing
-          await new Promise(resolve => setTimeout(resolve, 200))
+          console.log('Waiting for React components to render...')
+          await new Promise(resolve => setTimeout(resolve, 300))
           
-          // Only call ready when interface is truly ready
+          // Call ready to hide splash screen
+          console.log('Calling sdk.actions.ready()...')
           await sdk.actions.ready()
-          console.log('Farcaster splash screen hidden - interface is ready')
+          console.log('✅ Farcaster splash screen hidden - interface is ready')
         } catch (err) {
-          console.error('Failed to call ready:', err)
+          console.error('❌ Failed to call ready:', err)
+          // Try again after a delay
+          setTimeout(() => {
+            console.log('Retrying sdk.actions.ready()...')
+            sdk.actions.ready().catch(console.error)
+          }, 1000)
         }
       }
     }
 
     // Call ready after a short delay to ensure all components are rendered
-    const timer = setTimeout(callReady, 100)
+    const timer = setTimeout(callReady, 200)
     return () => clearTimeout(timer)
+  }, [isInitialized, isInFarcaster])
+
+  // Additional ready() call as backup
+  useEffect(() => {
+    if (isInitialized && isInFarcaster) {
+      const backupTimer = setTimeout(async () => {
+        try {
+          console.log('Backup ready() call...')
+          await sdk.actions.ready()
+          console.log('✅ Backup ready() call successful')
+        } catch (err) {
+          console.error('❌ Backup ready() call failed:', err)
+        }
+      }, 2000)
+
+      return () => clearTimeout(backupTimer)
+    }
   }, [isInitialized, isInFarcaster])
 
   const sendTransaction = async (transaction) => {

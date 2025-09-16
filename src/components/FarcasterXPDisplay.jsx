@@ -6,7 +6,7 @@ import { useFarcaster } from '../contexts/FarcasterContext'
 
 const FarcasterXPDisplay = () => {
   const { isConnected, address } = useAccount()
-  const { isInFarcaster, toggleFarcasterMode } = useFarcaster()
+  const { isInFarcaster, toggleFarcasterMode, sdk } = useFarcaster()
   const [totalXP, setTotalXP] = useState(0)
 
   // Load XP from Supabase and refresh every 3 seconds
@@ -51,23 +51,49 @@ const FarcasterXPDisplay = () => {
           <span className="token-value">{tokenBalance}</span>
         </div>
       </div>
-      {/* Test button - remove in production */}
-      <button 
-        onClick={toggleFarcasterMode}
-        style={{
-          position: 'absolute',
-          top: '-30px',
-          right: '0',
-          fontSize: '10px',
-          padding: '2px 4px',
-          background: 'red',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px'
-        }}
-      >
-        Toggle FC
-      </button>
+      {/* Test buttons - remove in production */}
+      <div style={{
+        position: 'absolute',
+        top: '-60px',
+        right: '0',
+        display: 'flex',
+        gap: '4px'
+      }}>
+        <button 
+          onClick={toggleFarcasterMode}
+          style={{
+            fontSize: '10px',
+            padding: '2px 4px',
+            background: 'red',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px'
+          }}
+        >
+          Toggle FC
+        </button>
+        <button 
+          onClick={async () => {
+            try {
+              console.log('Manual ready() call...')
+              await sdk.actions.ready()
+              console.log('✅ Manual ready() successful')
+            } catch (err) {
+              console.error('❌ Manual ready() failed:', err)
+            }
+          }}
+          style={{
+            fontSize: '10px',
+            padding: '2px 4px',
+            background: 'green',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px'
+          }}
+        >
+          Ready
+        </button>
+      </div>
     </div>
   )
 }
