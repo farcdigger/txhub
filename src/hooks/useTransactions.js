@@ -68,14 +68,15 @@ export const useTransactions = () => {
           console.error('Error adding XP:', xpError)
         }
         
-        return txHash
+        return { 
+          txHash,
+          xpEarned: 10 
+        }
       } catch (confirmError) {
         console.warn('⚠️ Confirmation timeout:', confirmError.message)
         // Don't award XP if confirmation fails
         throw new Error('Transaction confirmation failed - please try again')
       }
-      
-      return txHash
     } catch (err) {
       console.error('❌ Transaction failed:', err)
       setError(err.message)
@@ -137,14 +138,15 @@ export const useTransactions = () => {
           console.error('Error adding XP:', xpError)
         }
         
-        return txHash
+        return { 
+          txHash,
+          xpEarned: 10 
+        }
       } catch (confirmError) {
         console.warn('⚠️ Confirmation timeout:', confirmError.message)
         // Don't award XP if confirmation fails
         throw new Error('Transaction confirmation failed - please try again')
       }
-      
-      return txHash
     } catch (err) {
       console.error('❌ Transaction failed:', err)
       setError(err.message)
