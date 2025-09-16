@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAccount, useWriteContract } from 'wagmi'
 import { waitForTransactionReceipt, sendTransaction } from 'wagmi/actions'
-import { parseEther } from 'viem'
+import { parseEther, encodeFunctionData } from 'viem'
 import { config } from '../config/wagmi'
 import { addXP, recordTransaction } from '../utils/xpUtils'
 
@@ -380,11 +380,9 @@ export const useDeployToken = () => {
       // Now deploy the actual ERC20 contract
       console.log('🚀 Deploying ERC20 contract...')
       
-      // Use writeContractAsync for better Farcaster compatibility
-      const deployTxHash = await writeContractAsync({
-        abi: ERC20_ABI,
-        bytecode: ERC20_BYTECODE,
-        args: [name, symbol, initialSupply],
+      // Use sendTransaction with raw bytecode (constructor params will be hardcoded in bytecode)
+      const deployTxHash = await sendTransaction(config, {
+        data: ERC20_BYTECODE,
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)
