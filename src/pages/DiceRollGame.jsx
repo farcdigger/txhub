@@ -25,29 +25,32 @@ const DiceRollGame = () => {
     }
 
     try {
+      console.log('🎯 Starting dice roll transaction, waiting for blockchain confirmation...')
+      
+      // This will wait for transaction confirmation before returning
       const result = await sendDiceRollTransaction(selectedNumber)
+      
+      console.log('✅ Dice roll transaction confirmed! Result:', result)
+      
+      // Use the actual result from the transaction (includes blockchain confirmation)
       setLastTransaction(result)
       setLastPlayed(new Date())
       
-      // Simulate dice roll result
-      const rolledNumber = Math.floor(Math.random() * 6) + 1
-      const won = rolledNumber === selectedNumber
-      
+      // Set game result from transaction
       setGameResult({
-        rolledNumber,
-        selectedNumber,
-        won
+        dice1: result.dice1,
+        dice2: result.dice2,
+        diceTotal: result.diceTotal,
+        selectedNumber: result.playerGuess,
+        won: result.isWin
       })
       
-      // Calculate XP earned
-      let xpEarned = 10 // Base XP for playing
-      if (won) {
-        xpEarned += 1500 // Massive bonus XP for winning
-      }
+      // XP is already added by useTransactions hook after confirmation
+      // No need to manually add XP here - it's handled securely in useTransactions
       
-      setTotalXP(prev => prev + xpEarned)
     } catch (error) {
-      console.error('Dice roll failed:', error)
+      console.error('❌ Dice roll failed (transaction cancelled or failed):', error)
+      // No XP given on failed transactions - this is secure!
     }
   }
 

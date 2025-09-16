@@ -24,15 +24,23 @@ const GNGame = () => {
     }
 
     try {
+      console.log('🎯 Starting GN transaction, waiting for blockchain confirmation...')
+      
+      // This will wait for transaction confirmation before returning
       const result = await sendGNTransaction(message)
+      
+      console.log('✅ GN transaction confirmed! Result:', result)
+      
+      // Use the actual result from the transaction (includes blockchain confirmation)
       setLastTransaction(result)
       setLastSent(new Date())
       
-      // Calculate XP earned
-      let xpEarned = 10 // Base XP for playing
-      setTotalXP(prev => prev + xpEarned)
+      // XP is already added by useTransactions hook after confirmation
+      // No need to manually add XP here - it's handled securely in useTransactions
+      
     } catch (error) {
-      console.error('GN transaction failed:', error)
+      console.error('❌ GN transaction failed (transaction cancelled or failed):', error)
+      // No XP given on failed transactions - this is secure!
     }
   }
 

@@ -27,29 +27,30 @@ const LuckyNumberGame = () => {
     }
 
     try {
+      console.log('🎯 Starting lucky number transaction, waiting for blockchain confirmation...')
+      
+      // This will wait for transaction confirmation before returning
       const result = await sendLuckyNumberTransaction(selectedNumber)
+      
+      console.log('✅ Lucky number transaction confirmed! Result:', result)
+      
+      // Use the actual result from the transaction (includes blockchain confirmation)
       setLastTransaction(result)
       setLastPlayed(new Date())
       
-      // Simulate lucky number result
-      const winningNumber = Math.floor(Math.random() * 10) + 1
-      const won = winningNumber === selectedNumber
-      
+      // Set game result from transaction
       setGameResult({
-        winningNumber,
-        selectedNumber,
-        won
+        winningNumber: result.winningNumber,
+        selectedNumber: result.playerGuess,
+        won: result.isWin
       })
       
-      // Calculate XP earned
-      let xpEarned = 10 // Base XP for playing
-      if (won) {
-        xpEarned += 1000 // Massive bonus XP for winning
-      }
+      // XP is already added by useTransactions hook after confirmation
+      // No need to manually add XP here - it's handled securely in useTransactions
       
-      setTotalXP(prev => prev + xpEarned)
     } catch (error) {
-      console.error('Lucky number game failed:', error)
+      console.error('❌ Lucky number game failed (transaction cancelled or failed):', error)
+      // No XP given on failed transactions - this is secure!
     }
   }
 

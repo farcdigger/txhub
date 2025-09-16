@@ -24,23 +24,23 @@ const FlipGame = () => {
     }
 
     try {
+      console.log('🎯 Starting flip transaction, waiting for blockchain confirmation...')
+      
+      // This will wait for transaction confirmation before returning
       const result = await sendFlipTransaction(selectedSide)
+      
+      console.log('✅ Flip transaction confirmed! Result:', result)
+      
+      // Use the actual result from the transaction (includes blockchain confirmation)
       setLastTransaction(result)
+      setResult(result.result) // Use actual result from useTransactions
       
-      // Simulate coin flip result
-      const flipResult = Math.random() < 0.5 ? 'heads' : 'tails'
-      setResult(flipResult)
+      // XP is already added by useTransactions hook after confirmation
+      // No need to manually add XP here - it's handled securely in useTransactions
       
-      // Calculate XP earned
-      let xpEarned = 10 // Base XP for playing
-      const won = flipResult === selectedSide
-      if (won) {
-        xpEarned += 500 // Massive bonus XP for winning
-      }
-      
-      setTotalXP(prev => prev + xpEarned)
     } catch (error) {
-      console.error('Coin flip failed:', error)
+      console.error('❌ Coin flip failed (transaction cancelled or failed):', error)
+      // No XP given on failed transactions - this is secure!
     }
   }
 
@@ -101,30 +101,42 @@ const FlipGame = () => {
         </p>
       </div>
 
-      {result && (
+      {lastTransaction && lastTransaction.result && (
         <div style={{ 
           display: 'flex', 
+          flexDirection: 'column',
           alignItems: 'center', 
-          gap: '12px',
+          gap: '8px',
           justifyContent: 'center',
-          padding: '12px',
-          background: result === selectedSide ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-          border: result === selectedSide ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+          padding: '16px',
+          background: lastTransaction.isWin ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+          border: lastTransaction.isWin ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
           borderRadius: '8px',
           marginBottom: '24px'
         }}>
-          {result === selectedSide ? (
+          {lastTransaction.isWin ? (
             <TrendingUp size={20} style={{ color: '#10b981' }} />
           ) : (
             <TrendingDown size={20} style={{ color: '#ef4444' }} />
           )}
-          <span style={{ 
+          <div style={{ 
             fontWeight: 'bold',
-            color: result === selectedSide ? '#10b981' : '#ef4444'
+            fontSize: '16px',
+            color: lastTransaction.isWin ? '#10b981' : '#ef4444'
           }}>
-            {result === selectedSide ? 'You Won!' : 'You Lost!'} 
-            Result: {result}
-          </span>
+            {lastTransaction.isWin ? '🎉 You Won!' : '😔 You Lost!'} 
+          </div>
+          <div style={{ fontSize: '14px', color: '#6b7280' }}>
+            Your choice: <strong>{lastTransaction.playerChoice}</strong> | 
+            Result: <strong>{lastTransaction.result}</strong>
+          </div>
+          <div style={{ 
+            fontSize: '14px', 
+            fontWeight: 'bold',
+            color: lastTransaction.isWin ? '#10b981' : '#3b82f6'
+          }}>
+            XP Earned: +{lastTransaction.xpEarned} XP
+          </div>
         </div>
       )}
 
@@ -148,7 +160,7 @@ const FlipGame = () => {
             color: '#6b7280',
             wordBreak: 'break-all'
           }}>
-            {lastTransaction.hash || lastTransaction.transactionHash}
+            {lastTransaction.txHash || lastTransaction.hash || lastTransaction.transactionHash}
           </div>
         </div>
       )}
