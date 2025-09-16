@@ -4,6 +4,7 @@ import { Wallet, Home, Wifi, WifiOff, Gamepad2, Zap, Shield } from 'lucide-react
 import { useWallet } from '../hooks/useWallet'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { getCurrentConfig } from '../config/base'
+import WalletConnect from './WalletConnect'
 
 const Header = () => {
   const location = useLocation()
@@ -78,36 +79,7 @@ const Header = () => {
             </div>
             
             {/* Wallet Section */}
-            {isConnected ? (
-              <div className="wallet-section">
-                <div className="wallet-address">
-                  <Shield size={14} />
-                  <span>{formatAddress(address)}</span>
-                </div>
-                {!isInFarcaster && !isOnBaseNetwork && (
-                  <button 
-                    onClick={switchToBaseNetwork}
-                    className="action-button secondary"
-                  >
-                    Switch to Base
-                  </button>
-                )}
-                <button 
-                  onClick={disconnectWallet}
-                  className="action-button danger"
-                >
-                  Disconnect
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={connectWallet}
-                className="action-button primary"
-              >
-                <Wallet size={16} />
-                <span>Connect Wallet</span>
-              </button>
-            )}
+            <WalletConnect />
           </div>
         </div>
       </div>

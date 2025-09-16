@@ -1,13 +1,15 @@
 import { useState } from 'react'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { useFarcaster } from '../contexts/FarcasterContext'
-import { useWallet } from './useWallet'
 import { addXP, addBonusXP } from '../utils/xpUtils'
 import { getCurrentConfig, getContractAddress, GAS_CONFIG, GAME_CONFIG } from '../config/base'
-import { ethers } from 'ethers'
+import { parseEther, encodeFunctionData } from 'viem'
 
 export const useTransactions = () => {
   const { isInFarcaster, sendTransaction, sendNotification } = useFarcaster()
-  const { address, chainId, switchToBaseNetwork } = useWallet()
+  const { address, chainId } = useAccount()
+  const { writeContract } = useWriteContract()
+  const { isLoading: isTransactionLoading } = useWaitForTransactionReceipt()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -48,10 +50,16 @@ export const useTransactions = () => {
       const contractAddress = getContractAddress('GM_GAME')
       
       // Encode the function call: sendGM(string message)
-      const iface = new ethers.Interface([
-        "function sendGM(string memory message) external payable"
-      ])
-      const data = iface.encodeFunctionData("sendGM", [message])
+      const data = encodeFunctionData({
+        abi: [{
+          name: 'sendGM',
+          type: 'function',
+          stateMutability: 'payable',
+          inputs: [{ name: 'message', type: 'string' }]
+        }],
+        functionName: 'sendGM',
+        args: [message]
+      })
       
       let result
       
@@ -60,7 +68,7 @@ export const useTransactions = () => {
         const transaction = {
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005').toString(), // 0.000005 ETH fee
+          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         }
 
@@ -72,19 +80,19 @@ export const useTransactions = () => {
           body: `You earned 10 XP!`,
         })
       } else {
-        // Regular web3 transaction
-        const provider = getProvider()
-        const signer = await provider.getSigner()
-        
-        const tx = await signer.sendTransaction({
-          to: contractAddress,
-          data: data,
-          value: ethers.parseEther('0.000005'), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
+        // Use Wagmi for web transactions
+        result = await writeContract({
+          address: contractAddress,
+          abi: [{
+            name: 'sendGM',
+            type: 'function',
+            stateMutability: 'payable',
+            inputs: [{ name: 'message', type: 'string' }]
+          }],
+          functionName: 'sendGM',
+          args: [message],
+          value: parseEther('0.000005'), // 0.000005 ETH fee
         })
-
-        await tx.wait()
-        result = tx
       }
       
       // Add XP to player after successful transaction
@@ -134,7 +142,7 @@ export const useTransactions = () => {
         const transaction = {
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005').toString(), // 0.000005 ETH fee
+          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         }
 
@@ -151,7 +159,7 @@ export const useTransactions = () => {
         const tx = await signer.sendTransaction({
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005'), // 0.000005 ETH fee
+          value: parseEther('0.000005'), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         })
 
@@ -207,7 +215,7 @@ export const useTransactions = () => {
         const transaction = {
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005').toString(), // 0.000005 ETH fee
+          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         }
 
@@ -224,7 +232,7 @@ export const useTransactions = () => {
         const tx = await signer.sendTransaction({
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005'), // 0.000005 ETH fee
+          value: parseEther('0.000005'), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         })
 
@@ -279,7 +287,7 @@ export const useTransactions = () => {
         const transaction = {
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005').toString(), // 0.000005 ETH fee
+          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         }
 
@@ -298,7 +306,7 @@ export const useTransactions = () => {
         const tx = await signer.sendTransaction({
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005'), // 0.000005 ETH fee
+          value: parseEther('0.000005'), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         })
 
@@ -341,7 +349,7 @@ export const useTransactions = () => {
         const transaction = {
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005').toString(), // 0.000005 ETH fee
+          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         }
 
@@ -358,7 +366,7 @@ export const useTransactions = () => {
         const tx = await signer.sendTransaction({
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005'), // 0.000005 ETH fee
+          value: parseEther('0.000005'), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         })
 
@@ -415,7 +423,7 @@ export const useTransactions = () => {
         const transaction = {
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005').toString(), // 0.000005 ETH fee
+          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         }
 
@@ -432,7 +440,7 @@ export const useTransactions = () => {
         const tx = await signer.sendTransaction({
           to: contractAddress,
           data: data,
-          value: ethers.parseEther('0.000005'), // 0.000005 ETH fee
+          value: parseEther('0.000005'), // 0.000005 ETH fee
           gasLimit: GAS_CONFIG.GAS_LIMIT,
         })
 
