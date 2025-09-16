@@ -154,6 +154,16 @@ const Home = () => {
       xpReward: '10 XP',
       bonusXP: '+1500 XP (Win)'
     },
+    {
+      id: 'deploy',
+      title: 'Deploy Token',
+      description: 'Create your own ERC20 token',
+      icon: <Coins size={20} />,
+      path: '/deploy',
+      color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      xpReward: '50 XP',
+      bonusXP: null
+    },
   ]
 
   return (

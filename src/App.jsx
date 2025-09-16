@@ -14,6 +14,7 @@ import FlipGame from './pages/FlipGame'
 import LuckyNumberGame from './pages/LuckyNumberGame'
 import DiceRollGame from './pages/DiceRollGame'
 import Leaderboard from './pages/Leaderboard'
+import DeployToken from './pages/DeployToken'
 import './styles/index.css'
 
 const queryClient = new QueryClient()
@@ -58,6 +59,7 @@ function AppContent() {
             <Route path="/lucky" element={<LuckyNumberGame />} />
             <Route path="/dice" element={<DiceRollGame />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/deploy" element={<DeployToken />} />
           </Routes>
         </main>
       </div>
