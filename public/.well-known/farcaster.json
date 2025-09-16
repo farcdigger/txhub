@@ -1,5 +1,5 @@
 {
-  "miniapp": {
+  "frame": {
     "name": "BaseHub",
     "version": "1",
     "iconUrl": "https://basehub-alpha.vercel.app/icon.png",
@@ -8,60 +8,21 @@
     "buttonTitle": "Open BaseHub",
     "splashImageUrl": "https://basehub-alpha.vercel.app/splash.png",
     "splashBackgroundColor": "#6B76D9",
-    "subtitle": "Play Games and Earn XP",
-    "description": "Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!",
+    "webhookUrl": "https://basehub-alpha.vercel.app/api/webhook",
+    "subtitle": "BaseHub",
+    "description": "BaseHub",
     "primaryCategory": "games",
     "tags": [
       "gaming",
       "l2"
     ],
     "tagline": "gaming,tx,airdrop",
-    "ogTitle": "Play Games and Earn XP",
-    "ogDescription": "Play games and earn XP on Base network through Farcaster. Join the leaderboard!",
-    "heroImageUrl": "https://basehub-alpha.vercel.app/image.png",
-    "screenshotUrls": [
-      "https://basehub-alpha.vercel.app/image.png"
-    ],
-    "permissions": [
-      "ethereum",
-      "notifications"
-    ],
-    "supportedChains": [
-      {
-        "chainId": 8453,
-        "name": "Base",
-        "rpcUrl": "https://mainnet.base.org",
-        "blockExplorerUrl": "https://basescan.org",
-        "nativeCurrency": {
-          "name": "Ethereum",
-          "symbol": "ETH",
-          "decimals": 18
-        }
-      }
-    ],
-    "features": [
-      "wallet",
-      "transactions",
-      "notifications"
-    ],
-    "disableNativeGestures": false,
-    "requiredChains": [
-      {
-        "chainId": 8453,
-        "name": "Base",
-        "rpcUrl": "https://mainnet.base.org",
-        "blockExplorerUrl": "https://basescan.org",
-        "nativeCurrency": {
-          "name": "Ethereum",
-          "symbol": "ETH",
-          "decimals": 18
-        }
-      }
-    ],
-    "requiredCapabilities": [
-      "wallet.getEthereumProvider",
-      "actions.composeCast",
-      "actions.ready"
-    ]
+    "ogTitle": "BaseHub",
+    "ogDescription": "BaseHub"
+  },
+  "accountAssociation": {
+    "header": "eyJmaWQiOjI1MTYxOSwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDk3Njc1RjAzRDY1RkFCNzM3MWZhMkJlQjNkYkY5YzY4NDJjOGQ1MjUifQ",
+    "payload": "eyJkb21haW4iOiJiYXNlaHViLWFscGhhLnZlcmNlbC5hcHAifQ",
+    "signature": "6cm4RcrXEAoihRWZ+6e2uspMoY35dsu3QHGLE04imUlJpmGQ5YCw0tABFgqsR0sajr/EB/Dx51Da0PYk5vbkHhw="
   }
 }
