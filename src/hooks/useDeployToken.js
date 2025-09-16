@@ -244,34 +244,11 @@ export const useDeployToken = () => {
       // Now deploy the actual ERC20 contract
       console.log('🚀 Deploying ERC20 contract...')
       
-      // Manually encode constructor parameters (name, symbol, initialSupply)
-      // Simple ABI encoding for 3 parameters: string, string, uint256
-      
-      // Convert strings to hex and pad properly
-      const nameBytes = new TextEncoder().encode(name)
-      const symbolBytes = new TextEncoder().encode(symbol)
-      
-      // ABI encode: offset1 (96), offset2 (dynamic), initialSupply, nameLength+nameData, symbolLength+symbolData
-      const nameDataStart = 96 // 3 * 32 bytes for the three main params
-      const symbolDataStart = nameDataStart + 32 + Math.ceil(nameBytes.length / 32) * 32
-      
-      // Encode parameters
-      const offset1 = '0000000000000000000000000000000000000000000000000000000000000060' // 96 in hex
-      const offset2 = symbolDataStart.toString(16).padStart(64, '0')
-      const supply = BigInt(initialSupply).toString(16).padStart(64, '0')
-      const nameLen = nameBytes.length.toString(16).padStart(64, '0')
-      const nameData = Array.from(nameBytes).map(b => b.toString(16).padStart(2, '0')).join('').padEnd(Math.ceil(nameBytes.length / 32) * 64, '0')
-      const symbolLen = symbolBytes.length.toString(16).padStart(64, '0')
-      const symbolData = Array.from(symbolBytes).map(b => b.toString(16).padStart(2, '0')).join('').padEnd(Math.ceil(symbolBytes.length / 32) * 64, '0')
-      
-      const constructorData = '0x' + offset1 + offset2 + supply + nameLen + nameData + symbolLen + symbolData
-      
-      // Combine bytecode with constructor data
-      const deployData = ERC20_BYTECODE + constructorData.slice(2) // Remove '0x' from constructor data
-      
-      // Use sendTransaction with encoded bytecode
-      const deployTxHash = await sendTransaction(config, {
-        data: deployData,
+      // Use writeContractAsync for better Farcaster compatibility
+      const deployTxHash = await writeContractAsync({
+        abi: ERC20_ABI,
+        bytecode: ERC20_BYTECODE,
+        args: [name, symbol, initialSupply],
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)
