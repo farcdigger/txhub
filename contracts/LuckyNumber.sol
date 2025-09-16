@@ -12,8 +12,6 @@ contract LuckyNumber {
     uint256 public constant WIN_BONUS_XP = 1000; // Massive bonus XP for winning
     
     mapping(address => uint256) public playerLuckyCount;
-    mapping(address => uint256) public lastLuckyTime;
-    
     event LuckyNumberGuessed(address indexed player, uint256 guess, uint256 result, bool won, uint256 xpEarned);
     
     constructor(address _gameToken) {
@@ -25,12 +23,6 @@ contract LuckyNumber {
     function guessLuckyNumber(uint256 guess) external payable {
         require(msg.value >= GAME_FEE, "Insufficient fee");
         require(guess >= 1 && guess <= 10, "Guess must be between 1 and 10");
-        
-        // Prevent spam (1 guess per minute)
-        require(
-            block.timestamp >= lastLuckyTime[msg.sender] + 60,
-            "Wait 1 minute between guesses"
-        );
         
         // Generate random number (1-10)
         uint256 result = (uint256(keccak256(abi.encodePacked(
@@ -50,7 +42,6 @@ contract LuckyNumber {
         
         // Update player stats
         playerLuckyCount[msg.sender]++;
-        lastLuckyTime[msg.sender] = block.timestamp;
         
         // Send fee to owner
         payable(owner).transfer(GAME_FEE);
@@ -66,12 +57,10 @@ contract LuckyNumber {
     // Get player stats
     function getPlayerStats(address player) external view returns (
         uint256 luckyCount,
-        uint256 lastLucky,
         uint256 tokenBalance
     ) {
         return (
             playerLuckyCount[player],
-            lastLuckyTime[player],
             gameToken.balanceOf(player)
         );
     }

@@ -2,12 +2,11 @@ import React, { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { useTransactions } from '../hooks/useTransactions'
-import { useCooldown } from '../hooks/useCooldown'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { useSupabase } from '../hooks/useSupabase'
 import EmbedMeta from '../components/EmbedMeta'
 import BackButton from '../components/BackButton'
-import { Target, Send, Star, CheckCircle, ExternalLink, Coins, TrendingUp, TrendingDown, Clock } from 'lucide-react'
+import { Target, Send, Star, CheckCircle, ExternalLink, Coins, TrendingUp, TrendingDown } from 'lucide-react'
 
 const LuckyNumberGame = () => {
   const { isConnected, address } = useAccount()
@@ -15,7 +14,6 @@ const LuckyNumberGame = () => {
   const { sendLuckyNumberTransaction, isLoading, error } = useTransactions()
   const { isInFarcaster } = useFarcaster()
   const { calculateTokens } = useSupabase()
-  const { canPlay, cooldownRemaining, cooldownText, updateLastPlayTime } = useCooldown('LUCKY_NUMBER')
   const [selectedNumber, setSelectedNumber] = useState(1)
   const [lastPlayed, setLastPlayed] = useState(null)
   const [totalXP, setTotalXP] = useState(0)
@@ -28,14 +26,7 @@ const LuckyNumberGame = () => {
       return
     }
 
-    if (!canPlay) {
-      alert(`Please wait ${cooldownText} before playing again`)
-      return
-    }
-
     try {
-      // Update cooldown before transaction to prevent spam clicks
-      updateLastPlayTime()
       console.log('🎯 Starting lucky number transaction, waiting for blockchain confirmation...')
       
       // This will wait for transaction confirmation before returning
@@ -60,11 +51,6 @@ const LuckyNumberGame = () => {
     } catch (error) {
       console.error('❌ Lucky number game failed (transaction cancelled or failed):', error)
       
-      // Reset cooldown if transaction failed (except for rate limit errors)
-      if (!error.message.includes('Wait 1 minute') && !error.message.includes('between guesses')) {
-        // Reset cooldown for other errors (like user cancellation)
-        localStorage.removeItem(`lastPlay_LUCKY_NUMBER_${address}`)
-      }
       // No XP given on failed transactions - this is secure!
     }
   }
@@ -230,22 +216,17 @@ const LuckyNumberGame = () => {
 
         <button
           onClick={playLuckyNumber}
-          disabled={isLoading || !canPlay}
+          disabled={isLoading}
           className="btn btn-primary"
           style={{ 
             width: '100%',
-            background: (isLoading || !canPlay) ? '#9ca3af' : 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
+            background: isLoading ? '#9ca3af' : 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
           }}
         >
           {isLoading ? (
             <>
               <div className="loading" />
               Guessing Number...
-            </>
-          ) : !canPlay ? (
-            <>
-              <Clock size={20} />
-              Wait {cooldownText}
             </>
           ) : (
             <>

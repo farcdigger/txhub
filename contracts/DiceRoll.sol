@@ -12,8 +12,6 @@ contract DiceRoll {
     uint256 public constant WIN_BONUS_XP = 1500; // Massive bonus XP for winning
     
     mapping(address => uint256) public playerDiceCount;
-    mapping(address => uint256) public lastDiceTime;
-    
     event DiceRolled(address indexed player, uint256 guess, uint256 result, bool won, uint256 xpEarned);
     
     constructor(address _gameToken) {
@@ -25,12 +23,6 @@ contract DiceRoll {
     function rollDice(uint256 guess) external payable {
         require(msg.value >= GAME_FEE, "Insufficient fee");
         require(guess >= 1 && guess <= 6, "Guess must be between 1 and 6");
-        
-        // Prevent spam (1 roll per minute)
-        require(
-            block.timestamp >= lastDiceTime[msg.sender] + 60,
-            "Wait 1 minute between rolls"
-        );
         
         // Generate random dice roll (1-6)
         uint256 result = (uint256(keccak256(abi.encodePacked(
@@ -50,7 +42,6 @@ contract DiceRoll {
         
         // Update player stats
         playerDiceCount[msg.sender]++;
-        lastDiceTime[msg.sender] = block.timestamp;
         
         // Send fee to owner
         payable(owner).transfer(GAME_FEE);
@@ -66,12 +57,10 @@ contract DiceRoll {
     // Get player stats
     function getPlayerStats(address player) external view returns (
         uint256 diceCount,
-        uint256 lastDice,
         uint256 tokenBalance
     ) {
         return (
             playerDiceCount[player],
-            lastDiceTime[player],
             gameToken.balanceOf(player)
         );
     }

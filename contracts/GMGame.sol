@@ -11,7 +11,6 @@ contract GMGame {
     uint256 public constant GAME_FEE = 0.000005 ether; // 0.000005 ETH fee
     
     mapping(address => uint256) public playerGMCount;
-    mapping(address => uint256) public lastGMTime;
     
     event GMSent(address indexed player, string message, uint256 reward);
     
@@ -25,15 +24,9 @@ contract GMGame {
         require(msg.value >= GAME_FEE, "Insufficient fee");
         require(bytes(message).length > 0, "Message cannot be empty");
         
-        // Prevent spam (1 GM per minute)
-        require(
-            block.timestamp >= lastGMTime[msg.sender] + 60,
-            "Wait 1 minute between GMs"
-        );
         
         // Update player stats
         playerGMCount[msg.sender]++;
-        lastGMTime[msg.sender] = block.timestamp;
         
         // Send fee to owner
         payable(owner).transfer(GAME_FEE);
@@ -49,12 +42,10 @@ contract GMGame {
     // Get player stats
     function getPlayerStats(address player) external view returns (
         uint256 gmCount,
-        uint256 lastGM,
         uint256 tokenBalance
     ) {
         return (
             playerGMCount[player],
-            lastGMTime[player],
             gameToken.balanceOf(player)
         );
     }
