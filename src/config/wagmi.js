@@ -16,9 +16,13 @@ export const config = createConfig({
     // Web3 connectors for web usage
     injected(),
     metaMask(),
-    walletConnect({
-      projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'your-project-id',
-    }),
+    // Only add WalletConnect if project ID is provided
+    ...(import.meta.env.VITE_WALLETCONNECT_PROJECT_ID && import.meta.env.VITE_WALLETCONNECT_PROJECT_ID !== 'your-project-id' 
+      ? [walletConnect({
+          projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID,
+        })]
+      : []
+    ),
   ],
 })
 

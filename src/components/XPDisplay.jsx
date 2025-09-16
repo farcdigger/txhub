@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
 import { Star, Coins, Gift, Zap, Trophy } from 'lucide-react'
-import { useWallet } from '../hooks/useWallet'
 import { getXP, calculateTokens } from '../utils/xpUtils'
 
 const XPDisplay = () => {
-  const { isConnected, address } = useWallet()
+  const { isConnected, address } = useAccount()
   const [totalXP, setTotalXP] = useState(0)
   const [isScrolled, setIsScrolled] = useState(false)
 

@@ -21,7 +21,15 @@ export const FarcasterProvider = ({ children }) => {
     const initializeFarcaster = async () => {
       try {
         // Check if we're running inside Farcaster
-        const isInFarcasterApp = await sdk.context.isInFarcaster()
+        let isInFarcasterApp = false
+        try {
+          // Try to access Farcaster-specific APIs
+          await sdk.context.getUser()
+          isInFarcasterApp = true
+        } catch (e) {
+          // If getUser fails, we're probably not in Farcaster
+          isInFarcasterApp = false
+        }
         setIsInFarcaster(isInFarcasterApp)
 
         if (isInFarcasterApp) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useWallet } from '../hooks/useWallet'
+import { useAccount } from 'wagmi'
 import { useTransactions } from '../hooks/useTransactions'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { useSupabase } from '../hooks/useSupabase'
@@ -7,7 +7,7 @@ import EmbedMeta from '../components/EmbedMeta'
 import { Coins, RotateCcw, TrendingUp, TrendingDown, Star } from 'lucide-react'
 
 const FlipGame = () => {
-  const { isConnected, address } = useWallet()
+  const { isConnected, address } = useAccount()
   const { sendFlipTransaction, isLoading, error } = useTransactions()
   const { isInFarcaster } = useFarcaster()
   const { calculateTokens } = useSupabase()

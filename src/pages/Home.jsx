@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useWallet } from '../hooks/useWallet'
+import { useAccount } from 'wagmi'
 import { getLeaderboard } from '../utils/xpUtils'
 import { useTransactions } from '../hooks/useTransactions'
 import EmbedMeta from '../components/EmbedMeta'
 import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp } from 'lucide-react'
 
 const Home = () => {
-  const { isConnected } = useWallet()
+  const { isConnected } = useAccount()
   const { sendGMTransaction, sendGNTransaction, isLoading: transactionLoading } = useTransactions()
   const [leaderboard, setLeaderboard] = useState([])
   const [leaderboardLoading, setLeaderboardLoading] = useState(false)

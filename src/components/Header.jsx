@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAccount, useChainId } from 'wagmi'
 import { Wallet, Home, Wifi, WifiOff, Gamepad2, Zap, Shield } from 'lucide-react'
-import { useWallet } from '../hooks/useWallet'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { getCurrentConfig } from '../config/base'
 import WalletConnect from './WalletConnect'
 
 const Header = () => {
   const location = useLocation()
-  const { isConnected, address, connectWallet, disconnectWallet, chainId, switchToBaseNetwork } = useWallet()
+  const { isConnected, address } = useAccount()
+  const chainId = useChainId()
   const { isInFarcaster, user } = useFarcaster()
   const baseConfig = getCurrentConfig()
   const [isScrolled, setIsScrolled] = useState(false)

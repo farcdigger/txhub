@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useWallet } from '../hooks/useWallet'
+import { useAccount } from 'wagmi'
 import { useTransactions } from '../hooks/useTransactions'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { useSupabase } from '../hooks/useSupabase'
@@ -7,7 +7,7 @@ import EmbedMeta from '../components/EmbedMeta'
 import { Dice6, Send, Star, CheckCircle, ExternalLink, Coins, TrendingUp, TrendingDown } from 'lucide-react'
 
 const DiceRollGame = () => {
-  const { isConnected, address } = useWallet()
+  const { isConnected, address } = useAccount()
   const { sendDiceRollTransaction, isLoading, error } = useTransactions()
   const { isInFarcaster } = useFarcaster()
   const { calculateTokens } = useSupabase()
