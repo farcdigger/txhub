@@ -106,8 +106,9 @@ const FarcasterXPDisplay = () => {
           <span>{tokenBalance}</span>
         </div>
         
-        <button className="claim-mini disabled" disabled title="Coming Soon">
-          <Clock size={12} />
+        <button className="claim-button coming-soon" disabled title="Claim feature coming soon!">
+          <Clock size={14} />
+          <span>Claim</span>
         </button>
       </div>
     </div>
