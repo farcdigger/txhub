@@ -260,45 +260,213 @@ body {
   padding-top: 16px !important;
 }
 
-/* Farcaster XP Display */
+/* Farcaster XP Display - Enhanced */
 .farcaster-xp-display {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 15px;
   z-index: 9999;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  padding: 8px 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  max-width: 120px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  min-width: 180px;
+  max-width: 220px;
+  transition: all 0.3s ease;
 }
 
-.farcaster-xp-display .xp-info {
+.farcaster-xp-display:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Not Connected State */
+.farcaster-xp-display.not-connected {
+  background: linear-gradient(145deg, rgba(103, 118, 234, 0.95), rgba(118, 75, 162, 0.9));
+  color: white;
+  text-align: center;
+}
+
+.connect-section {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.farcaster-xp-display .xp-item {
+.connect-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.connect-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.xp-preview {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.xp-preview .xp-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Connected State */
+.farcaster-xp-display.connected {
+  color: #374151;
+}
+
+.xp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.player-badge {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #1f2937;
-  font-size: 12px;
+  color: #7c3aed;
   font-weight: 600;
-  white-space: nowrap;
+  font-size: 12px;
 }
 
-.farcaster-xp-display .xp-value {
-  color: #667eea;
-  font-size: 11px;
+.wallet-info {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #6b7280;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px 8px;
+  border-radius: 8px;
 }
 
-.farcaster-xp-display .token-value {
-  color: #764ba2;
+.xp-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.xp-stat {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.05));
+}
+
+.token-stat {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(56, 142, 60, 0.05));
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+.xp-stat .stat-icon {
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  color: white;
+}
+
+.token-stat .stat-icon {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: white;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stat-value {
+  font-weight: 700;
+  font-size: 16px;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.stat-label {
   font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.claim-section {
+  text-align: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 12px;
+}
+
+.claim-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  cursor: not-allowed;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.claim-button.disabled {
+  background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+  color: #9ca3af;
+}
+
+.claim-note {
+  font-size: 10px;
+  color: #6b7280;
+  line-height: 1.3;
 }
 
 /* Skeleton Loader Styles */
@@ -405,12 +573,24 @@ body {
   }
   
   .farcaster-xp-display {
-    top: 16px;
-    right: 16px;
-    padding: 10px 12px;
+    top: 10px;
+    right: 10px;
+    min-width: 160px;
+    max-width: 180px;
+    padding: 12px;
   }
   
-  .farcaster-xp-display .xp-item {
+  .stat-value {
+    font-size: 14px;
+  }
+  
+  .stat-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .connect-button {
+    padding: 8px 12px;
     font-size: 12px;
   }
 }
