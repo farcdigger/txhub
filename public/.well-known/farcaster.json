@@ -1,49 +1,23 @@
 {
-  "name": "BaseHub",
-  "description": "Play games and earn XP on Base network through Farcaster",
-  "version": "1.0.0",
-  "icon": "/icon.svg",
-  "splash": {
-    "image": "/splash.svg",
-    "backgroundColor": "#667eea"
-  },
-  "permissions": [
-    "ethereum",
-    "notifications"
-  ],
-  "supportedChains": [
-    {
-      "chainId": 8453,
-      "name": "Base",
-      "rpcUrl": "https://mainnet.base.org",
-      "blockExplorerUrl": "https://basescan.org",
-      "nativeCurrency": {
-        "name": "Ethereum",
-        "symbol": "ETH",
-        "decimals": 18
-      }
-    }
-  ],
-  "features": [
-    "wallet",
-    "transactions",
-    "notifications"
-  ],
-  "disableNativeGestures": false,
-  "categories": ["games", "defi", "social"],
-  "tags": ["base", "ethereum", "games", "tokens", "farcaster"],
-  "author": {
-    "name": "BaseHub Team",
-    "url": "https://github.com/ereyli/basehub"
-  },
-  "homepage": "https://github.com/ereyli/basehub",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ereyli/basehub"
-  },
-  "license": "MIT",
-  "webhookUrl": "https://your-domain.com/webhook",
-  "verification": {
-    "domain": "your-domain.com"
+  "frame": {
+    "name": "BaseHub",
+    "version": "1",
+    "iconUrl": "https://basehub-alpha.vercel.app/icon.png",
+    "homeUrl": "https://basehub-alpha.vercel.app",
+    "imageUrl": "https://basehub-alpha.vercel.app/image.png",
+    "buttonTitle": "Open BaseHub",
+    "splashImageUrl": "https://basehub-alpha.vercel.app/splash.png",
+    "splashBackgroundColor": "#6B76D9",
+    "webhookUrl": "https://basehub-alpha.vercel.app/api/webhook",
+    "subtitle": "Play Games & Earn XP",
+    "description": "Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!",
+    "primaryCategory": "games",
+    "tags": [
+      "gaming",
+      "l2"
+    ],
+    "tagline": "gaming,tx,airdrop",
+    "ogTitle": "BaseHub - Play Games & Earn XP",
+    "ogDescription": "Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!"
   }
 }
