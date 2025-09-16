@@ -30,7 +30,7 @@ export const useTransactions = () => {
       console.log('📡 Sending GM transaction to blockchain...')
       
       // Send transaction to blockchain
-      const txHash = await writeContractAsyncAsync({
+      const txHash = await writeContractAsync({
         address: contractAddress,
         abi: [{
           name: 'sendGM',
