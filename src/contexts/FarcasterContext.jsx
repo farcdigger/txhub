@@ -13,127 +13,107 @@ export const useFarcaster = () => {
 
 export const FarcasterProvider = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false)
-  const [user, setUser] = useState(null)
-  const [isInFarcaster, setIsInFarcaster] = useState(true) // Force true for Farcaster-only app
-  const [error, setError] = useState(null)
   const [isReady, setIsReady] = useState(false)
+  const [user, setUser] = useState(null)
+  const [error, setError] = useState(null)
+  const [isInFarcaster] = useState(true) // Force true for Farcaster-only app
 
   useEffect(() => {
     const initializeFarcaster = async () => {
       try {
-        console.log('🚀 Initializing Farcaster-only Mini App...')
+        console.log('🚀 Initializing Farcaster Mini App...')
         
-        // Force Farcaster mode for dedicated Mini App
-        console.log('✅ Farcaster mode enabled (dedicated Mini App)')
-        
-        // Wait for DOM to be ready first
-        if (document.readyState === 'loading') {
-          await new Promise(resolve => {
-            document.addEventListener('DOMContentLoaded', resolve)
-          })
-        }
-        
-        console.log('📋 DOM ready, initializing SDK...')
-        
-        // Try to get user context (don't fail if not available)
-        try {
-          const userContext = await sdk.context.getUser()
-          setUser(userContext)
-          console.log('✅ User context loaded:', userContext)
-        } catch (userError) {
-          console.log('ℹ️ User context not available (normal in some environments)')
-        }
-
+        // Mark as initialized immediately
         setIsInitialized(true)
-        console.log('✅ Farcaster context initialized successfully')
+        console.log('✅ Farcaster context initialized')
         
       } catch (err) {
-        console.error('❌ Failed to initialize Farcaster SDK:', err)
+        console.error('❌ Failed to initialize Farcaster:', err)
         setError(err.message)
-        setIsInitialized(true) // Continue anyway
+        setIsInitialized(true) // Still set to true to allow app to continue
       }
     }
 
     initializeFarcaster()
   }, [])
 
-  // Call ready() properly according to Farcaster docs
+  // Handle ready() call when DOM is fully loaded
   useEffect(() => {
-    let timeoutId
-    
-    const callReady = async () => {
-      if (isInitialized && !isReady) {
-        try {
-          console.log('⏳ Waiting for app to be fully loaded...')
-          
-          // Wait for all resources to load
+    if (!isInitialized || isReady) return
+
+    const handleReady = async () => {
+      try {
+        console.log('⏳ Waiting for DOM to be fully ready...')
+        
+        // Wait for complete DOM load
+        if (document.readyState !== 'complete') {
           await new Promise(resolve => {
-            if (document.readyState === 'complete') {
+            const handleLoad = () => {
+              console.log('📋 DOM loaded completely')
               resolve()
+            }
+            if (document.readyState === 'complete') {
+              handleLoad()
             } else {
-              window.addEventListener('load', resolve, { once: true })
+              window.addEventListener('load', handleLoad, { once: true })
             }
           })
-          
-          // Additional small delay for React hydration
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          
-          console.log('📞 Calling sdk.actions.ready() to hide splash screen...')
-          await sdk.actions.ready()
-          setIsReady(true)
-          console.log('✅ Splash screen hidden - Mini App is ready!')
-          
-        } catch (err) {
-          console.error('❌ Failed to call ready():', err)
-          
-          // Fallback: try again after longer delay
-          timeoutId = setTimeout(async () => {
-            try {
-              console.log('🔄 Fallback: Calling ready() again...')
-              await sdk.actions.ready()
-              setIsReady(true)
-              console.log('✅ Fallback ready() successful!')
-            } catch (retryErr) {
-              console.error('❌ Fallback ready() failed:', retryErr)
-              // Set ready to true anyway to prevent infinite loading
-              setIsReady(true)
-            }
-          }, 2000)
         }
+
+        // Wait a bit more for React hydration
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        console.log('📞 Calling sdk.actions.ready()...')
+        await sdk.actions.ready()
+        
+        setIsReady(true)
+        console.log('✅ Farcaster Mini App is ready!')
+        
+        // Try to get user context after ready
+        try {
+          const userContext = await sdk.context.getUser()
+          setUser(userContext)
+          console.log('✅ User context loaded:', userContext)
+        } catch (userError) {
+          console.log('ℹ️ User context not available:', userError.message)
+        }
+        
+      } catch (err) {
+        console.error('❌ Failed to call ready():', err)
+        setIsReady(true) // Set anyway to prevent infinite loading
       }
     }
 
-    callReady()
-    
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId)
-    }
+    // Start the ready process
+    handleReady()
   }, [isInitialized, isReady])
 
   const sendTransaction = async (transaction) => {
     if (!isInFarcaster) {
       throw new Error('Transaction can only be sent from within Farcaster')
     }
-
     try {
+      console.log('💸 Sending transaction via Farcaster SDK:', transaction)
       const result = await sdk.actions.sendTransaction(transaction)
+      console.log('✅ Transaction sent successfully:', result)
       return result
     } catch (err) {
-      console.error('Transaction failed:', err)
+      console.error('❌ Transaction failed:', err)
       throw err
     }
   }
 
   const sendNotification = async (notification) => {
     if (!isInFarcaster) {
-      console.log('Notifications only work within Farcaster')
+      console.log('ℹ️ Notifications only work within Farcaster')
       return
     }
-
     try {
+      console.log('🔔 Sending notification:', notification)
       await sdk.actions.sendNotification(notification)
+      console.log('✅ Notification sent successfully')
     } catch (err) {
-      console.error('Failed to send notification:', err)
+      console.error('❌ Failed to send notification:', err)
     }
   }
 

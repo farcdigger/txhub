@@ -7,26 +7,25 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
 // Check if Supabase is properly configured
 const isConfigured = supabaseUrl !== 'https://your-project.supabase.co' && supabaseKey !== 'your-anon-key'
 
-if (isConfigured) {
-  console.log('✅ Supabase configured successfully')
-} else {
-  console.warn('⚠️ Supabase not configured - using fallback localStorage')
-}
-
-// Create Supabase client with singleton pattern to avoid multiple instances
-let supabaseInstance = null
-
-export const supabase = (() => {
-  if (!supabaseInstance && isConfigured) {
-    supabaseInstance = createClient(supabaseUrl, supabaseKey, {
-      auth: {
-        persistSession: false, // Disable session persistence to avoid multiple instances
-        autoRefreshToken: false
-      }
-    })
+// Create single Supabase instance
+export const supabase = isConfigured ? createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'farcaster-miniapp@1.0.0'
+    }
   }
-  return supabaseInstance
-})()
+}) : null
+
+if (isConfigured) {
+  console.log('✅ Supabase configured for Farcaster Mini App')
+} else {
+  console.log('ℹ️ Supabase not configured - using localStorage fallback')
+}
 
 // Database table names
 export const TABLES = {

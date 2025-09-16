@@ -1,20 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase, TABLES, XP_CONFIG, GAME_TYPES } from '../config/supabase'
 
-// Singleton pattern to avoid multiple instances
-let supabaseHook = null
-
 export const useSupabase = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-
-  // Ensure single instance
-  useEffect(() => {
-    if (!supabaseHook) {
-      supabaseHook = true
-      console.log('✅ Supabase hook initialized (singleton)')
-    }
-  }, [])
 
   // Get or create player
   const getOrCreatePlayer = async (walletAddress) => {
