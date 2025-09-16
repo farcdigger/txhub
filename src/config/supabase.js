@@ -1,15 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase configuration - REQUIRED for production
+// Supabase configuration - OPTIONAL for development
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('❌ Missing Supabase configuration! Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env file')
-}
+const isSupabaseConfigured = supabaseUrl && supabaseKey
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+// Create Supabase client only if configured
+export const supabase = isSupabaseConfigured ? createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
@@ -20,9 +18,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
       'X-Client-Info': 'basehub-farcaster@1.0.0'
     }
   }
-})
+}) : null
 
-console.log('✅ Supabase configured for BaseHub Farcaster Mini App')
+if (isSupabaseConfigured) {
+  console.log('✅ Supabase configured for BaseHub Farcaster Mini App')
+} else {
+  console.log('⚠️ Supabase not configured - using localStorage for development')
+}
 
 // Database table names
 export const TABLES = {

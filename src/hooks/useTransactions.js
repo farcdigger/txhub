@@ -10,7 +10,7 @@ import { config } from '../config/wagmi'
 export const useTransactions = () => {
   const { isInFarcaster } = useFarcaster()
   const { address, chainId } = useAccount()
-  const { writeContractAsyncAsync, data: txData } = useWriteContract()
+  const { writeContractAsync, data: txData } = useWriteContract()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
