@@ -199,11 +199,11 @@ cp .env.example .env
 ```
 
 Required environment variables:
-- `VITE_SUPABASE_URL`: Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key
-- `VITE_BASE_RPC_URL`: Base network RPC URL
-- `VITE_BASE_CHAIN_ID`: Base chain ID (8453 for mainnet)
-- Contract addresses for deployed games
+- `VITE_SUPABASE_URL`: Your Supabase project URL (REQUIRED)
+- `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key (REQUIRED)
+- `VITE_BASE_RPC_URL`: Base network RPC URL (default: https://mainnet.base.org)
+- `VITE_BASE_CHAIN_ID`: Base chain ID (default: 8453)
+- Contract addresses (optional - add when contracts are deployed)
 
 ### Vercel Deployment
 
