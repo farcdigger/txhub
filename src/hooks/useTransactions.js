@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useAccount, useWriteContract } from 'wagmi'
+import { waitForTransactionReceipt } from 'wagmi/actions'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { addXP, addBonusXP } from '../utils/xpUtils'
 import { getCurrentConfig, getContractAddress, GAS_CONFIG, GAME_CONFIG } from '../config/base'
 import { parseEther } from 'viem'
+import { config } from '../config/wagmi'
 
 export const useTransactions = () => {
   const { isInFarcaster } = useFarcaster()
@@ -25,9 +27,9 @@ export const useTransactions = () => {
     try {
       const contractAddress = getContractAddress('GM_GAME')
       
-      console.log('📡 Sending GM transaction...')
+      console.log('📡 Step 1: Sending GM transaction to blockchain...')
       
-      // Send transaction to blockchain and wait for confirmation
+      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -41,12 +43,20 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('✅ GM transaction confirmed!', txHash)
+      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
       
-      // Only add XP after successful transaction confirmation
+      // Step 2: Wait for REAL blockchain confirmation
+      const receipt = await waitForTransactionReceipt(config, {
+        hash: txHash,
+        confirmations: 1, // Wait for at least 1 confirmation
+      })
+      
+      console.log('✅ Step 3: GM transaction CONFIRMED on blockchain!', receipt)
+      
+      // Step 3: ONLY NOW add XP after real confirmation
       try {
         await addXP(address, 10) // GM gives 10 XP
-        console.log('XP added successfully for GM transaction')
+        console.log('✅ XP added successfully AFTER blockchain confirmation')
       } catch (xpError) {
         console.error('Error adding XP:', xpError)
         // Don't throw error here, transaction was successful
@@ -72,8 +82,10 @@ export const useTransactions = () => {
     try {
       const contractAddress = getContractAddress('GN_GAME')
       
-      // Always use Wagmi for transactions (Farcaster handles wallet connection)
-      const result = await writeContract({
+      console.log('📡 Step 1: Sending GN transaction to blockchain...')
+      
+      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
+      const txHash = await writeContract({
         address: contractAddress,
         abi: [{
           name: 'sendGN',
@@ -86,19 +98,26 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      // Notification disabled due to Farcaster SDK issues
-      console.log('✅ GN transaction completed successfully!')
+      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
       
-      // Add XP to player after successful transaction
-        try {
-          console.log('Adding XP for GN transaction:', { address, result })
-          await addXP(address, 10) // GN gives 10 XP
-          console.log('XP added successfully for GN transaction')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+      // Step 2: Wait for REAL blockchain confirmation
+      const receipt = await waitForTransactionReceipt(config, {
+        hash: txHash,
+        confirmations: 1, // Wait for at least 1 confirmation
+      })
       
-      return result
+      console.log('✅ Step 3: GN transaction CONFIRMED on blockchain!', receipt)
+      
+      // Step 3: ONLY NOW add XP after real confirmation
+      try {
+        await addXP(address, 10) // GN gives 10 XP
+        console.log('✅ XP added successfully AFTER blockchain confirmation')
+      } catch (xpError) {
+        console.error('Error adding XP:', xpError)
+        // Don't throw error here, transaction was successful
+      }
+      
+      return txHash
     } catch (err) {
       setError(err.message)
       throw err
@@ -122,9 +141,9 @@ export const useTransactions = () => {
       // Encode the function call: playFlip(uint8 choice) where 0=Heads, 1=Tails
       const choice = selectedSide === 'heads' ? 0 : 1
       
-      console.log('📡 Sending Flip transaction...')
+      console.log('📡 Step 1: Sending Flip transaction to blockchain...')
       
-      // Send transaction to blockchain and wait for confirmation
+      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -138,26 +157,33 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('✅ Flip transaction confirmed!', txHash)
+      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
       
-      // Simulate game result (in real implementation, this would come from contract events)
-      const isWin = Math.random() < 0.5 // 50% chance to win
+      // Step 2: Wait for REAL blockchain confirmation
+      const receipt = await waitForTransactionReceipt(config, {
+        hash: txHash,
+        confirmations: 1, // Wait for at least 1 confirmation
+      })
+      
+      console.log('✅ Step 3: Flip transaction CONFIRMED on blockchain!', receipt)
+      
+      // Step 3: Generate game result ONLY after confirmation
       const actualResult = Math.random() < 0.5 ? 'heads' : 'tails'
       const playerWon = (selectedSide === 'heads' && actualResult === 'heads') || 
                        (selectedSide === 'tails' && actualResult === 'tails')
       
-      console.log('🎲 Game result:', { selectedSide, actualResult, playerWon })
+      console.log('🎲 Game result AFTER confirmation:', { selectedSide, actualResult, playerWon })
       
-      // Add XP based on win/loss
+      // Step 4: Add XP ONLY after blockchain confirmation
       try {
         await addBonusXP(address, 'flip', playerWon)
         const xpEarned = playerWon ? 10 + 500 : 10 // Base + bonus or just base
-        console.log(`XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        console.log(`✅ XP added AFTER confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
       } catch (xpError) {
         console.error('Error adding XP:', xpError)
       }
       
-      // Return game result for UI display
+      // Return game result for UI display (ONLY after confirmation)
       return { 
         txHash, 
         playerChoice: selectedSide, 
@@ -186,9 +212,9 @@ export const useTransactions = () => {
 
       const contractAddress = getContractAddress('LUCKY_NUMBER')
       
-      console.log('📡 Sending Lucky Number transaction...')
+      console.log('📡 Step 1: Sending Lucky Number transaction to blockchain...')
       
-      // Send transaction to blockchain and wait for confirmation
+      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -202,24 +228,32 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('✅ Lucky Number transaction confirmed!', txHash)
+      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
       
-      // Generate random winning number (1-10)
+      // Step 2: Wait for REAL blockchain confirmation
+      const receipt = await waitForTransactionReceipt(config, {
+        hash: txHash,
+        confirmations: 1, // Wait for at least 1 confirmation
+      })
+      
+      console.log('✅ Step 3: Lucky Number transaction CONFIRMED on blockchain!', receipt)
+      
+      // Step 3: Generate game result ONLY after confirmation
       const winningNumber = Math.floor(Math.random() * 10) + 1
       const playerWon = guess === winningNumber
       
-      console.log('🎲 Lucky Number result:', { guess, winningNumber, playerWon })
+      console.log('🎲 Lucky Number result AFTER confirmation:', { guess, winningNumber, playerWon })
       
-      // Add XP based on win/loss
+      // Step 4: Add XP ONLY after blockchain confirmation
       try {
         await addBonusXP(address, 'luckynumber', playerWon)
         const xpEarned = playerWon ? 10 + 1000 : 10 // Base + bonus or just base
-        console.log(`XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        console.log(`✅ XP added AFTER confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
       } catch (xpError) {
         console.error('Error adding XP:', xpError)
       }
       
-      // Return game result for UI display
+      // Return game result for UI display (ONLY after confirmation)
       return { 
         txHash, 
         playerGuess: guess, 
@@ -247,9 +281,9 @@ export const useTransactions = () => {
 
       const contractAddress = getContractAddress('DICE_ROLL')
       
-      console.log('📡 Sending Dice Roll transaction...')
+      console.log('📡 Step 1: Sending Dice Roll transaction to blockchain...')
       
-      // Send transaction to blockchain and wait for confirmation
+      // Step 1: Send transaction (ONLY gets hash, NOT confirmed yet!)
       const txHash = await writeContract({
         address: contractAddress,
         abi: [{
@@ -263,26 +297,34 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      console.log('✅ Dice Roll transaction confirmed!', txHash)
+      console.log('📡 Step 2: Transaction sent! Hash:', txHash, '⏳ WAITING for blockchain confirmation...')
       
-      // Roll two dice (2-12 total)
+      // Step 2: Wait for REAL blockchain confirmation
+      const receipt = await waitForTransactionReceipt(config, {
+        hash: txHash,
+        confirmations: 1, // Wait for at least 1 confirmation
+      })
+      
+      console.log('✅ Step 3: Dice Roll transaction CONFIRMED on blockchain!', receipt)
+      
+      // Step 3: Generate game result ONLY after confirmation
       const dice1 = Math.floor(Math.random() * 6) + 1
       const dice2 = Math.floor(Math.random() * 6) + 1
       const diceTotal = dice1 + dice2
       const playerWon = guess === diceTotal
       
-      console.log('🎲 Dice Roll result:', { guess, dice1, dice2, diceTotal, playerWon })
+      console.log('🎲 Dice Roll result AFTER confirmation:', { guess, dice1, dice2, diceTotal, playerWon })
       
-      // Add XP based on win/loss
+      // Step 4: Add XP ONLY after blockchain confirmation
       try {
         await addBonusXP(address, 'diceroll', playerWon)
         const xpEarned = playerWon ? 10 + 1500 : 10 // Base + bonus or just base
-        console.log(`XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+        console.log(`✅ XP added AFTER confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
       } catch (xpError) {
         console.error('Error adding XP:', xpError)
       }
       
-      // Return game result for UI display
+      // Return game result for UI display (ONLY after confirmation)
       return { 
         txHash, 
         playerGuess: guess, 
