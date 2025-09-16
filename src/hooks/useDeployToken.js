@@ -5,8 +5,24 @@ import { parseEther } from 'viem'
 import { config } from '../config/wagmi'
 import { addXP, recordTransaction } from '../utils/xpUtils'
 
-// Dynamic ERC20 ABI from Remix (SimpleToken)
+// Simple ERC20 ABI with 2 constructor parameters (name, symbol)
 const ERC20_ABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "symbol",
+				"type": "string"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
 	{
 		"inputs": [
 			{
@@ -30,27 +46,6 @@ const ERC20_ABI = [
 		],
 		"stateMutability": "nonpayable",
 		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "symbol",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "initialSupply",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
 	},
 	{
 		"inputs": [
@@ -248,7 +243,7 @@ export const useDeployToken = () => {
       const deployTxHash = await writeContractAsync({
         abi: ERC20_ABI,
         bytecode: ERC20_BYTECODE,
-        args: [name, symbol, initialSupply],
+        args: [name, symbol],
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)

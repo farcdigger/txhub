@@ -13,7 +13,6 @@ const DeployToken = () => {
   const [formData, setFormData] = useState({
     name: '',
     symbol: '',
-    initialSupply: '',
     decimals: '18'
   })
   
@@ -39,7 +38,7 @@ const DeployToken = () => {
       const result = await deployToken(
         formData.name,
         formData.symbol,
-        formData.initialSupply,
+        1000000, // Default initial supply
         parseInt(formData.decimals)
       )
       
@@ -105,19 +104,6 @@ const DeployToken = () => {
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="initialSupply">Initial Supply</label>
-              <input
-                type="number"
-                id="initialSupply"
-                name="initialSupply"
-                value={formData.initialSupply}
-                onChange={handleInputChange}
-                placeholder="e.g., 1000000"
-                min="1"
-                required
-              />
-            </div>
 
             <div className="form-group">
               <label htmlFor="decimals">Decimals</label>
@@ -177,7 +163,7 @@ const DeployToken = () => {
                 <strong>Symbol:</strong> {formData.symbol}
               </div>
               <div className="detail-item">
-                <strong>Initial Supply:</strong> {formData.initialSupply} {formData.symbol}
+                <strong>Initial Supply:</strong> 1,000,000 {formData.symbol}
               </div>
               <div className="detail-item">
                 <strong>Status:</strong>
@@ -228,7 +214,7 @@ const DeployToken = () => {
               <button 
                 onClick={() => {
                   setDeployResult(null)
-                  setFormData({ name: '', symbol: '', initialSupply: '', decimals: '18' })
+                  setFormData({ name: '', symbol: '', decimals: '18' })
                 }}
                 className="deploy-another-button"
               >
