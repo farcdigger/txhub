@@ -3,10 +3,10 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagm
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { addXP, addBonusXP } from '../utils/xpUtils'
 import { getCurrentConfig, getContractAddress, GAS_CONFIG, GAME_CONFIG } from '../config/base'
-import { parseEther, encodeFunctionData } from 'viem'
+import { parseEther } from 'viem'
 
 export const useTransactions = () => {
-  const { isInFarcaster, sendTransaction, sendNotification } = useFarcaster()
+  const { isInFarcaster, sendNotification } = useFarcaster()
   const { address, chainId } = useAccount()
   const { writeContract } = useWriteContract()
   const { isLoading: isTransactionLoading } = useWaitForTransactionReceipt()
@@ -26,8 +26,9 @@ export const useTransactions = () => {
     try {
       const contractAddress = getContractAddress('GM_GAME')
       
-      // Encode the function call: sendGM(string message)
-      const data = encodeFunctionData({
+      // Always use Wagmi for transactions (Farcaster handles wallet connection)
+      const result = await writeContract({
+        address: contractAddress,
         abi: [{
           name: 'sendGM',
           type: 'function',
@@ -35,41 +36,20 @@ export const useTransactions = () => {
           inputs: [{ name: 'message', type: 'string' }]
         }],
         functionName: 'sendGM',
-        args: [message]
+        args: [message],
+        value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      let result
-      
-      if (isInFarcaster) {
-        // Use Farcaster SDK for transaction
-        const transaction = {
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
+      // Send Farcaster notification if available
+      if (isInFarcaster && sendNotification) {
+        try {
+          await sendNotification({
+            title: 'GM Sent!',
+            body: `You earned 10 XP!`,
+          })
+        } catch (notificationError) {
+          console.log('Notification failed:', notificationError)
         }
-
-        result = await sendTransaction(transaction)
-        
-        // Send notification
-        await sendNotification({
-          title: 'GM Sent!',
-          body: `You earned 10 XP!`,
-        })
-      } else {
-        // Use Wagmi for web transactions
-        result = await writeContract({
-          address: contractAddress,
-          abi: [{
-            name: 'sendGM',
-            type: 'function',
-            stateMutability: 'payable',
-            inputs: [{ name: 'message', type: 'string' }]
-          }],
-          functionName: 'sendGM',
-          args: [message],
-          value: parseEther('0.000005'), // 0.000005 ETH fee
-        })
       }
       
       // Add XP to player after successful transaction
@@ -102,8 +82,9 @@ export const useTransactions = () => {
     try {
       const contractAddress = getContractAddress('GN_GAME')
       
-      // Encode the function call: sendGN(string message)
-      const data = encodeFunctionData({
+      // Always use Wagmi for transactions (Farcaster handles wallet connection)
+      const result = await writeContract({
+        address: contractAddress,
         abi: [{
           name: 'sendGN',
           type: 'function',
@@ -111,38 +92,20 @@ export const useTransactions = () => {
           inputs: [{ name: 'message', type: 'string' }]
         }],
         functionName: 'sendGN',
-        args: [message]
+        args: [message],
+        value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      let result
-      
-      if (isInFarcaster) {
-        const transaction = {
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
+      // Send Farcaster notification if available
+      if (isInFarcaster && sendNotification) {
+        try {
+          await sendNotification({
+            title: 'GN Sent!',
+            body: `You earned 10 XP!`,
+          })
+        } catch (notificationError) {
+          console.log('Notification failed:', notificationError)
         }
-
-        result = await sendTransaction(transaction)
-        
-        await sendNotification({
-          title: 'GN Sent!',
-          body: `You earned 10 XP!`,
-        })
-      } else {
-        const provider = getProvider()
-        const signer = await provider.getSigner()
-        
-        const tx = await signer.sendTransaction({
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005'), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
-        })
-
-        await tx.wait()
-        result = tx
       }
       
       // Add XP to player after successful transaction
@@ -178,7 +141,10 @@ export const useTransactions = () => {
       
       // Encode the function call: playFlip(uint8 choice) where 0=Heads, 1=Tails
       const choice = selectedSide === 'heads' ? 0 : 1
-      const data = encodeFunctionData({
+      
+      // Always use Wagmi for transactions (Farcaster handles wallet connection)
+      const result = await writeContract({
+        address: contractAddress,
         abi: [{
           name: 'playFlip',
           type: 'function',
@@ -186,38 +152,20 @@ export const useTransactions = () => {
           inputs: [{ name: 'choice', type: 'uint8' }]
         }],
         functionName: 'playFlip',
-        args: [choice]
+        args: [choice],
+        value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      let result
-      
-      if (isInFarcaster) {
-        const transaction = {
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
+      // Send Farcaster notification if available
+      if (isInFarcaster && sendNotification) {
+        try {
+          await sendNotification({
+            title: 'Coin Flipped!',
+            body: `You earned 15 XP! Check the result on Base network!`,
+          })
+        } catch (notificationError) {
+          console.log('Notification failed:', notificationError)
         }
-
-        result = await sendTransaction(transaction)
-        
-        await sendNotification({
-          title: 'Coin Flipped!',
-          body: `You earned 15 XP! Check the result on Base network!`,
-        })
-      } else {
-        const provider = getProvider()
-        const signer = await provider.getSigner()
-        
-        const tx = await signer.sendTransaction({
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005'), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
-        })
-
-        await tx.wait()
-        result = tx
       }
       
       // Add XP to player after successful transaction
@@ -315,8 +263,9 @@ export const useTransactions = () => {
 
       const contractAddress = getContractAddress('LUCKY_NUMBER')
       
-      // Encode the function call: guessLuckyNumber(uint256 guess)
-      const data = encodeFunctionData({
+      // Always use Wagmi for transactions (Farcaster handles wallet connection)
+      const result = await writeContract({
+        address: contractAddress,
         abi: [{
           name: 'guessLuckyNumber',
           type: 'function',
@@ -324,38 +273,20 @@ export const useTransactions = () => {
           inputs: [{ name: 'guess', type: 'uint256' }]
         }],
         functionName: 'guessLuckyNumber',
-        args: [guess]
+        args: [guess],
+        value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      let result
-      
-      if (isInFarcaster) {
-        const transaction = {
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
+      // Send Farcaster notification if available
+      if (isInFarcaster && sendNotification) {
+        try {
+          await sendNotification({
+            title: 'Lucky Number Guessed!',
+            body: `You earned XP! Check if you won bonus XP!`,
+          })
+        } catch (notificationError) {
+          console.log('Notification failed:', notificationError)
         }
-
-        result = await sendTransaction(transaction)
-        
-        await sendNotification({
-          title: 'Lucky Number Guessed!',
-          body: `You earned XP! Check if you won bonus XP!`,
-        })
-      } else {
-        const provider = getProvider()
-        const signer = await provider.getSigner()
-        
-        const tx = await signer.sendTransaction({
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005'), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
-        })
-
-        await tx.wait()
-        result = tx
       }
       
       // Add XP to player after successful transaction
@@ -391,8 +322,9 @@ export const useTransactions = () => {
 
       const contractAddress = getContractAddress('DICE_ROLL')
       
-      // Encode the function call: rollDice(uint256 guess)
-      const data = encodeFunctionData({
+      // Always use Wagmi for transactions (Farcaster handles wallet connection)
+      const result = await writeContract({
+        address: contractAddress,
         abi: [{
           name: 'rollDice',
           type: 'function',
@@ -400,38 +332,20 @@ export const useTransactions = () => {
           inputs: [{ name: 'guess', type: 'uint256' }]
         }],
         functionName: 'rollDice',
-        args: [guess]
+        args: [guess],
+        value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      let result
-      
-      if (isInFarcaster) {
-        const transaction = {
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005').toString(), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
+      // Send Farcaster notification if available
+      if (isInFarcaster && sendNotification) {
+        try {
+          await sendNotification({
+            title: 'Dice Rolled!',
+            body: `You earned XP! Check if you won bonus XP!`,
+          })
+        } catch (notificationError) {
+          console.log('Notification failed:', notificationError)
         }
-
-        result = await sendTransaction(transaction)
-        
-        await sendNotification({
-          title: 'Dice Rolled!',
-          body: `You earned XP! Check if you won bonus XP!`,
-        })
-      } else {
-        const provider = getProvider()
-        const signer = await provider.getSigner()
-        
-        const tx = await signer.sendTransaction({
-          to: contractAddress,
-          data: data,
-          value: parseEther('0.000005'), // 0.000005 ETH fee
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
-        })
-
-        await tx.wait()
-        result = tx
       }
       
       // Add XP to player after successful transaction
@@ -465,36 +379,30 @@ export const useTransactions = () => {
 
     try {
       
-      if (isInFarcaster) {
-        const transaction = {
-          to: contractAddress,
-          data: functionData,
-          value: value,
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
+      // For custom transactions, we need to use sendTransaction from Wagmi
+      // since we don't have ABI information
+      const { sendTransaction } = await import('wagmi/actions')
+      const { config } = await import('../config/wagmi')
+      
+      const result = await sendTransaction(config, {
+        to: contractAddress,
+        data: functionData,
+        value: BigInt(value),
+      })
+      
+      // Send Farcaster notification if available
+      if (isInFarcaster && sendNotification) {
+        try {
+          await sendNotification({
+            title: 'Transaction Sent!',
+            body: 'Your custom transaction has been submitted to Base network.',
+          })
+        } catch (notificationError) {
+          console.log('Notification failed:', notificationError)
         }
-
-        const result = await sendTransaction(transaction)
-        
-        await sendNotification({
-          title: 'Transaction Sent!',
-          body: 'Your custom transaction has been submitted to Base network.',
-        })
-
-        return result
-      } else {
-        const provider = getProvider()
-        const signer = await provider.getSigner()
-        
-        const tx = await signer.sendTransaction({
-          to: contractAddress,
-          data: functionData,
-          value: value,
-          gasLimit: GAS_CONFIG.GAS_LIMIT,
-        })
-
-        await tx.wait()
-        return tx
       }
+
+      return result
     } catch (err) {
       setError(err.message)
       throw err
