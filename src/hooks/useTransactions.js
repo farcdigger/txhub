@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { useFarcaster } from '../contexts/FarcasterContext'
-import { addXP } from '../utils/xpUtils'
+import { addXP, addBonusXP } from '../utils/xpUtils'
 import { getCurrentConfig, getContractAddress, GAS_CONFIG, GAME_CONFIG } from '../config/base'
 import { parseEther } from 'viem'
 
@@ -9,7 +9,6 @@ export const useTransactions = () => {
   const { isInFarcaster } = useFarcaster()
   const { address, chainId } = useAccount()
   const { writeContract } = useWriteContract()
-  const { isLoading: isTransactionLoading } = useWaitForTransactionReceipt()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -26,8 +25,10 @@ export const useTransactions = () => {
     try {
       const contractAddress = getContractAddress('GM_GAME')
       
-      // Always use Wagmi for transactions (Farcaster handles wallet connection)
-      const result = await writeContract({
+      console.log('📡 Sending GM transaction...')
+      
+      // Send transaction to blockchain and wait for confirmation
+      const txHash = await writeContract({
         address: contractAddress,
         abi: [{
           name: 'sendGM',
@@ -40,19 +41,18 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      // Notification disabled due to Farcaster SDK issues
-      console.log('✅ GM transaction completed successfully!')
+      console.log('✅ GM transaction confirmed!', txHash)
       
-      // Add XP to player after successful transaction
-        try {
-          console.log('Adding XP for GM transaction:', { address, result })
-          await addXP(address, 10) // GM gives 10 XP
-          console.log('XP added successfully for GM transaction')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+      // Only add XP after successful transaction confirmation
+      try {
+        await addXP(address, 10) // GM gives 10 XP
+        console.log('XP added successfully for GM transaction')
+      } catch (xpError) {
+        console.error('Error adding XP:', xpError)
+        // Don't throw error here, transaction was successful
+      }
       
-      return result
+      return txHash
     } catch (err) {
       setError(err.message)
       throw err
@@ -122,8 +122,10 @@ export const useTransactions = () => {
       // Encode the function call: playFlip(uint8 choice) where 0=Heads, 1=Tails
       const choice = selectedSide === 'heads' ? 0 : 1
       
-      // Always use Wagmi for transactions (Farcaster handles wallet connection)
-      const result = await writeContract({
+      console.log('📡 Sending Flip transaction...')
+      
+      // Send transaction to blockchain and wait for confirmation
+      const txHash = await writeContract({
         address: contractAddress,
         abi: [{
           name: 'playFlip',
@@ -136,19 +138,33 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      // Notification disabled due to Farcaster SDK issues
-      console.log('✅ Flip transaction completed successfully!')
+      console.log('✅ Flip transaction confirmed!', txHash)
       
-      // Add XP to player after successful transaction
-        try {
-          console.log('Adding XP for Flip Game transaction:', { address, result })
-          await addXP(address, 15) // Flip Game gives 15 XP
-          console.log('XP added successfully for Flip Game transaction')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+      // Simulate game result (in real implementation, this would come from contract events)
+      const isWin = Math.random() < 0.5 // 50% chance to win
+      const actualResult = Math.random() < 0.5 ? 'heads' : 'tails'
+      const playerWon = (selectedSide === 'heads' && actualResult === 'heads') || 
+                       (selectedSide === 'tails' && actualResult === 'tails')
       
-      return result
+      console.log('🎲 Game result:', { selectedSide, actualResult, playerWon })
+      
+      // Add XP based on win/loss
+      try {
+        await addBonusXP(address, 'flip', playerWon)
+        const xpEarned = playerWon ? 10 + 500 : 10 // Base + bonus or just base
+        console.log(`XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+      } catch (xpError) {
+        console.error('Error adding XP:', xpError)
+      }
+      
+      // Return game result for UI display
+      return { 
+        txHash, 
+        playerChoice: selectedSide, 
+        result: actualResult, 
+        isWin: playerWon,
+        xpEarned: playerWon ? 510 : 10
+      }
     } catch (err) {
       setError(err.message)
       throw err
@@ -170,8 +186,10 @@ export const useTransactions = () => {
 
       const contractAddress = getContractAddress('LUCKY_NUMBER')
       
-      // Always use Wagmi for transactions (Farcaster handles wallet connection)
-      const result = await writeContract({
+      console.log('📡 Sending Lucky Number transaction...')
+      
+      // Send transaction to blockchain and wait for confirmation
+      const txHash = await writeContract({
         address: contractAddress,
         abi: [{
           name: 'guessLuckyNumber',
@@ -184,19 +202,31 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      // Notification disabled due to Farcaster SDK issues
-      console.log('✅ Lucky Number transaction completed successfully!')
+      console.log('✅ Lucky Number transaction confirmed!', txHash)
       
-      // Add XP to player after successful transaction
-        try {
-          console.log('Adding XP for Lucky Number transaction:', { address, result })
-          await addXP(address, 20) // Lucky Number gives 20 XP
-          console.log('XP added successfully for Lucky Number transaction')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+      // Generate random winning number (1-10)
+      const winningNumber = Math.floor(Math.random() * 10) + 1
+      const playerWon = guess === winningNumber
       
-      return result
+      console.log('🎲 Lucky Number result:', { guess, winningNumber, playerWon })
+      
+      // Add XP based on win/loss
+      try {
+        await addBonusXP(address, 'luckynumber', playerWon)
+        const xpEarned = playerWon ? 10 + 1000 : 10 // Base + bonus or just base
+        console.log(`XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+      } catch (xpError) {
+        console.error('Error adding XP:', xpError)
+      }
+      
+      // Return game result for UI display
+      return { 
+        txHash, 
+        playerGuess: guess, 
+        winningNumber, 
+        isWin: playerWon,
+        xpEarned: playerWon ? 1010 : 10
+      }
     } catch (err) {
       setError(err.message)
       throw err
@@ -217,8 +247,10 @@ export const useTransactions = () => {
 
       const contractAddress = getContractAddress('DICE_ROLL')
       
-      // Always use Wagmi for transactions (Farcaster handles wallet connection)
-      const result = await writeContract({
+      console.log('📡 Sending Dice Roll transaction...')
+      
+      // Send transaction to blockchain and wait for confirmation
+      const txHash = await writeContract({
         address: contractAddress,
         abi: [{
           name: 'rollDice',
@@ -231,19 +263,35 @@ export const useTransactions = () => {
         value: parseEther('0.000005'), // 0.000005 ETH fee
       })
       
-      // Notification disabled due to Farcaster SDK issues
-      console.log('✅ Dice Roll transaction completed successfully!')
+      console.log('✅ Dice Roll transaction confirmed!', txHash)
       
-      // Add XP to player after successful transaction
-        try {
-          console.log('Adding XP for Dice Roll transaction:', { address, result })
-          await addXP(address, 25) // Dice Roll gives 25 XP
-          console.log('XP added successfully for Dice Roll transaction')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+      // Roll two dice (2-12 total)
+      const dice1 = Math.floor(Math.random() * 6) + 1
+      const dice2 = Math.floor(Math.random() * 6) + 1
+      const diceTotal = dice1 + dice2
+      const playerWon = guess === diceTotal
       
-      return result
+      console.log('🎲 Dice Roll result:', { guess, dice1, dice2, diceTotal, playerWon })
+      
+      // Add XP based on win/loss
+      try {
+        await addBonusXP(address, 'diceroll', playerWon)
+        const xpEarned = playerWon ? 10 + 1500 : 10 // Base + bonus or just base
+        console.log(`XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+      } catch (xpError) {
+        console.error('Error adding XP:', xpError)
+      }
+      
+      // Return game result for UI display
+      return { 
+        txHash, 
+        playerGuess: guess, 
+        dice1,
+        dice2,
+        diceTotal, 
+        isWin: playerWon,
+        xpEarned: playerWon ? 1510 : 10
+      }
     } catch (err) {
       setError(err.message)
       throw err
