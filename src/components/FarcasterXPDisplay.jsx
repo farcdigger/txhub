@@ -41,12 +41,12 @@ const FarcasterXPDisplay = () => {
     <div className="farcaster-xp-display">
       <div className="xp-info">
         <div className="xp-item">
-          <Zap size={16} />
-          <span className="xp-value">{totalXP} XP</span>
+          <Zap size={14} />
+          <span className="xp-value">{totalXP}</span>
         </div>
         <div className="xp-item">
-          <Coins size={16} />
-          <span className="token-value">{tokenBalance} BHUP</span>
+          <Coins size={14} />
+          <span className="token-value">{tokenBalance}</span>
         </div>
       </div>
     </div>

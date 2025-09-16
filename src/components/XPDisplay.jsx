@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { Star, Coins, Gift, Zap, Trophy } from 'lucide-react'
 import { getXP, calculateTokens } from '../utils/xpUtils'
+import { useFarcaster } from '../contexts/FarcasterContext'
 
 const XPDisplay = () => {
   const { isConnected, address } = useAccount()
+  const { isInFarcaster } = useFarcaster()
   const [totalXP, setTotalXP] = useState(0)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -45,7 +47,8 @@ const XPDisplay = () => {
   }, [])
 
 
-  if (!isConnected) {
+  // Don't show XPDisplay in Farcaster - use FarcasterXPDisplay instead
+  if (isInFarcaster || !isConnected) {
     return null
   }
 
