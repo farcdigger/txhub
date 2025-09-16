@@ -8,18 +8,7 @@ export const addXP = async (walletAddress, xpAmount) => {
     return
   }
 
-  console.log('🎯 Adding XP:', { walletAddress, xpAmount, supabaseConfigured: !!supabase })
-
-  // If Supabase is not configured, use localStorage
-  if (!supabase) {
-    console.log('⚠️ Supabase not configured, using localStorage')
-    const xpKey = `xp_${walletAddress}`
-    const currentXP = parseInt(localStorage.getItem(xpKey) || '0')
-    const newXP = currentXP + xpAmount
-    localStorage.setItem(xpKey, newXP.toString())
-    console.log(`✅ Fallback: Added ${xpAmount} XP to ${walletAddress}. Total: ${newXP}`)
-    return newXP
-  }
+  console.log('🎯 Adding XP:', { walletAddress, xpAmount })
 
   try {
     console.log('📊 Checking if player exists in Supabase...')
@@ -96,26 +85,14 @@ export const addXP = async (walletAddress, xpAmount) => {
       return xpAmount
     }
   } catch (error) {
-    console.error('Error in addXP:', error)
-    // Fallback to localStorage if Supabase fails
-    const xpKey = `xp_${walletAddress}`
-    const currentXP = parseInt(localStorage.getItem(xpKey) || '0')
-    const newXP = currentXP + xpAmount
-    localStorage.setItem(xpKey, newXP.toString())
-    console.log(`Fallback: Added ${xpAmount} XP to ${walletAddress}. Total: ${newXP}`)
-    return newXP
+    console.error('❌ Error in addXP:', error)
+    throw error
   }
 }
 
 // Get XP for user's wallet address
 export const getXP = async (walletAddress) => {
   if (!walletAddress) return 0
-  
-  // If Supabase is not configured, use localStorage directly
-  if (!supabase) {
-    const xpKey = `xp_${walletAddress}`
-    return parseInt(localStorage.getItem(xpKey) || '0')
-  }
   
   try {
     const { data: player, error } = await supabase
@@ -124,31 +101,18 @@ export const getXP = async (walletAddress) => {
       .eq('wallet_address', walletAddress)
       .single()
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching XP:', error)
-      throw error
-    }
+    if (error && error.code === 'PGRST116') return 0 // No player found
+    if (error) throw error
 
-    return player ? player.total_xp : 0
+    return player?.total_xp || 0
   } catch (error) {
-    console.error('Error in getXP:', error)
-    // Fallback to localStorage
-    const xpKey = `xp_${walletAddress}`
-    return parseInt(localStorage.getItem(xpKey) || '0')
+    console.error('❌ Error in getXP:', error)
+    return 0
   }
 }
 
 // Get leaderboard (top 10 players)
 export const getLeaderboard = async () => {
-  if (!supabase) {
-    console.log('⚠️ Supabase not configured, returning mock leaderboard')
-    return [
-      { wallet_address: '0xMockPlayer1', total_xp: 1000, token_balance: 50000 },
-      { wallet_address: '0xMockPlayer2', total_xp: 800, token_balance: 40000 },
-      { wallet_address: '0xMockPlayer3', total_xp: 600, token_balance: 30000 },
-    ]
-  }
-
   try {
     console.log('🏆 Fetching leaderboard from Supabase...')
     const { data: players, error } = await supabase

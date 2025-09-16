@@ -192,18 +192,29 @@ export const CONTRACT_ADDRESSES = {
 
 ### Environment Variables Setup
 
-Before deploying, you need to set up environment variables. Copy `.env.example` to `.env` and fill in your values:
+Before deploying, you need to set up environment variables. Create a `.env` file:
 
 ```bash
-cp .env.example .env
+# Create .env file with these variables:
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-Required environment variables:
+**Required environment variables:**
 - `VITE_SUPABASE_URL`: Your Supabase project URL (REQUIRED)
 - `VITE_SUPABASE_ANON_KEY`: Your Supabase anonymous key (REQUIRED)
-- `VITE_BASE_RPC_URL`: Base network RPC URL (default: https://mainnet.base.org)
-- `VITE_BASE_CHAIN_ID`: Base chain ID (default: 8453)
-- Contract addresses (optional - add when contracts are deployed)
+
+### Supabase Setup
+
+1. **Create a Supabase project** at [supabase.com](https://supabase.com)
+2. **Run the SQL schema**:
+   - Go to SQL Editor in your Supabase dashboard
+   - Copy and paste the contents of `supabase-schema.sql`
+   - Execute the SQL to create tables
+3. **Get your credentials**:
+   - Project URL: Settings → API → Project URL
+   - Anon key: Settings → API → Project API keys → anon/public
+4. **Add to environment variables** (both `.env` and Vercel)
 
 ### Vercel Deployment
 
