@@ -1,14 +1,19 @@
 // XP utility functions with Supabase integration
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-const supabase = createClient(supabaseUrl, supabaseKey)
+import { supabase } from '../config/supabase'
 
 // Add XP to user's wallet address (every game gives XP)
 export const addXP = async (walletAddress, xpAmount) => {
   if (!walletAddress || !xpAmount) return
+
+  // If Supabase is not configured, use localStorage
+  if (!supabase) {
+    const xpKey = `xp_${walletAddress}`
+    const currentXP = parseInt(localStorage.getItem(xpKey) || '0')
+    const newXP = currentXP + xpAmount
+    localStorage.setItem(xpKey, newXP.toString())
+    console.log(`Fallback: Added ${xpAmount} XP to ${walletAddress}. Total: ${newXP}`)
+    return newXP
+  }
 
   try {
     // First, check if player already exists
@@ -84,6 +89,12 @@ export const addXP = async (walletAddress, xpAmount) => {
 // Get XP for user's wallet address
 export const getXP = async (walletAddress) => {
   if (!walletAddress) return 0
+  
+  // If Supabase is not configured, use localStorage directly
+  if (!supabase) {
+    const xpKey = `xp_${walletAddress}`
+    return parseInt(localStorage.getItem(xpKey) || '0')
+  }
   
   try {
     const { data: player, error } = await supabase

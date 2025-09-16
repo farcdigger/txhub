@@ -24,11 +24,6 @@ export const useTransactions = () => {
     setError(null)
 
     try {
-      const isOnBase = await ensureBaseNetwork()
-      if (!isOnBase) {
-        throw new Error('Please switch to Base network')
-      }
-
       const contractAddress = getContractAddress('GM_GAME')
       
       // Encode the function call: sendGM(string message)
@@ -105,18 +100,19 @@ export const useTransactions = () => {
     setError(null)
 
     try {
-      const isOnBase = await ensureBaseNetwork()
-      if (!isOnBase) {
-        throw new Error('Please switch to Base network')
-      }
-
       const contractAddress = getContractAddress('GN_GAME')
       
       // Encode the function call: sendGN(string message)
-      const iface = new ethers.Interface([
-        "function sendGN(string memory message) external payable"
-      ])
-      const data = iface.encodeFunctionData("sendGN", [message])
+      const data = encodeFunctionData({
+        abi: [{
+          name: 'sendGN',
+          type: 'function',
+          stateMutability: 'payable',
+          inputs: [{ name: 'message', type: 'string' }]
+        }],
+        functionName: 'sendGN',
+        args: [message]
+      })
       
       let result
       
@@ -177,19 +173,21 @@ export const useTransactions = () => {
     setError(null)
 
     try {
-      const isOnBase = await ensureBaseNetwork()
-      if (!isOnBase) {
-        throw new Error('Please switch to Base network')
-      }
 
       const contractAddress = getContractAddress('FLIP_GAME')
       
       // Encode the function call: playFlip(uint8 choice) where 0=Heads, 1=Tails
-      const iface = new ethers.Interface([
-        "function playFlip(uint8 choice) external payable"
-      ])
       const choice = selectedSide === 'heads' ? 0 : 1
-      const data = iface.encodeFunctionData("playFlip", [choice])
+      const data = encodeFunctionData({
+        abi: [{
+          name: 'playFlip',
+          type: 'function',
+          stateMutability: 'payable',
+          inputs: [{ name: 'choice', type: 'uint8' }]
+        }],
+        functionName: 'playFlip',
+        args: [choice]
+      })
       
       let result
       
@@ -252,18 +250,20 @@ export const useTransactions = () => {
     setError(null)
 
     try {
-      const isOnBase = await ensureBaseNetwork()
-      if (!isOnBase) {
-        throw new Error('Please switch to Base network')
-      }
 
       const contractAddress = getContractAddress('SLOTH_GAME')
       
       // Encode the function call: startSlothSession()
-      const iface = new ethers.Interface([
-        "function startSlothSession() external payable"
-      ])
-      const data = iface.encodeFunctionData("startSlothSession", [])
+      const data = encodeFunctionData({
+        abi: [{
+          name: 'startSlothSession',
+          type: 'function',
+          stateMutability: 'payable',
+          inputs: []
+        }],
+        functionName: 'startSlothSession',
+        args: []
+      })
       
       if (isInFarcaster) {
         const transaction = {
@@ -312,18 +312,20 @@ export const useTransactions = () => {
     setError(null)
 
     try {
-      const isOnBase = await ensureBaseNetwork()
-      if (!isOnBase) {
-        throw new Error('Please switch to Base network')
-      }
 
       const contractAddress = getContractAddress('LUCKY_NUMBER')
       
       // Encode the function call: guessLuckyNumber(uint256 guess)
-      const iface = new ethers.Interface([
-        "function guessLuckyNumber(uint256 guess) external payable"
-      ])
-      const data = iface.encodeFunctionData("guessLuckyNumber", [guess])
+      const data = encodeFunctionData({
+        abi: [{
+          name: 'guessLuckyNumber',
+          type: 'function',
+          stateMutability: 'payable',
+          inputs: [{ name: 'guess', type: 'uint256' }]
+        }],
+        functionName: 'guessLuckyNumber',
+        args: [guess]
+      })
       
       let result
       
@@ -386,18 +388,20 @@ export const useTransactions = () => {
     setError(null)
 
     try {
-      const isOnBase = await ensureBaseNetwork()
-      if (!isOnBase) {
-        throw new Error('Please switch to Base network')
-      }
 
       const contractAddress = getContractAddress('DICE_ROLL')
       
       // Encode the function call: rollDice(uint256 guess)
-      const iface = new ethers.Interface([
-        "function rollDice(uint256 guess) external payable"
-      ])
-      const data = iface.encodeFunctionData("rollDice", [guess])
+      const data = encodeFunctionData({
+        abi: [{
+          name: 'rollDice',
+          type: 'function',
+          stateMutability: 'payable',
+          inputs: [{ name: 'guess', type: 'uint256' }]
+        }],
+        functionName: 'rollDice',
+        args: [guess]
+      })
       
       let result
       
@@ -460,10 +464,6 @@ export const useTransactions = () => {
     setError(null)
 
     try {
-      const isOnBase = await ensureBaseNetwork()
-      if (!isOnBase) {
-        throw new Error('Please switch to Base network')
-      }
       
       if (isInFarcaster) {
         const transaction = {
