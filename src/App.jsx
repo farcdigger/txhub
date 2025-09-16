@@ -23,10 +23,10 @@ const queryClient = new QueryClient()
 
 // AppContent component - Farcaster Only
 function AppContent() {
-  const { isInitialized, isInFarcaster } = useFarcaster()
+  const { isInitialized, isReady, isInFarcaster } = useFarcaster()
 
-  // Show loading state while initializing
-  if (!isInitialized) {
+  // Show loading state while initializing or waiting for ready
+  if (!isInitialized || !isReady) {
     return <SkeletonLoader />
   }
 

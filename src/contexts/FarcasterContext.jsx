@@ -14,129 +14,101 @@ export const useFarcaster = () => {
 export const FarcasterProvider = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false)
   const [user, setUser] = useState(null)
-  const [isInFarcaster, setIsInFarcaster] = useState(false)
+  const [isInFarcaster, setIsInFarcaster] = useState(true) // Force true for Farcaster-only app
   const [error, setError] = useState(null)
-  
-  // Manual override for testing (remove in production)
-  const [manualFarcasterMode, setManualFarcasterMode] = useState(false)
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
     const initializeFarcaster = async () => {
       try {
-        // Check if we're running inside Farcaster using multiple detection methods
-        let isInFarcasterApp = false
+        console.log('🚀 Initializing Farcaster-only Mini App...')
         
-        // Method 1: Check for Farcaster-specific environment first
-        const isInIframe = window.location !== window.parent.location
-        const hasFarcasterUA = window.navigator.userAgent.includes('Farcaster') || 
-                              window.navigator.userAgent.includes('Warpcast')
-        const hasFarcasterURL = window.location.href.includes('farcaster') || 
-                               window.location.href.includes('warpcast')
-        const hasFarcasterReferrer = document.referrer.includes('farcaster') || 
-                                    document.referrer.includes('warpcast')
+        // Force Farcaster mode for dedicated Mini App
+        console.log('✅ Farcaster mode enabled (dedicated Mini App)')
         
-        // If any of these conditions are true, we're likely in Farcaster
-        if (isInIframe || hasFarcasterUA || hasFarcasterURL || hasFarcasterReferrer) {
-          isInFarcasterApp = true
-          console.log('Farcaster detected via environment check')
-        } else {
-          // Method 2: Try to access Farcaster-specific APIs
-          try {
-            await sdk.context.getUser()
-            isInFarcasterApp = true
-            console.log('Farcaster detected via SDK API')
-          } catch (e) {
-            isInFarcasterApp = false
-            console.log('Not in Farcaster environment')
-          }
+        // Wait for DOM to be ready first
+        if (document.readyState === 'loading') {
+          await new Promise(resolve => {
+            document.addEventListener('DOMContentLoaded', resolve)
+          })
         }
         
-        console.log('Farcaster detection result:', isInFarcasterApp)
+        console.log('📋 DOM ready, initializing SDK...')
         
-        // Force Farcaster mode for Farcaster-only app
-        console.log('Forcing Farcaster mode for Farcaster-only app')
-        setIsInFarcaster(true)
-
-        // Try to get user context if available
+        // Try to get user context (don't fail if not available)
         try {
           const userContext = await sdk.context.getUser()
           setUser(userContext)
           console.log('✅ User context loaded:', userContext)
         } catch (userError) {
-          console.log('⚠️ User context not available (this is normal in some cases):', userError.message)
+          console.log('ℹ️ User context not available (normal in some environments)')
         }
 
         setIsInitialized(true)
+        console.log('✅ Farcaster context initialized successfully')
+        
       } catch (err) {
-        console.error('Failed to initialize Farcaster SDK:', err)
+        console.error('❌ Failed to initialize Farcaster SDK:', err)
         setError(err.message)
-        setIsInitialized(true) // Still set to true to allow app to continue
+        setIsInitialized(true) // Continue anyway
       }
     }
 
     initializeFarcaster()
   }, [])
 
-  // Call ready() when interface is fully loaded - Farcaster Only
+  // Call ready() properly according to Farcaster docs
   useEffect(() => {
+    let timeoutId
+    
     const callReady = async () => {
-      if (isInitialized) {
+      if (isInitialized && !isReady) {
         try {
-          console.log('🚀 Attempting to call sdk.actions.ready()...')
+          console.log('⏳ Waiting for app to be fully loaded...')
           
-          // Wait for DOM to be fully ready
-          if (document.readyState === 'loading') {
-            console.log('⏳ DOM still loading, waiting for DOMContentLoaded...')
-            await new Promise(resolve => {
-              document.addEventListener('DOMContentLoaded', resolve)
-            })
-          }
-          
-          // Wait for React components to be fully rendered
-          console.log('⏳ Waiting for React components to render...')
-          await new Promise(resolve => setTimeout(resolve, 800))
-          
-          // Call ready to hide splash screen
-          console.log('📞 Calling sdk.actions.ready()...')
-          await sdk.actions.ready()
-          console.log('✅ Farcaster splash screen hidden - interface is ready!')
-        } catch (err) {
-          console.error('❌ Failed to call ready:', err)
-          // Try again after a delay
-          setTimeout(async () => {
-            try {
-              console.log('🔄 Retrying sdk.actions.ready()...')
-              await sdk.actions.ready()
-              console.log('✅ Retry successful!')
-            } catch (retryErr) {
-              console.error('❌ Retry failed:', retryErr)
+          // Wait for all resources to load
+          await new Promise(resolve => {
+            if (document.readyState === 'complete') {
+              resolve()
+            } else {
+              window.addEventListener('load', resolve, { once: true })
             }
-          }, 1500)
+          })
+          
+          // Additional small delay for React hydration
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          console.log('📞 Calling sdk.actions.ready() to hide splash screen...')
+          await sdk.actions.ready()
+          setIsReady(true)
+          console.log('✅ Splash screen hidden - Mini App is ready!')
+          
+        } catch (err) {
+          console.error('❌ Failed to call ready():', err)
+          
+          // Fallback: try again after longer delay
+          timeoutId = setTimeout(async () => {
+            try {
+              console.log('🔄 Fallback: Calling ready() again...')
+              await sdk.actions.ready()
+              setIsReady(true)
+              console.log('✅ Fallback ready() successful!')
+            } catch (retryErr) {
+              console.error('❌ Fallback ready() failed:', retryErr)
+              // Set ready to true anyway to prevent infinite loading
+              setIsReady(true)
+            }
+          }, 2000)
         }
       }
     }
 
-    // Call ready after a short delay to ensure all components are rendered
-    const timer = setTimeout(callReady, 500)
-    return () => clearTimeout(timer)
-  }, [isInitialized])
-
-  // Additional ready() call as backup
-  useEffect(() => {
-    if (isInitialized) {
-      const backupTimer = setTimeout(async () => {
-        try {
-          console.log('🔄 Backup ready() call...')
-          await sdk.actions.ready()
-          console.log('✅ Backup ready() call successful!')
-        } catch (err) {
-          console.error('❌ Backup ready() call failed:', err)
-        }
-      }, 3000)
-
-      return () => clearTimeout(backupTimer)
+    callReady()
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
     }
-  }, [isInitialized])
+  }, [isInitialized, isReady])
 
   const sendTransaction = async (transaction) => {
     if (!isInFarcaster) {
@@ -167,17 +139,13 @@ export const FarcasterProvider = ({ children }) => {
 
   const value = {
     isInitialized,
+    isReady,
     user,
     isInFarcaster,
     error,
     sendTransaction,
     sendNotification,
     sdk,
-    // Manual toggle for testing
-    toggleFarcasterMode: () => {
-      setManualFarcasterMode(!manualFarcasterMode)
-      setIsInFarcaster(!isInFarcaster)
-    }
   }
 
   return (
