@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider } from 'wagmi'
+import { HelmetProvider } from 'react-helmet-async'
 import { FarcasterProvider, useFarcaster } from './contexts/FarcasterContext'
 import { config } from './config/wagmi'
 import Header from './components/Header'
@@ -132,13 +133,15 @@ function AppContent() {
 // Main App component with providers
 function App() {
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <FarcasterProvider>
-          <AppContent />
-        </FarcasterProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <HelmetProvider>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <FarcasterProvider>
+            <AppContent />
+          </FarcasterProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </HelmetProvider>
   )
 }
 

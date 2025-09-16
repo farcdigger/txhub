@@ -3,6 +3,7 @@ import { useWallet } from '../hooks/useWallet'
 import { useTransactions } from '../hooks/useTransactions'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { useSupabase } from '../hooks/useSupabase'
+import EmbedMeta from '../components/EmbedMeta'
 import { Coins, RotateCcw, TrendingUp, TrendingDown, Star } from 'lucide-react'
 
 const FlipGame = () => {
@@ -65,6 +66,11 @@ const FlipGame = () => {
 
   return (
     <div className="card">
+      <EmbedMeta 
+        title="Flip Game - BaseHub"
+        description="Flip a coin and win XP! 50% chance to win 500 bonus XP. Play now on BaseHub!"
+        buttonText="Play Flip Game"
+      />
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <div 
           className="game-icon"

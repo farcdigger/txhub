@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { getLeaderboard } from '../utils/xpUtils'
+import EmbedMeta from '../components/EmbedMeta'
 import { Trophy, Medal, Award, Users, TrendingUp, RefreshCw } from 'lucide-react'
 
 const Leaderboard = () => {
@@ -89,6 +90,11 @@ const Leaderboard = () => {
 
   return (
     <div className="leaderboard">
+      <EmbedMeta 
+        title="Leaderboard - BaseHub"
+        description="Check out the top players on BaseHub! See who has the most XP and compete for the top spot!"
+        buttonText="View Leaderboard"
+      />
       <style>
         {`
           @keyframes spin {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useWallet } from '../hooks/useWallet'
 import { getLeaderboard } from '../utils/xpUtils'
 import { useTransactions } from '../hooks/useTransactions'
+import EmbedMeta from '../components/EmbedMeta'
 import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp } from 'lucide-react'
 
 const Home = () => {
@@ -134,6 +135,11 @@ const Home = () => {
 
   return (
     <div className="home">
+      <EmbedMeta 
+        title="BaseHub - Play Games & Earn XP"
+        description="Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!"
+        buttonText="Play BaseHub"
+      />
       <div className="welcome-section">
         <div className="card">
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>

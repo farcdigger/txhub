@@ -22,17 +22,6 @@
         "symbol": "ETH",
         "decimals": 18
       }
-    },
-    {
-      "chainId": 84532,
-      "name": "Base Sepolia",
-      "rpcUrl": "https://sepolia.base.org",
-      "blockExplorerUrl": "https://sepolia.basescan.org",
-      "nativeCurrency": {
-        "name": "Ethereum",
-        "symbol": "ETH",
-        "decimals": 18
-      }
     }
   ],
   "features": [
@@ -52,5 +41,9 @@
     "type": "git",
     "url": "https://github.com/ereyli/basehub"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "webhookUrl": "https://your-domain.com/webhook",
+  "verification": {
+    "domain": "your-domain.com"
+  }
 }

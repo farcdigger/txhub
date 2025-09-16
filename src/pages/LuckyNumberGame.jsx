@@ -3,6 +3,7 @@ import { useWallet } from '../hooks/useWallet'
 import { useTransactions } from '../hooks/useTransactions'
 import { useFarcaster } from '../contexts/FarcasterContext'
 import { useSupabase } from '../hooks/useSupabase'
+import EmbedMeta from '../components/EmbedMeta'
 import { Target, Send, Star, CheckCircle, ExternalLink, Coins, TrendingUp, TrendingDown } from 'lucide-react'
 
 const LuckyNumberGame = () => {
@@ -72,6 +73,11 @@ const LuckyNumberGame = () => {
 
   return (
     <div className="card">
+      <EmbedMeta 
+        title="Lucky Number Game - BaseHub"
+        description="Pick a number 1-10 and win XP! 10% chance to win 1000 bonus XP. Play now on BaseHub!"
+        buttonText="Play Lucky Number"
+      />
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <div 
           className="game-icon"
