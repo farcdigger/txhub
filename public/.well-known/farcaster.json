@@ -4,7 +4,7 @@
     "payload": "eyJkb21haW4iOiJiYXNlaHViLWFscGhhLnZlcmNlbC5hcHAiLCJ0aW1lc3RhbXAiOjE3MzQ0NDQ0NDR9",
     "signature": "placeholder_signature_for_domain_verification"
   },
-  "frame": {
+  "miniapp": {
     "name": "BaseHub",
     "version": "1",
     "iconUrl": "https://basehub-alpha.vercel.app/icon.png",
@@ -50,6 +50,24 @@
       "transactions",
       "notifications"
     ],
-    "disableNativeGestures": false
+    "disableNativeGestures": false,
+    "requiredChains": [
+      {
+        "chainId": 8453,
+        "name": "Base",
+        "rpcUrl": "https://mainnet.base.org",
+        "blockExplorerUrl": "https://basescan.org",
+        "nativeCurrency": {
+          "name": "Ethereum",
+          "symbol": "ETH",
+          "decimals": 18
+        }
+      }
+    ],
+    "requiredCapabilities": [
+      "wallet.getEthereumProvider",
+      "actions.composeCast",
+      "actions.ready"
+    ]
   }
 }

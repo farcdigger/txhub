@@ -6,22 +6,32 @@ const EmbedMeta = ({
   description, 
   image = "/icon.svg", 
   url, 
-  buttonText = "Play Game",
+  buttonText = "🎮 Play BaseHub",
   gameType = "game"
 }) => {
   const fullUrl = url || window.location.href
   const fullTitle = title ? `${title} - BaseHub` : "BaseHub - Play Games & Earn XP"
   const fullDescription = description || "Play games and earn XP on Base network through Farcaster"
 
+  const embedContent = {
+    version: "1",
+    imageUrl: image,
+    button: {
+      title: buttonText,
+      action: {
+        type: "launch_frame",
+        name: fullTitle,
+        url: fullUrl,
+        splashImageUrl: image,
+        splashBackgroundColor: "#6B76D9"
+      }
+    }
+  }
+
   return (
     <Helmet>
       {/* Farcaster Mini App Embed Meta Tags */}
-      <meta property="fc:miniapp" content="1.0.0" />
-      <meta property="fc:miniapp:image" content={image} />
-      <meta property="fc:miniapp:button" content={buttonText} />
-      <meta property="fc:miniapp:action" content={fullUrl} />
-      <meta property="fc:miniapp:title" content={fullTitle} />
-      <meta property="fc:miniapp:description" content={fullDescription} />
+      <meta name="fc:miniapp" content={JSON.stringify(embedContent)} />
       
       {/* Open Graph Meta Tags for Social Sharing */}
       <meta property="og:title" content={fullTitle} />

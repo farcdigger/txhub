@@ -25,18 +25,25 @@ export default function handler(req, res) {
       headers: req.headers
     })
 
-    // Handle different webhook events
+    // Handle Farcaster Mini App events as per documentation
     const { type, data } = req.body
 
     switch (type) {
-      case 'user_interaction':
-        console.log('User interaction:', data)
+      case 'miniapp_added':
+        console.log('Mini App added by user:', data)
+        // Handle app installation
         break
-      case 'app_install':
-        console.log('App installed:', data)
+      case 'miniapp_removed':
+        console.log('Mini App removed by user:', data)
+        // Handle app uninstallation
         break
-      case 'app_uninstall':
-        console.log('App uninstalled:', data)
+      case 'notifications_enabled':
+        console.log('Notifications enabled for user:', data)
+        // Handle notification permission granted
+        break
+      case 'notifications_disabled':
+        console.log('Notifications disabled for user:', data)
+        // Handle notification permission revoked
         break
       default:
         console.log('Unknown webhook type:', type)

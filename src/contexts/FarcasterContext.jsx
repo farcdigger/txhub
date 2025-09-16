@@ -20,15 +20,22 @@ export const FarcasterProvider = ({ children }) => {
   useEffect(() => {
     const initializeFarcaster = async () => {
       try {
-        // Check if we're running inside Farcaster
+        // Check if we're running inside Farcaster using multiple detection methods
         let isInFarcasterApp = false
         try {
-          // Try to access Farcaster-specific APIs
+          // Method 1: Try to access Farcaster-specific APIs
           await sdk.context.getUser()
           isInFarcasterApp = true
         } catch (e) {
-          // If getUser fails, we're probably not in Farcaster
-          isInFarcasterApp = false
+          // Method 2: Check for Farcaster-specific environment
+          if (window.location !== window.parent.location || 
+              window.navigator.userAgent.includes('Farcaster') ||
+              window.location.href.includes('farcaster') ||
+              document.referrer.includes('farcaster')) {
+            isInFarcasterApp = true
+          } else {
+            isInFarcasterApp = false
+          }
         }
         setIsInFarcaster(isInFarcasterApp)
 
@@ -65,8 +72,8 @@ export const FarcasterProvider = ({ children }) => {
             })
           }
           
-          // Additional delay to ensure React components are rendered
-          await new Promise(resolve => setTimeout(resolve, 500))
+          // Minimal delay to avoid jitter - as per documentation
+          await new Promise(resolve => setTimeout(resolve, 100))
           
           await sdk.actions.ready()
           console.log('Farcaster splash screen hidden - app is ready')
