@@ -187,20 +187,33 @@ export const useTransactions = () => {
       
       console.log('✅ Flip transaction sent! Hash:', txHash)
       
-      // Generate game result immediately after transaction submission
-      const actualResult = Math.random() < 0.5 ? 'heads' : 'tails'
-      const playerWon = (selectedSide === 'heads' && actualResult === 'heads') || 
-                       (selectedSide === 'tails' && actualResult === 'tails')
-      
-      console.log('🎲 Game result:', { selectedSide, actualResult, playerWon })
-      
-      // In Farcaster environment, award XP immediately after transaction submission
-      if (isInFarcaster) {
-        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
+      // Wait for transaction confirmation before generating results
+      console.log('⏳ Waiting for transaction confirmation...')
+      try {
+        // Wait for confirmation with timeout
+        const receipt = await Promise.race([
+          waitForTransactionReceipt(config, {
+            hash: txHash,
+            confirmations: 1,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
+          )
+        ])
+        
+        console.log('✅ Flip transaction confirmed!', receipt)
+        
+        // ONLY NOW generate game result after confirmation
+        const actualResult = Math.random() < 0.5 ? 'heads' : 'tails'
+        const playerWon = (selectedSide === 'heads' && actualResult === 'heads') || 
+                         (selectedSide === 'tails' && actualResult === 'tails')
+        
+        console.log('🎲 Flip result AFTER confirmation:', { selectedSide, actualResult, playerWon })
+        
         try {
           await addBonusXP(address, 'flip', playerWon)
           const xpEarned = playerWon ? 10 + 500 : 10
-          console.log(`✅ XP added successfully in Farcaster mode: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+          console.log(`✅ XP added after confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
         }
@@ -212,48 +225,11 @@ export const useTransactions = () => {
           isWin: playerWon,
           xpEarned: playerWon ? 510 : 10
         }
-      }
-      
-      // For regular web (non-Farcaster), wait for confirmation
-      console.log('⏳ Non-Farcaster mode - waiting for blockchain confirmation...')
-      try {
-        const receipt = await Promise.race([
-          waitForTransactionReceipt(config, {
-            hash: txHash,
-            confirmations: 1,
-          }),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000)
-          )
-        ])
         
-        console.log('✅ Transaction confirmed!', receipt)
-        
-        try {
-          await addBonusXP(address, 'flip', playerWon)
-          const xpEarned = playerWon ? 10 + 500 : 10
-          console.log(`✅ XP added after confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
       } catch (confirmError) {
-        console.warn('⚠️ Confirmation failed, but transaction was sent:', confirmError.message)
-        // Still award XP since transaction was submitted successfully
-        try {
-          await addBonusXP(address, 'flip', playerWon)
-          const xpEarned = playerWon ? 10 + 500 : 10
-          console.log(`✅ XP added despite confirmation timeout: ${xpEarned}`)
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
-      }
-      
-      return { 
-        txHash, 
-        playerChoice: selectedSide, 
-        result: actualResult, 
-        isWin: playerWon,
-        xpEarned: playerWon ? 510 : 10
+        console.warn('⚠️ Confirmation timeout:', confirmError.message)
+        // Don't generate results if confirmation fails
+        throw new Error('Transaction confirmation failed - please try again')
       }
     } catch (err) {
       setError(err.message)
@@ -294,19 +270,32 @@ export const useTransactions = () => {
       
       console.log('✅ Lucky Number transaction sent! Hash:', txHash)
       
-      // Generate game result immediately after transaction submission
-      const winningNumber = Math.floor(Math.random() * 10) + 1
-      const playerWon = guess === winningNumber
-      
-      console.log('🎲 Lucky Number result:', { guess, winningNumber, playerWon })
-      
-      // In Farcaster environment, award XP immediately after transaction submission
-      if (isInFarcaster) {
-        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
+      // Wait for transaction confirmation before generating results
+      console.log('⏳ Waiting for transaction confirmation...')
+      try {
+        // Wait for confirmation with timeout
+        const receipt = await Promise.race([
+          waitForTransactionReceipt(config, {
+            hash: txHash,
+            confirmations: 1,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
+          )
+        ])
+        
+        console.log('✅ Lucky Number transaction confirmed!', receipt)
+        
+        // ONLY NOW generate game result after confirmation
+        const winningNumber = Math.floor(Math.random() * 10) + 1
+        const playerWon = guess === winningNumber
+        
+        console.log('🎲 Lucky Number result AFTER confirmation:', { guess, winningNumber, playerWon })
+        
         try {
           await addBonusXP(address, 'luckynumber', playerWon)
           const xpEarned = playerWon ? 10 + 1000 : 10
-          console.log(`✅ XP added successfully in Farcaster mode: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+          console.log(`✅ XP added after confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
         }
@@ -318,33 +307,11 @@ export const useTransactions = () => {
           isWin: playerWon,
           xpEarned: playerWon ? 1010 : 10
         }
-      }
-      
-      // For regular web, try confirmation with timeout fallback
-      try {
-        await Promise.race([
-          waitForTransactionReceipt(config, { hash: txHash, confirmations: 1 }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
-        ])
-        console.log('✅ Transaction confirmed!')
-      } catch (error) {
-        console.warn('⚠️ Confirmation timeout, but awarding XP anyway:', error.message)
-      }
-      
-      try {
-        await addBonusXP(address, 'luckynumber', playerWon)
-        const xpEarned = playerWon ? 10 + 1000 : 10
-        console.log(`✅ XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
-      } catch (xpError) {
-        console.error('Error adding XP:', xpError)
-      }
-      
-      return { 
-        txHash, 
-        playerGuess: guess, 
-        winningNumber, 
-        isWin: playerWon,
-        xpEarned: playerWon ? 1010 : 10
+        
+      } catch (confirmError) {
+        console.warn('⚠️ Confirmation timeout:', confirmError.message)
+        // Don't generate results if confirmation fails
+        throw new Error('Transaction confirmation failed - please try again')
       }
     } catch (err) {
       setError(err.message)
@@ -384,21 +351,34 @@ export const useTransactions = () => {
       
       console.log('✅ Dice Roll transaction sent! Hash:', txHash)
       
-      // Generate game result immediately after transaction submission
-      const dice1 = Math.floor(Math.random() * 6) + 1
-      const dice2 = Math.floor(Math.random() * 6) + 1
-      const diceTotal = dice1 + dice2
-      const playerWon = guess === diceTotal
-      
-      console.log('🎲 Dice Roll result:', { guess, dice1, dice2, diceTotal, playerWon })
-      
-      // In Farcaster environment, award XP immediately after transaction submission
-      if (isInFarcaster) {
-        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
+      // Wait for transaction confirmation before generating results
+      console.log('⏳ Waiting for transaction confirmation...')
+      try {
+        // Wait for confirmation with timeout
+        const receipt = await Promise.race([
+          waitForTransactionReceipt(config, {
+            hash: txHash,
+            confirmations: 1,
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
+          )
+        ])
+        
+        console.log('✅ Dice Roll transaction confirmed!', receipt)
+        
+        // ONLY NOW generate game result after confirmation
+        const dice1 = Math.floor(Math.random() * 6) + 1
+        const dice2 = Math.floor(Math.random() * 6) + 1
+        const diceTotal = dice1 + dice2
+        const playerWon = guess === diceTotal
+        
+        console.log('🎲 Dice Roll result AFTER confirmation:', { guess, dice1, dice2, diceTotal, playerWon })
+        
         try {
           await addBonusXP(address, 'diceroll', playerWon)
           const xpEarned = playerWon ? 10 + 1500 : 10
-          console.log(`✅ XP added successfully in Farcaster mode: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
+          console.log(`✅ XP added after confirmation: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
         }
@@ -412,35 +392,11 @@ export const useTransactions = () => {
           isWin: playerWon,
           xpEarned: playerWon ? 1510 : 10
         }
-      }
-      
-      // For regular web, try confirmation with timeout fallback
-      try {
-        await Promise.race([
-          waitForTransactionReceipt(config, { hash: txHash, confirmations: 1 }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
-        ])
-        console.log('✅ Transaction confirmed!')
-      } catch (error) {
-        console.warn('⚠️ Confirmation timeout, but awarding XP anyway:', error.message)
-      }
-      
-      try {
-        await addBonusXP(address, 'diceroll', playerWon)
-        const xpEarned = playerWon ? 10 + 1500 : 10
-        console.log(`✅ XP added: ${xpEarned} (${playerWon ? 'WIN' : 'LOSS'})`)
-      } catch (xpError) {
-        console.error('Error adding XP:', xpError)
-      }
-      
-      return { 
-        txHash, 
-        playerGuess: guess, 
-        dice1,
-        dice2,
-        diceTotal, 
-        isWin: playerWon,
-        xpEarned: playerWon ? 1510 : 10
+        
+      } catch (confirmError) {
+        console.warn('⚠️ Confirmation timeout:', confirmError.message)
+        // Don't generate results if confirmation fails
+        throw new Error('Transaction confirmation failed - please try again')
       }
     } catch (err) {
       setError(err.message)
