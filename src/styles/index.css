@@ -116,24 +116,25 @@ body {
 
 .farcaster-main {
   /* Ensure content starts from the top in Farcaster */
-  padding-top: 80px !important;
+  padding-top: 60px !important;
   margin-top: 0 !important;
   min-height: 100vh;
 }
 
 /* Farcaster-specific game card styles */
 .farcaster-app .game-card {
-  margin-bottom: 16px;
-  border-radius: 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
-  padding: 20px;
+  padding: 12px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  min-height: 85px;
 }
 
 .farcaster-app .game-card:hover {
@@ -147,17 +148,17 @@ body {
 
 /* Farcaster game card content */
 .farcaster-app .game-card h3 {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   color: #1f2937;
 }
 
 .farcaster-app .game-card p {
-  font-size: 14px;
+  font-size: 11px;
   color: #6b7280;
-  margin-bottom: 12px;
-  line-height: 1.5;
+  margin-bottom: 6px;
+  line-height: 1.4;
 }
 
 .farcaster-app .game-card .game-stats {
@@ -260,26 +261,101 @@ body {
   padding-top: 16px !important;
 }
 
-/* Farcaster XP Display - Compact */
-.farcaster-xp-display.compact {
+/* Farcaster Header Bar */
+.farcaster-header-bar {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 9999;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  width: 140px;
-  font-size: 12px;
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.farcaster-xp-display.compact:hover {
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #7c3aed;
+  font-weight: 600;
+}
+
+.wallet-address {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.not-connected-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.stat-mini {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.stat-mini.xp {
+  color: #f57c00;
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.stat-mini.token {
+  color: #388e3c;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.claim-mini {
+  background: #e5e7eb;
+  border: none;
+  border-radius: 6px;
+  padding: 6px;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.header-connect-button {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-connect-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 /* Not Connected State */
@@ -801,8 +877,14 @@ body {
 /* Farcaster specific adjustments */
 .farcaster-app .games-grid {
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 8px;
   margin-top: 16px;
+}
+
+.farcaster-app .game-card {
+  padding: 12px;
+  min-height: 90px;
+  position: relative;
 }
 
 .game-card {
