@@ -6,11 +6,11 @@ const EmbedMeta = ({
   description, 
   image = "/icon.svg", 
   url, 
-  buttonText = "🎮 Play BaseHub",
+  buttonText = "Play BaseHub",
   gameType = "game"
 }) => {
   const fullUrl = url || window.location.href
-  const fullTitle = title ? `${title} - BaseHub` : "BaseHub - Play Games & Earn XP"
+  const fullTitle = title ? `${title} - BaseHub` : "BaseHub - Play Games and Earn XP"
   const fullDescription = description || "Play games and earn XP on Base network through Farcaster"
 
   const embedContent = {

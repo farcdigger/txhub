@@ -14,7 +14,7 @@
     "splashImageUrl": "https://basehub-alpha.vercel.app/splash.png",
     "splashBackgroundColor": "#6B76D9",
     "webhookUrl": "https://basehub-alpha.vercel.app/api/webhook",
-    "subtitle": "Play Games & Earn XP",
+    "subtitle": "Play Games and Earn XP",
     "description": "Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!",
     "primaryCategory": "games",
     "tags": [
@@ -22,8 +22,8 @@
       "l2"
     ],
     "tagline": "gaming,tx,airdrop",
-    "ogTitle": "BaseHub - Play Games & Earn XP",
-    "ogDescription": "Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!",
+    "ogTitle": "BaseHub - Play Games and Earn XP",
+    "ogDescription": "Play games and earn XP on Base network through Farcaster. Join the leaderboard!",
     "heroImageUrl": "https://basehub-alpha.vercel.app/image.png",
     "screenshotUrls": [
       "https://basehub-alpha.vercel.app/image.png"

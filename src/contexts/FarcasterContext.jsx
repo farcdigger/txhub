@@ -16,28 +16,53 @@ export const FarcasterProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isInFarcaster, setIsInFarcaster] = useState(false)
   const [error, setError] = useState(null)
+  
+  // Manual override for testing (remove in production)
+  const [manualFarcasterMode, setManualFarcasterMode] = useState(false)
 
   useEffect(() => {
     const initializeFarcaster = async () => {
       try {
         // Check if we're running inside Farcaster using multiple detection methods
         let isInFarcasterApp = false
-        try {
-          // Method 1: Try to access Farcaster-specific APIs
-          await sdk.context.getUser()
+        
+        // Method 1: Check for Farcaster-specific environment first
+        const isInIframe = window.location !== window.parent.location
+        const hasFarcasterUA = window.navigator.userAgent.includes('Farcaster') || 
+                              window.navigator.userAgent.includes('Warpcast')
+        const hasFarcasterURL = window.location.href.includes('farcaster') || 
+                               window.location.href.includes('warpcast')
+        const hasFarcasterReferrer = document.referrer.includes('farcaster') || 
+                                    document.referrer.includes('warpcast')
+        
+        // If any of these conditions are true, we're likely in Farcaster
+        if (isInIframe || hasFarcasterUA || hasFarcasterURL || hasFarcasterReferrer) {
           isInFarcasterApp = true
-        } catch (e) {
-          // Method 2: Check for Farcaster-specific environment
-          if (window.location !== window.parent.location || 
-              window.navigator.userAgent.includes('Farcaster') ||
-              window.location.href.includes('farcaster') ||
-              document.referrer.includes('farcaster')) {
+          console.log('Farcaster detected via environment check')
+        } else {
+          // Method 2: Try to access Farcaster-specific APIs
+          try {
+            await sdk.context.getUser()
             isInFarcasterApp = true
-          } else {
+            console.log('Farcaster detected via SDK API')
+          } catch (e) {
             isInFarcasterApp = false
+            console.log('Not in Farcaster environment')
           }
         }
-        setIsInFarcaster(isInFarcasterApp)
+        
+        console.log('Farcaster detection result:', isInFarcasterApp)
+        
+        // Manual override for testing (check URL parameter)
+        const urlParams = new URLSearchParams(window.location.search)
+        const forceFarcaster = urlParams.get('farcaster') === 'true'
+        
+        if (forceFarcaster) {
+          console.log('Manual Farcaster mode enabled via URL parameter')
+          setIsInFarcaster(true)
+        } else {
+          setIsInFarcaster(isInFarcasterApp)
+        }
 
         if (isInFarcasterApp) {
           // Get user context if available
@@ -120,7 +145,12 @@ export const FarcasterProvider = ({ children }) => {
     error,
     sendTransaction,
     sendNotification,
-    sdk
+    sdk,
+    // Manual toggle for testing
+    toggleFarcasterMode: () => {
+      setManualFarcasterMode(!manualFarcasterMode)
+      setIsInFarcaster(!isInFarcaster)
+    }
   }
 
   return (

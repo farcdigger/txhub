@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { Star, Coins, Zap, Trophy } from 'lucide-react'
 import { getXP, calculateTokens } from '../utils/xpUtils'
+import { useFarcaster } from '../contexts/FarcasterContext'
 
 const FarcasterXPDisplay = () => {
   const { isConnected, address } = useAccount()
+  const { isInFarcaster, toggleFarcasterMode } = useFarcaster()
   const [totalXP, setTotalXP] = useState(0)
 
   // Load XP from Supabase and refresh every 3 seconds
@@ -49,6 +51,23 @@ const FarcasterXPDisplay = () => {
           <span className="token-value">{tokenBalance}</span>
         </div>
       </div>
+      {/* Test button - remove in production */}
+      <button 
+        onClick={toggleFarcasterMode}
+        style={{
+          position: 'absolute',
+          top: '-30px',
+          right: '0',
+          fontSize: '10px',
+          padding: '2px 4px',
+          background: 'red',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px'
+        }}
+      >
+        Toggle FC
+      </button>
     </div>
   )
 }
