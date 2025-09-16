@@ -47,19 +47,25 @@ export const useTransactions = () => {
       
       // Even in Farcaster, wait for at least some confirmation
       console.log('⏳ Waiting for transaction confirmation...')
+      console.log('📋 Transaction hash:', txHash)
+      console.log('⏰ Will wait up to 30 seconds for confirmation...')
+      
       try {
-        // Wait for confirmation with shorter timeout for better UX
+        // Wait for confirmation with timeout for better UX
         const receipt = await Promise.race([
           waitForTransactionReceipt(config, {
             hash: txHash,
             confirmations: 1,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000) // 30 seconds
           )
         ])
         
-        console.log('✅ GM transaction confirmed!', receipt)
+        console.log('✅ GM transaction confirmed!')
+        console.log('📦 Receipt:', receipt)
+        console.log('🔢 Block number:', receipt.blockNumber)
+        console.log('⛽ Gas used:', receipt.gasUsed?.toString())
         
         try {
           await addXP(address, 10) // GM gives 10 XP
@@ -125,7 +131,7 @@ export const useTransactions = () => {
             confirmations: 1,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000) // 30 seconds
           )
         ])
         
@@ -199,7 +205,7 @@ export const useTransactions = () => {
             confirmations: 1,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000) // 30 seconds
           )
         ])
         
@@ -282,7 +288,7 @@ export const useTransactions = () => {
             confirmations: 1,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000) // 30 seconds
           )
         ])
         
@@ -363,7 +369,7 @@ export const useTransactions = () => {
             confirmations: 1,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000) // 30 seconds
           )
         ])
         
