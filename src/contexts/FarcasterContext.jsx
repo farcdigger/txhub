@@ -58,10 +58,18 @@ export const FarcasterProvider = ({ children }) => {
     const callReady = async () => {
       if (isInitialized && isInFarcaster) {
         try {
-          // Small delay to ensure UI is fully rendered
-          await new Promise(resolve => setTimeout(resolve, 100))
+          // Wait for DOM to be fully ready
+          if (document.readyState === 'loading') {
+            await new Promise(resolve => {
+              document.addEventListener('DOMContentLoaded', resolve)
+            })
+          }
+          
+          // Additional delay to ensure React components are rendered
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
           await sdk.actions.ready()
-          console.log('Farcaster splash screen hidden')
+          console.log('Farcaster splash screen hidden - app is ready')
         } catch (err) {
           console.error('Failed to call ready:', err)
         }

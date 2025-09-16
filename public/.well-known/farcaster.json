@@ -1,4 +1,9 @@
 {
+  "accountAssociation": {
+    "header": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+    "payload": "eyJkb21haW4iOiJiYXNlaHViLWFscGhhLnZlcmNlbC5hcHAiLCJ0aW1lc3RhbXAiOjE3MzQ0NDQ0NDR9",
+    "signature": "placeholder_signature_for_domain_verification"
+  },
   "frame": {
     "name": "BaseHub",
     "version": "1",
@@ -18,6 +23,33 @@
     ],
     "tagline": "gaming,tx,airdrop",
     "ogTitle": "BaseHub - Play Games & Earn XP",
-    "ogDescription": "Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!"
+    "ogDescription": "Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!",
+    "heroImageUrl": "https://basehub-alpha.vercel.app/image.png",
+    "screenshotUrls": [
+      "https://basehub-alpha.vercel.app/image.png"
+    ],
+    "permissions": [
+      "ethereum",
+      "notifications"
+    ],
+    "supportedChains": [
+      {
+        "chainId": 8453,
+        "name": "Base",
+        "rpcUrl": "https://mainnet.base.org",
+        "blockExplorerUrl": "https://basescan.org",
+        "nativeCurrency": {
+          "name": "Ethereum",
+          "symbol": "ETH",
+          "decimals": 18
+        }
+      }
+    ],
+    "features": [
+      "wallet",
+      "transactions",
+      "notifications"
+    ],
+    "disableNativeGestures": false
   }
 }
