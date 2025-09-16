@@ -178,9 +178,9 @@ export const getLeaderboard = async () => {
   }
 }
 
-// Calculate tokens from XP (1 XP = 50 BHUP)
+// Calculate tokens from XP (1 XP = 10 BHUP)
 export const calculateTokens = (xp) => {
-  return Math.floor(xp * 50)
+  return Math.floor(xp * 10)
 }
 
 // Add bonus XP for winning games

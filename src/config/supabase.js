@@ -44,7 +44,7 @@ export const XP_CONFIG = {
   CONTRACT_GAME: 30,  // 30 XP per contract interaction
   
   // XP to Token conversion
-  XP_TO_TOKEN_RATIO: 50, // 1 XP = 50 BHUP token
+  XP_TO_TOKEN_RATIO: 10, // 1 XP = 50 BHUP token
   
   // Level system
   LEVEL_1: 100,       // Level 1: 100 XP

@@ -122,7 +122,7 @@ SELECT
         WHEN p.total_xp >= 250 THEN 2
         ELSE 1
     END as calculated_level,
-    FLOOR(p.total_xp * 50.0) as token_balance
+    FLOOR(p.total_xp * 10.0) as token_balance
 FROM players p;
 
 -- Grant permissions

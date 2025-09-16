@@ -45,33 +45,21 @@ export const useTransactions = () => {
       
       console.log('✅ GM transaction sent! Hash:', txHash)
       
-      // In Farcaster environment, we trust the transaction once we get the hash
-      // since Farcaster wallet handles the confirmation UI
-      if (isInFarcaster) {
-        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
-        try {
-          await addXP(address, 10) // GM gives 10 XP
-          console.log('✅ XP added successfully in Farcaster mode')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
-        return txHash
-      }
-      
-      // For regular web (non-Farcaster), wait for confirmation
-      console.log('⏳ Non-Farcaster mode - waiting for blockchain confirmation...')
+      // Even in Farcaster, wait for at least some confirmation
+      console.log('⏳ Waiting for transaction confirmation...')
       try {
+        // Wait for confirmation with shorter timeout for better UX
         const receipt = await Promise.race([
           waitForTransactionReceipt(config, {
             hash: txHash,
             confirmations: 1,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000)
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
           )
         ])
         
-        console.log('✅ Transaction confirmed!', receipt)
+        console.log('✅ GM transaction confirmed!', receipt)
         
         try {
           await addXP(address, 10) // GM gives 10 XP
@@ -79,15 +67,12 @@ export const useTransactions = () => {
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
         }
+        
+        return txHash
       } catch (confirmError) {
-        console.warn('⚠️ Confirmation failed, but transaction was sent:', confirmError.message)
-        // Still award XP since transaction was submitted successfully
-        try {
-          await addXP(address, 10)
-          console.log('✅ XP added despite confirmation timeout')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+        console.warn('⚠️ Confirmation timeout:', confirmError.message)
+        // Don't award XP if confirmation fails
+        throw new Error('Transaction confirmation failed - please try again')
       }
       
       return txHash
@@ -129,32 +114,21 @@ export const useTransactions = () => {
       
       console.log('✅ GN transaction sent! Hash:', txHash)
       
-      // In Farcaster environment, award XP after successful transaction submission
-      if (isInFarcaster) {
-        console.log('🎯 Farcaster detected - awarding XP after transaction submission')
-        try {
-          await addXP(address, 10) // GN gives 10 XP
-          console.log('✅ XP added successfully in Farcaster mode')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
-        return txHash
-      }
-      
-      // For regular web (non-Farcaster), wait for confirmation
-      console.log('⏳ Non-Farcaster mode - waiting for blockchain confirmation...')
+      // Wait for transaction confirmation
+      console.log('⏳ Waiting for transaction confirmation...')
       try {
+        // Wait for confirmation with shorter timeout for better UX
         const receipt = await Promise.race([
           waitForTransactionReceipt(config, {
             hash: txHash,
             confirmations: 1,
           }),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000)
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 15000) // 15 seconds
           )
         ])
         
-        console.log('✅ Transaction confirmed!', receipt)
+        console.log('✅ GN transaction confirmed!', receipt)
         
         try {
           await addXP(address, 10) // GN gives 10 XP
@@ -162,15 +136,12 @@ export const useTransactions = () => {
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
         }
+        
+        return txHash
       } catch (confirmError) {
-        console.warn('⚠️ Confirmation failed, but transaction was sent:', confirmError.message)
-        // Still award XP since transaction was submitted successfully
-        try {
-          await addXP(address, 10)
-          console.log('✅ XP added despite confirmation timeout')
-        } catch (xpError) {
-          console.error('Error adding XP:', xpError)
-        }
+        console.warn('⚠️ Confirmation timeout:', confirmError.message)
+        // Don't award XP if confirmation fails
+        throw new Error('Transaction confirmation failed - please try again')
       }
       
       return txHash
