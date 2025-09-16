@@ -43,28 +43,25 @@ const FarcasterXPDisplay = () => {
     }
   }
 
-  // If not connected, show connect button
+  // If not connected, show compact connect version
   if (!isConnected || !address) {
     return (
-      <div className="farcaster-xp-display not-connected">
-        <div className="connect-section">
-          <Wallet size={20} />
-          <span className="connect-text">Connect Wallet</span>
-        </div>
+      <div className="farcaster-xp-display compact not-connected">
         <button 
-          className="connect-button"
+          className="compact-connect-button"
           onClick={handleConnect}
         >
-          Connect
+          <Wallet size={14} />
+          <span>Connect</span>
         </button>
-        <div className="xp-preview">
-          <div className="xp-item">
-            <Zap size={16} />
-            <span>0 XP</span>
+        <div className="compact-stats">
+          <div className="compact-stat">
+            <Zap size={12} />
+            <span>0</span>
           </div>
-          <div className="xp-item">
-            <Coins size={16} />
-            <span>0 BHUP</span>
+          <div className="compact-stat">
+            <Coins size={12} />
+            <span>0</span>
           </div>
         </div>
       </div>
@@ -72,48 +69,36 @@ const FarcasterXPDisplay = () => {
   }
 
   return (
-    <div className="farcaster-xp-display connected">
-      <div className="xp-header">
-        <div className="player-badge">
-          <Trophy size={18} />
-          <span className="player-text">Player</span>
-        </div>
-        <div className="wallet-info">
-          {address.slice(0, 6)}...{address.slice(-4)}
+    <div className="farcaster-xp-display compact connected">
+      <div className="compact-header">
+        <div className="compact-player">
+          <Trophy size={14} />
+          <span>{address.slice(0, 4)}...{address.slice(-3)}</span>
         </div>
       </div>
       
-      <div className="xp-stats">
-        <div className="stat-item xp-stat">
-          <div className="stat-icon">
-            <Zap size={20} />
-          </div>
-          <div className="stat-content">
-            <span className="stat-value">{totalXP}</span>
-            <span className="stat-label">XP</span>
+      <div className="compact-stats">
+        <div className="compact-stat xp">
+          <Zap size={14} />
+          <div className="stat-info">
+            <span className="value">{totalXP}</span>
+            <span className="label">XP</span>
           </div>
         </div>
         
-        <div className="stat-item token-stat">
-          <div className="stat-icon">
-            <Coins size={20} />
-          </div>
-          <div className="stat-content">
-            <span className="stat-value">{tokenBalance}</span>
-            <span className="stat-label">BHUP</span>
+        <div className="compact-stat token">
+          <Coins size={14} />
+          <div className="stat-info">
+            <span className="value">{tokenBalance}</span>
+            <span className="label">BHUP</span>
           </div>
         </div>
       </div>
       
-      <div className="claim-section">
-        <button className="claim-button disabled" disabled>
-          <Clock size={16} />
-          <span>Coming Soon</span>
-        </button>
-        <div className="claim-note">
-          Token claiming will be available soon!
-        </div>
-      </div>
+      <button className="compact-claim-button disabled" disabled>
+        <Clock size={12} />
+        <span>Soon</span>
+      </button>
     </div>
   )
 }

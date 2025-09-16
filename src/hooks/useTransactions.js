@@ -13,25 +13,7 @@ export const useTransactions = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const getProvider = () => {
-    if (isInFarcaster) {
-      // In Farcaster, use the SDK's provider
-      return null // SDK handles this
-    } else {
-      // Regular web3 provider
-      return new ethers.BrowserProvider(window.ethereum)
-    }
-  }
-
-  const ensureBaseNetwork = async () => {
-    // Force Base Mainnet (Chain ID: 8453)
-    const baseMainnetChainId = 8453
-    if (chainId !== baseMainnetChainId) {
-      await switchToBaseNetwork()
-      return false
-    }
-    return true
-  }
+  // Farcaster-only app - no need for provider checks
 
   const sendGMTransaction = async (message = 'GM!') => {
     if (!address) {
