@@ -108,6 +108,208 @@ body {
   transform: scale(1.1);
 }
 
+/* Farcaster Mobile App Styles */
+.farcaster-app {
+  /* Remove any fixed positioning that might conflict with Farcaster's UI */
+  position: relative;
+}
+
+.farcaster-main {
+  /* Ensure content starts from the top in Farcaster */
+  padding-top: 20px !important;
+  margin-top: 0 !important;
+}
+
+/* Farcaster-specific game card styles */
+.farcaster-app .game-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  padding: 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.farcaster-app .game-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.farcaster-app .game-card:active {
+  transform: translateY(-2px);
+}
+
+/* Farcaster game card content */
+.farcaster-app .game-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1f2937;
+}
+
+.farcaster-app .game-card p {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.farcaster-app .game-card .game-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.farcaster-app .game-card .xp-reward {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.farcaster-app .game-card .bonus-xp {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Farcaster-specific button styles */
+.farcaster-app .action-button {
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.farcaster-app .action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Farcaster-specific card styles */
+.farcaster-app .card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+/* Farcaster-specific welcome section */
+.farcaster-app .welcome-section {
+  margin-bottom: 32px;
+}
+
+.farcaster-app .welcome-section h1 {
+  font-size: 32px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Farcaster-specific leaderboard styles */
+.farcaster-app .leaderboard {
+  padding: 0;
+}
+
+.farcaster-app .leaderboard .card {
+  margin-bottom: 16px;
+}
+
+/* Farcaster-specific game page styles */
+.farcaster-app .game-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.farcaster-app .game-icon svg {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+/* Farcaster XP Display */
+.farcaster-xp-display {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.farcaster-xp-display .xp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.farcaster-xp-display .xp-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.farcaster-xp-display .xp-value {
+  color: #667eea;
+}
+
+.farcaster-xp-display .token-value {
+  color: #764ba2;
+}
+
+/* Farcaster-specific responsive adjustments */
+@media (max-width: 768px) {
+  .farcaster-app .container {
+    padding: 16px;
+  }
+  
+  .farcaster-app .game-card {
+    padding: 20px;
+  }
+  
+  .farcaster-app .card {
+    padding: 24px;
+  }
+  
+  .farcaster-xp-display {
+    top: 16px;
+    right: 16px;
+    padding: 10px 12px;
+  }
+  
+  .farcaster-xp-display .xp-item {
+    font-size: 12px;
+  }
+}
+
 /* Mobile-first responsive design */
 .container {
   max-width: 100%;

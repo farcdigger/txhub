@@ -7,6 +7,7 @@ import { FarcasterProvider, useFarcaster } from './contexts/FarcasterContext'
 import { config } from './config/wagmi'
 import Header from './components/Header'
 import XPDisplay from './components/XPDisplay'
+import FarcasterXPDisplay from './components/FarcasterXPDisplay'
 import Home from './pages/Home'
 import GMGame from './pages/GMGame'
 import GNGame from './pages/GNGame'
@@ -68,13 +69,14 @@ function AppContent() {
 
   return (
     <Router>
-      <div className="App">
-        <Header />
-        <XPDisplay />
+      <div className={`App ${isInFarcaster ? 'farcaster-app' : ''}`}>
+        {!isInFarcaster && <Header />}
+        {!isInFarcaster && <XPDisplay />}
+        {isInFarcaster && <FarcasterXPDisplay />}
         <main 
-          className="container" 
+          className={`container ${isInFarcaster ? 'farcaster-main' : ''}`}
           style={{ 
-            paddingTop: isScrolled ? '20px' : '200px', 
+            paddingTop: isInFarcaster ? '20px' : (isScrolled ? '20px' : '200px'), 
             paddingBottom: '40px',
             transition: 'padding-top 0.3s ease'
           }}
