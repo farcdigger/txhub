@@ -1,9 +1,4 @@
 {
-  "accountAssociation": {
-    "header": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-    "payload": "eyJkb21haW4iOiJiYXNlaHViLWFscGhhLnZlcmNlbC5hcHAiLCJ0aW1lc3RhbXAiOjE3MzQ0NDQ0NDR9",
-    "signature": "placeholder_signature_for_domain_verification"
-  },
   "miniapp": {
     "name": "BaseHub",
     "version": "1",
@@ -13,7 +8,6 @@
     "buttonTitle": "Open BaseHub",
     "splashImageUrl": "https://basehub-alpha.vercel.app/splash.png",
     "splashBackgroundColor": "#6B76D9",
-    "webhookUrl": "https://basehub-alpha.vercel.app/api/webhook",
     "subtitle": "Play Games and Earn XP",
     "description": "Play games and earn XP on Base network through Farcaster. Join the leaderboard and compete with other players!",
     "primaryCategory": "games",
