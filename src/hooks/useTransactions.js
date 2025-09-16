@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { useFarcaster } from '../contexts/FarcasterContext'
-import { addXP, addBonusXP } from '../utils/xpUtils'
+import { addXP } from '../utils/xpUtils'
 import { getCurrentConfig, getContractAddress, GAS_CONFIG, GAME_CONFIG } from '../config/base'
 import { parseEther } from 'viem'
 
@@ -56,7 +56,7 @@ export const useTransactions = () => {
         try {
           const txHash = result.hash || result.transactionHash
           console.log('Adding XP for GM transaction:', { address, txHash })
-          await addBonusXP(address, 'gm', false) // GM gives 10 XP (no bonus)
+          await addXP(address, 10) // GM gives 10 XP
           console.log('XP added successfully for GM transaction')
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
@@ -112,7 +112,7 @@ export const useTransactions = () => {
         try {
           const txHash = result.hash || result.transactionHash
           console.log('Adding XP for GN transaction:', { address, txHash })
-          await addBonusXP(address, 'gn', false) // GN gives 10 XP (no bonus)
+          await addXP(address, 10) // GN gives 10 XP
           console.log('XP added successfully for GN transaction')
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
@@ -172,9 +172,7 @@ export const useTransactions = () => {
         try {
           const txHash = result.hash || result.transactionHash
           console.log('Adding XP for Flip Game transaction:', { address, txHash })
-          // Check if player won (you'll need to get this from contract result)
-          const isWin = result.isWin || false // This should come from contract
-          await addBonusXP(address, 'flip', isWin) // Flip Game gives 10 XP + 500 bonus if win
+          await addXP(address, 15) // Flip Game gives 15 XP
           console.log('XP added successfully for Flip Game transaction')
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
@@ -293,9 +291,7 @@ export const useTransactions = () => {
         try {
           const txHash = result.hash || result.transactionHash
           console.log('Adding XP for Lucky Number transaction:', { address, txHash })
-          // Check if player won (you'll need to get this from contract result)
-          const isWin = result.isWin || false // This should come from contract
-          await addBonusXP(address, 'luckynumber', isWin) // Lucky Number gives 10 XP + 1000 bonus if win
+          await addXP(address, 20) // Lucky Number gives 20 XP
           console.log('XP added successfully for Lucky Number transaction')
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
@@ -352,9 +348,7 @@ export const useTransactions = () => {
         try {
           const txHash = result.hash || result.transactionHash
           console.log('Adding XP for Dice Roll transaction:', { address, txHash })
-          // Check if player won (you'll need to get this from contract result)
-          const isWin = result.isWin || false // This should come from contract
-          await addBonusXP(address, 'diceroll', isWin) // Dice Roll gives 10 XP + 1500 bonus if win
+          await addXP(address, 25) // Dice Roll gives 25 XP
           console.log('XP added successfully for Dice Roll transaction')
         } catch (xpError) {
           console.error('Error adding XP:', xpError)
