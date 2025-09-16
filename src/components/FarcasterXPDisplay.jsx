@@ -101,9 +101,12 @@ const FarcasterXPDisplay = () => {
           <span>{totalXP}</span>
         </div>
         
-        <div className="stat-mini token">
+        <div className="stat-mini token exciting">
           <Coins size={14} />
-          <span>{tokenBalance}</span>
+          <div className="token-info">
+            <span className="token-name">BHUP</span>
+            <span className="token-balance">{tokenBalance}</span>
+          </div>
         </div>
         
         <button className="claim-button coming-soon" disabled title="Claim feature coming soon!">

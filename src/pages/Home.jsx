@@ -11,6 +11,9 @@ const Home = () => {
   const { sendGMTransaction, sendGNTransaction, isLoading: transactionLoading } = useTransactions()
   const [leaderboard, setLeaderboard] = useState([])
   const [leaderboardLoading, setLeaderboardLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [isLoadingGM, setIsLoadingGM] = useState(false)
+  const [isLoadingGN, setIsLoadingGN] = useState(false)
 
   // Load leaderboard
   useEffect(() => {
@@ -47,10 +50,20 @@ const Home = () => {
       alert('Please connect your wallet first')
       return
     }
+    
+    setIsLoadingGM(true)
+    setSuccessMessage('')
+    
     try {
-      await sendGMTransaction('GM from BaseHub! 🎮')
+      const result = await sendGMTransaction('GM from BaseHub! 🎮')
+      setSuccessMessage(`🎉 GM sent successfully! +10 XP earned!`)
+      setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('GM transaction failed:', error)
+      setSuccessMessage('❌ GM transaction failed. Please try again.')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } finally {
+      setIsLoadingGM(false)
     }
   }
 
@@ -60,10 +73,20 @@ const Home = () => {
       alert('Please connect your wallet first')
       return
     }
+    
+    setIsLoadingGN(true)
+    setSuccessMessage('')
+    
     try {
-      await sendGNTransaction('GN from BaseHub! 🌙')
+      const result = await sendGNTransaction('GN from BaseHub! 🌙')
+      setSuccessMessage(`🌙 GN sent successfully! +10 XP earned!`)
+      setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
       console.error('GN transaction failed:', error)
+      setSuccessMessage('❌ GN transaction failed. Please try again.')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } finally {
+      setIsLoadingGN(false)
     }
   }
 
@@ -182,6 +205,28 @@ const Home = () => {
                 </p>
               </div>
             )}
+            
+            {/* Success Message */}
+            {successMessage && (
+              <div style={{
+                background: successMessage.includes('❌') 
+                  ? 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)'
+                  : 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                border: successMessage.includes('❌') 
+                  ? '1px solid #fca5a5'
+                  : '1px solid #86efac',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                marginTop: '16px',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: successMessage.includes('❌') ? '#dc2626' : '#16a34a',
+                textAlign: 'center',
+                animation: 'slideInDown 0.3s ease-out'
+              }}>
+                {successMessage}
+              </div>
+            )}
           </div>
 
           <div className="games-grid">
@@ -192,13 +237,13 @@ const Home = () => {
                   <button
                     key={game.id}
                     onClick={game.id === 'gm' ? handleGMClick : handleGNClick}
-                    disabled={!isConnected || transactionLoading}
+                    disabled={!isConnected || (game.id === 'gm' ? isLoadingGM : isLoadingGN)}
                     className="game-card"
                     style={{ 
                       textDecoration: 'none',
                       border: 'none',
-                      cursor: isConnected && !transactionLoading ? 'pointer' : 'not-allowed',
-                      opacity: isConnected && !transactionLoading ? 1 : 0.6
+                      cursor: isConnected && !(game.id === 'gm' ? isLoadingGM : isLoadingGN) ? 'pointer' : 'not-allowed',
+                      opacity: isConnected && !(game.id === 'gm' ? isLoadingGM : isLoadingGN) ? 1 : 0.6
                     }}
                   >
                   <div 
@@ -259,7 +304,7 @@ const Home = () => {
                     fontSize: '14px',
                     lineHeight: '1.5'
                   }}>
-                    {transactionLoading ? 'Sending...' : game.description}
+                    {(game.id === 'gm' ? isLoadingGM : isLoadingGN) ? 'Sending...' : game.description}
                   </p>
                   </button>
                 )
