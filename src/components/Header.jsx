@@ -36,7 +36,6 @@ const Header = () => {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
   const [userXP, setUserXP] = useState(0)
-  const [userLevel, setUserLevel] = useState(1)
   const [showWalletModal, setShowWalletModal] = useState(false)
 
   // Load user XP
@@ -48,16 +47,14 @@ const Header = () => {
         try {
           console.log('🔍 Loading XP for address:', address)
           const totalXP = await getXP(address)
-          console.log('✅ XP loaded:', totalXP)
-          setUserXP(totalXP || 0)
-          setUserLevel(Math.floor((totalXP || 0) / 100) + 1)
+                   console.log('✅ XP loaded:', totalXP)
+                   setUserXP(totalXP || 0)
         } catch (error) {
           console.error('❌ Error loading user XP:', error)
         }
       } else {
         console.log('⚠️ No address available for XP loading')
         setUserXP(0)
-        setUserLevel(1)
       }
     }
 
@@ -171,8 +168,7 @@ const Header = () => {
   console.log('🔍 Header Debug:', {
     isConnected,
     address,
-    userXP,
-    userLevel
+    userXP
   })
 
   // Wallet options for connection
@@ -440,15 +436,15 @@ const Header = () => {
                   </div>
                 </div>
 
-                {/* Level Card */}
-                <div className="stat-card level-card" style={{
-                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                {/* BHUB Token Card */}
+                <div className="stat-card bhub-card" style={{
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                   borderRadius: '12px',
                   padding: '6px 12px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   backdropFilter: 'blur(10px)',
                   transition: 'all 0.3s ease',
@@ -456,11 +452,11 @@ const Header = () => {
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-2px) scale(1.05)'
-                  e.target.style.boxShadow = '0 6px 16px rgba(139, 92, 246, 0.4)'
+                  e.target.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.4)'
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0px) scale(1)'
-                  e.target.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)'
+                  e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)'
                 }}>
                   <div style={{
                     width: '24px',
@@ -471,22 +467,50 @@ const Header = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '12px'
-                  }}>🏆</div>
+                  }}>🪙</div>
                   <div>
                     <div style={{
                       color: 'white',
                       fontSize: '14px',
                       fontWeight: '700',
                       lineHeight: '1'
-                    }}>{userLevel}</div>
+                    }}>0</div>
                     <div style={{
                       color: 'rgba(255, 255, 255, 0.8)',
                       fontSize: '10px',
                       fontWeight: '500',
                       lineHeight: '1'
-                    }}>Level</div>
+                    }}>BHUB</div>
                   </div>
                 </div>
+
+                {/* Claim Button */}
+                <button
+                  className="claim-button"
+                  disabled
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(156, 163, 175, 0.8) 0%, rgba(107, 114, 128, 0.8) 100%)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    padding: '6px 12px',
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'not-allowed',
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.3s ease',
+                    opacity: '0.7'
+                  }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <span>⏰</span>
+                    <span>Coming Soon</span>
+                  </div>
+                </button>
               </div>
 
               {/* Wallet Card */}
