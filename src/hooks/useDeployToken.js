@@ -386,11 +386,16 @@ export const useDeployToken = () => {
       
       console.log('📝 Using shortened parameters:', { shortName, shortSymbol, initialSupply })
       
-      // Use writeContractAsync for Farcaster compatibility
-      const deployTxHash = await writeContractAsync({
-        abi: ERC20_ABI,
-        bytecode: ERC20_BYTECODE,
-        args: [shortName, shortSymbol, BigInt(initialSupply)],
+      // Use sendTransaction with manual encoding for Farcaster compatibility
+      const constructorData = encodeAbiParameters(
+        parseAbiParameters('string name, string symbol, uint256 initialSupply'),
+        [shortName, shortSymbol, BigInt(initialSupply)]
+      )
+      
+      const deployData = ERC20_BYTECODE + constructorData.slice(2)
+      
+      const deployTxHash = await sendTransaction(config, {
+        data: deployData,
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)
