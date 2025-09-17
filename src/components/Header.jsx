@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
-import { getXP } from '../utils/xpUtils'
 import { useNavigate } from 'react-router-dom'
 import { Home as HomeIcon } from 'lucide-react' // Renamed to avoid conflict
 
@@ -35,44 +34,8 @@ const Header = () => {
   const navigate = useNavigate()
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
-  const [userXP, setUserXP] = useState(0)
   const [showWalletModal, setShowWalletModal] = useState(false)
-  
-  // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
-  const bhubTokens = userXP * 10
 
-  // Load user XP
-  useEffect(() => {
-    console.log('🔄 XP useEffect triggered, address:', address)
-    
-    const loadUserXP = async () => {
-      if (address) {
-        try {
-          console.log('🔍 Loading XP for address:', address)
-          const totalXP = await getXP(address)
-                   console.log('✅ XP loaded:', totalXP)
-                   setUserXP(totalXP || 0)
-        } catch (error) {
-          console.error('❌ Error loading user XP:', error)
-        }
-      } else {
-        console.log('⚠️ No address available for XP loading')
-        setUserXP(0)
-      }
-    }
-
-    loadUserXP()
-    
-    // Also try to load XP every 5 seconds if connected
-    let interval
-    if (address) {
-      interval = setInterval(loadUserXP, 5000)
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [address])
 
   // Format address for display
   const formatAddress = (address) => {
@@ -168,12 +131,6 @@ const Header = () => {
     }
   }
 
-  console.log('🔍 Header Debug:', {
-    isConnected,
-    address,
-    userXP,
-    bhubTokens
-  })
 
   // Wallet options for connection
   const walletOptions = [
@@ -398,135 +355,6 @@ const Header = () => {
               gap: '12px',
               flexWrap: 'wrap'
             }}>
-              {/* XP & Level Cards */}
-              <div className="stats-container" style={{
-                display: 'flex',
-                gap: '6px',
-                alignItems: 'center',
-                flexWrap: 'wrap'
-              }}>
-                {/* XP Card */}
-                <div className="stat-card xp-card" style={{
-                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                  borderRadius: '12px',
-                  padding: '6px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px) scale(1.05)'
-                  e.target.style.boxShadow = '0 6px 16px rgba(251, 191, 36, 0.4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0px) scale(1)'
-                  e.target.style.boxShadow = '0 4px 12px rgba(251, 191, 36, 0.3)'
-                }}>
-                  <div style={{
-                    width: '24px',
-                    height: '24px',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    borderRadius: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px'
-                  }}>⚡</div>
-                  <div>
-                    <div style={{
-                      color: 'white',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      lineHeight: '1'
-                    }}>{userXP.toLocaleString()}</div>
-                    <div style={{
-                      color: 'rgba(255, 255, 255, 0.8)',
-                      fontSize: '10px',
-                      fontWeight: '500',
-                      lineHeight: '1'
-                    }}>XP</div>
-                  </div>
-                </div>
-
-                {/* BHUB Token Card */}
-                <div className="stat-card bhub-card" style={{
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                  borderRadius: '12px',
-                  padding: '6px 12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px) scale(1.05)'
-                  e.target.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0px) scale(1)'
-                  e.target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)'
-                }}>
-                  <div style={{
-                    width: '24px',
-                    height: '24px',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    borderRadius: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px'
-                  }}>🪙</div>
-                  <div>
-                    <div style={{
-                      color: 'white',
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      lineHeight: '1'
-                    }}>{bhubTokens.toLocaleString()}</div>
-                    <div style={{
-                      color: 'rgba(255, 255, 255, 0.8)',
-                      fontSize: '10px',
-                      fontWeight: '500',
-                      lineHeight: '1'
-                    }}>BHUB</div>
-                  </div>
-                </div>
-
-                {/* Claim Button */}
-                <button
-                  className="claim-button"
-                  disabled
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(107, 114, 128, 0.3) 100%)',
-                    border: '1px solid rgba(156, 163, 175, 0.4)',
-                    borderRadius: '8px',
-                    padding: '4px 8px',
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    fontSize: '10px',
-                    fontWeight: '600',
-                    cursor: 'not-allowed',
-                    backdropFilter: 'blur(10px)',
-                    transition: 'all 0.3s ease',
-                    opacity: '0.6',
-                    whiteSpace: 'nowrap',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '3px'
-                  }}
-                >
-                  <span style={{ fontSize: '8px' }}>⏰</span>
-                  <span>Soon</span>
-                </button>
-              </div>
 
               {/* Wallet Card */}
               <div className="wallet-card" style={{

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAccount } from 'wagmi'
-import { getLeaderboard } from '../utils/xpUtils'
+import { getLeaderboard, getXP } from '../utils/xpUtils'
 import { useTransactions } from '../hooks/useTransactions'
 import EmbedMeta from '../components/EmbedMeta'
 import Header from '../components/Header'
 import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp, Image } from 'lucide-react'
 
 const Home = () => {
-  const { isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const { sendGMTransaction, sendGNTransaction, isLoading: transactionLoading } = useTransactions()
   const [leaderboard, setLeaderboard] = useState([])
   const [leaderboardLoading, setLeaderboardLoading] = useState(false)
@@ -16,6 +16,10 @@ const Home = () => {
   const [isLoadingGM, setIsLoadingGM] = useState(false)
   const [isLoadingGN, setIsLoadingGN] = useState(false)
   const [showAllPlayers, setShowAllPlayers] = useState(false)
+  const [userXP, setUserXP] = useState(0)
+  
+  // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
+  const bhubTokens = userXP * 10
 
   // Load leaderboard
   useEffect(() => {
@@ -38,6 +42,31 @@ const Home = () => {
     const interval = setInterval(loadLeaderboard, 10000)
     return () => clearInterval(interval)
   }, [])
+
+  // Load user XP
+  useEffect(() => {
+    const loadUserXP = async () => {
+      if (address) {
+        try {
+          const totalXP = await getXP(address)
+          setUserXP(totalXP || 0)
+        } catch (error) {
+          console.error('Error loading user XP:', error)
+        }
+      } else {
+        setUserXP(0)
+      }
+    }
+
+    loadUserXP()
+    let interval
+    if (address) {
+      interval = setInterval(loadUserXP, 5000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [address])
 
 
 
@@ -205,20 +234,152 @@ const Home = () => {
               🎮
             </div>
             <h1 style={{ 
-              fontSize: '32px', 
+              fontSize: '28px', 
               fontWeight: 'bold', 
               marginBottom: '8px',
               color: '#1f2937'
             }}>
-              Welcome to BaseHub
+              ⚡ BaseHub
             </h1>
             <p style={{ 
-              fontSize: '18px', 
+              fontSize: '16px', 
               color: '#6b7280',
-              marginBottom: '24px'
+              marginBottom: '20px'
             }}>
-              Play games and earn XP on the Base network through Farcaster
+              Play games & earn XP
             </p>
+
+            {/* XP and BHUB Stats */}
+            {isConnected && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '12px',
+                marginBottom: '24px',
+                flexWrap: 'wrap'
+              }}>
+                {/* XP Card */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                  borderRadius: '16px',
+                  padding: '12px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 8px 20px rgba(251, 191, 36, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-4px) scale(1.05)'
+                  e.target.style.boxShadow = '0 12px 25px rgba(251, 191, 36, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0px) scale(1)'
+                  e.target.style.boxShadow = '0 8px 20px rgba(251, 191, 36, 0.3)'
+                }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px'
+                  }}>⚡</div>
+                  <div>
+                    <div style={{
+                      color: 'white',
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      lineHeight: '1'
+                    }}>{userXP.toLocaleString()}</div>
+                    <div style={{
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      lineHeight: '1'
+                    }}>XP</div>
+                  </div>
+                </div>
+
+                {/* BHUB Token Card */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  borderRadius: '16px',
+                  padding: '12px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 8px 20px rgba(59, 130, 246, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-4px) scale(1.05)'
+                  e.target.style.boxShadow = '0 12px 25px rgba(59, 130, 246, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0px) scale(1)'
+                  e.target.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.3)'
+                }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px'
+                  }}>🪙</div>
+                  <div>
+                    <div style={{
+                      color: 'white',
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      lineHeight: '1'
+                    }}>{bhubTokens.toLocaleString()}</div>
+                    <div style={{
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      lineHeight: '1'
+                    }}>BHUB</div>
+                  </div>
+                </div>
+
+                {/* Claim Button */}
+                <button
+                  disabled
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(107, 114, 128, 0.3) 100%)',
+                    border: '1px solid rgba(156, 163, 175, 0.4)',
+                    borderRadius: '16px',
+                    padding: '12px 16px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'not-allowed',
+                    backdropFilter: 'blur(10px)',
+                    transition: 'all 0.3s ease',
+                    opacity: '0.6',
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span style={{ fontSize: '12px' }}>⏰</span>
+                  <span>Soon</span>
+                </button>
+              </div>
+            )}
             
             {!isConnected && (
               <div style={{
