@@ -647,22 +647,29 @@ const Header = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.9)',
+            background: 'rgba(59, 130, 246, 0.1)',
             backdropFilter: 'blur(15px)',
             zIndex: 99999999,
             display: 'flex',
-            alignItems: 'flex-start',
+            alignItems: 'center',
             justifyContent: 'center',
-            padding: '120px 20px 20px 20px'
+            padding: '20px'
           }} onClick={() => setShowWalletModal(false)}>
-            {/* Direct Wallet Grid - No Modal Container */}
-            <div className="wallet-grid" style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '20px',
+            {/* Wallet Selection Container */}
+            <div className="wallet-container" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               maxWidth: '500px',
               width: '100%'
             }} onClick={(e) => e.stopPropagation()}>
+              {/* Wallet Grid */}
+              <div className="wallet-grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '20px',
+                width: '100%'
+              }}>
               {walletOptions.map((wallet) => (
                 <button
                   key={wallet.id}
@@ -732,6 +739,40 @@ const Header = () => {
                   </div>
                 </button>
               ))}
+              </div>
+            
+            {/* Cancel Button */}
+            <button
+              onClick={() => setShowWalletModal(false)}
+              style={{
+                marginTop: '24px',
+                padding: '12px 24px',
+                background: 'rgba(255, 255, 255, 0.9)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '12px',
+                color: '#6b7280',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                backdropFilter: 'blur(20px)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(239, 68, 68, 0.9)'
+                e.target.style.color = 'white'
+                e.target.style.borderColor = 'rgba(239, 68, 68, 0.6)'
+                e.target.style.transform = 'scale(1.05)'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.9)'
+                e.target.style.color = '#6b7280'
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              ✕ Cancel
+            </button>
             </div>
           </div>
         )}
