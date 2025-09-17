@@ -1,8 +1,38 @@
 import React, { useState, useEffect } from 'react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { getXP } from '../utils/xpUtils'
+import { useNavigate } from 'react-router-dom'
+import { Home as HomeIcon } from 'lucide-react' // Renamed to avoid conflict
+
+// Add modal animation styles
+const modalStyles = `
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0px);
+    }
+  }
+  
+  @keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`
+
+// Inject styles
+if (typeof document !== 'undefined' && !document.getElementById('modal-styles')) {
+  const style = document.createElement('style')
+  style.id = 'modal-styles'
+  style.textContent = modalStyles
+  document.head.appendChild(style)
+}
 
 const Header = () => {
+  const navigate = useNavigate()
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
   const [userXP, setUserXP] = useState(0)
@@ -149,27 +179,39 @@ const Header = () => {
   const walletOptions = [
     {
       id: 'injected',
-      name: 'Browser Wallet',
-      icon: '🌐',
-      description: 'MetaMask, Brave, etc.'
-    },
-    {
-      id: 'metaMask',
       name: 'MetaMask',
       icon: '🦊',
-      description: 'Connect with MetaMask'
+      description: 'Most popular Web3 wallet'
+    },
+    {
+      id: 'rabby',
+      name: 'Rabby',
+      icon: '🐰',
+      description: 'Multi-chain DeFi wallet'
+    },
+    {
+      id: 'phantom',
+      name: 'Phantom',
+      icon: '👻',
+      description: 'Solana & Ethereum wallet'
+    },
+    {
+      id: 'coinbase',
+      name: 'Coinbase Wallet',
+      icon: '🔵',
+      description: 'Coinbase official wallet'
+    },
+    {
+      id: 'walletconnect',
+      name: 'WalletConnect',
+      icon: '🔗',
+      description: 'Connect any mobile wallet'
     },
     {
       id: 'farcaster',
       name: 'Farcaster',
       icon: '🎭',
       description: 'Farcaster Mini App'
-    },
-    {
-      id: 'coinbase',
-      name: 'Coinbase Wallet',
-      icon: '🔵',
-      description: 'Coinbase Wallet'
     }
   ]
 
@@ -177,10 +219,71 @@ const Header = () => {
     console.log('🔗 Connecting with wallet:', walletId)
     setShowWalletModal(false)
     
-    if (window.__walletConnect) {
-      window.__walletConnect(walletId)
-    } else {
-      await handleConnect()
+    try {
+      // Specific wallet detection and connection
+      switch (walletId) {
+        case 'injected':
+        case 'metaMask':
+          if (window.ethereum?.isMetaMask) {
+            await window.ethereum.request({ method: 'eth_requestAccounts' })
+          } else if (window.__walletConnect) {
+            window.__walletConnect('injected')
+          }
+          break
+          
+        case 'rabby':
+          if (window.ethereum?.isRabby) {
+            await window.ethereum.request({ method: 'eth_requestAccounts' })
+          } else if (window.rabby) {
+            await window.rabby.request({ method: 'eth_requestAccounts' })
+          } else if (window.__walletConnect) {
+            window.__walletConnect('rabby')
+          }
+          break
+          
+        case 'phantom':
+          if (window.phantom?.ethereum) {
+            await window.phantom.ethereum.request({ method: 'eth_requestAccounts' })
+          } else if (window.__walletConnect) {
+            window.__walletConnect('phantom')
+          }
+          break
+          
+        case 'coinbase':
+          if (window.ethereum?.isCoinbaseWallet) {
+            await window.ethereum.request({ method: 'eth_requestAccounts' })
+          } else if (window.__walletConnect) {
+            window.__walletConnect('coinbase')
+          }
+          break
+          
+        case 'walletconnect':
+          if (window.__walletConnect) {
+            window.__walletConnect('walletConnect')
+          }
+          break
+          
+        case 'farcaster':
+          if (window.__walletConnect) {
+            window.__walletConnect('farcaster')
+          }
+          break
+          
+        default:
+          if (window.__walletConnect) {
+            window.__walletConnect(walletId)
+          } else {
+            await handleConnect()
+          }
+      }
+    } catch (error) {
+      console.error('❌ Wallet connection failed:', error)
+      // Fallback to generic connection
+      if (window.__walletConnect) {
+        window.__walletConnect(walletId)
+      } else {
+        await handleConnect()
+      }
     }
   }
 
@@ -505,44 +608,61 @@ const Header = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 999999,
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 9999999,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '20px'
           }} onClick={() => setShowWalletModal(false)}>
             <div className="wallet-modal" style={{
-              background: 'rgba(255, 255, 255, 0.95)',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
               backdropFilter: 'blur(20px)',
-              borderRadius: '20px',
-              padding: '24px',
-              maxWidth: '400px',
+              borderRadius: '24px',
+              padding: '28px',
+              maxWidth: '420px',
               width: '100%',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
-              border: '1px solid rgba(255, 255, 255, 0.2)'
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.3)',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              animation: 'modalSlideIn 0.3s ease-out'
             }} onClick={(e) => e.stopPropagation()}>
               <div className="modal-header" style={{
                 textAlign: 'center',
-                marginBottom: '20px'
+                marginBottom: '24px'
               }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px auto',
+                  fontSize: '20px'
+                }}>🔗</div>
                 <h3 style={{
                   margin: '0 0 8px 0',
-                  fontSize: '20px',
+                  fontSize: '22px',
                   fontWeight: '700',
-                  color: '#1f2937'
-                }}>Connect Your Wallet</h3>
+                  color: '#1f2937',
+                  background: 'linear-gradient(135deg, #1f2937 0%, #3b82f6 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>Connect Wallet</h3>
                 <p style={{
                   margin: 0,
                   color: '#6b7280',
-                  fontSize: '14px'
-                }}>Choose how you'd like to connect</p>
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}>Choose your preferred wallet to connect</p>
               </div>
 
               <div className="wallet-options" style={{
-                display: 'flex',
-                flexDirection: 'column',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
                 gap: '12px'
               }}>
                 {walletOptions.map((wallet) => (
@@ -552,53 +672,56 @@ const Header = () => {
                     className="wallet-option"
                     style={{
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '12px',
-                      padding: '16px',
-                      background: 'rgba(255, 255, 255, 0.5)',
-                      border: '1px solid rgba(0, 0, 0, 0.1)',
-                      borderRadius: '12px',
+                      gap: '8px',
+                      padding: '16px 12px',
+                      background: 'rgba(255, 255, 255, 0.7)',
+                      border: '1px solid rgba(0, 0, 0, 0.08)',
+                      borderRadius: '16px',
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left'
+                      transition: 'all 0.3s ease',
+                      textAlign: 'center',
+                      minHeight: '100px'
                     }}
                     onMouseEnter={(e) => {
                       e.target.style.background = 'rgba(59, 130, 246, 0.1)'
-                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.2)'
-                      e.target.style.transform = 'translateY(-2px)'
+                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.3)'
+                      e.target.style.transform = 'translateY(-4px) scale(1.02)'
+                      e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.15)'
                     }}
                     onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.5)'
-                      e.target.style.borderColor = 'rgba(0, 0, 0, 0.1)'
-                      e.target.style.transform = 'translateY(0px)'
+                      e.target.style.background = 'rgba(255, 255, 255, 0.7)'
+                      e.target.style.borderColor = 'rgba(0, 0, 0, 0.08)'
+                      e.target.style.transform = 'translateY(0px) scale(1)'
+                      e.target.style.boxShadow = 'none'
                     }}
                   >
                     <div style={{
-                      fontSize: '24px',
-                      width: '40px',
-                      height: '40px',
+                      fontSize: '28px',
+                      width: '48px',
+                      height: '48px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      background: 'rgba(59, 130, 246, 0.1)',
-                      borderRadius: '8px'
+                      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
+                      borderRadius: '12px',
+                      marginBottom: '4px'
                     }}>{wallet.icon}</div>
-                    <div style={{ flex: 1 }}>
+                    <div>
                       <div style={{
                         fontWeight: '600',
                         color: '#1f2937',
-                        fontSize: '14px',
-                        marginBottom: '2px'
+                        fontSize: '13px',
+                        marginBottom: '2px',
+                        lineHeight: '1.2'
                       }}>{wallet.name}</div>
                       <div style={{
                         color: '#6b7280',
-                        fontSize: '12px'
+                        fontSize: '10px',
+                        lineHeight: '1.3'
                       }}>{wallet.description}</div>
                     </div>
-                    <div style={{
-                      color: '#6b7280',
-                      fontSize: '16px'
-                    }}>→</div>
                   </button>
                 ))}
               </div>
