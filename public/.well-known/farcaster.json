@@ -2,7 +2,7 @@
   "frame": {
     "name": "BaseHub",
     "version": "1",
-    "iconUrl": "https://basehub-alpha.vercel.app/icon.svg",
+    "iconUrl": "https://basehub-alpha.vercel.app/icon.png",
     "homeUrl": "https://basehub-alpha.vercel.app",
     "imageUrl": "https://basehub-alpha.vercel.app/image.svg",
     "buttonTitle": "Open BaseHub",
