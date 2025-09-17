@@ -594,10 +594,41 @@ export default Home
 
 // Modern CSS Styles
 const styles = `
+  /* Hide Farcaster Header */
+  [data-testid="header"],
+  [data-testid="app-header"],
+  .farcaster-header,
+  header[class*="header"],
+  div[class*="header"][class*="top"],
+  div[class*="header"][class*="fixed"],
+  div[class*="header"][class*="absolute"],
+  div[class*="header"][class*="sticky"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Hide any element that looks like a header */
+  div[style*="position: fixed"][style*="top: 0"],
+  div[style*="position: sticky"][style*="top: 0"],
+  div[style*="position: absolute"][style*="top: 0"] {
+    display: none !important;
+  }
+
+  /* Force body to start from top */
+  body {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
   .home {
     min-height: 100vh;
     background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     padding: 20px;
+    margin-top: 0 !important;
+    padding-top: 20px !important;
   }
 
   .welcome-section {
