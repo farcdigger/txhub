@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMintNFT } from '../hooks/useMintNFT'
 
@@ -13,6 +13,18 @@ const NFTMint = () => {
     image: null,
     imagePreview: null
   })
+
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      setIsScrolled(scrollTop > 50)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -68,7 +80,7 @@ const NFTMint = () => {
     <div className="nft-mint-page">
       <div className="container">
         {/* Header */}
-        <div className="header-section">
+        <div className={`header-section ${isScrolled ? 'scrolled' : ''}`}>
           <button
             onClick={() => navigate('/')}
             className="home-button"
@@ -248,6 +260,7 @@ const styles = `
   .container {
     max-width: 600px;
     margin: 0 auto;
+    padding-top: 120px;
   }
 
   /* Header Styles */
@@ -256,8 +269,23 @@ const styles = `
     align-items: center;
     justify-content: space-between;
     margin-bottom: 32px;
-    position: relative;
-    z-index: 10;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 20px;
+    background: rgba(59, 130, 246, 0.1);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    transform: translateY(0);
+  }
+
+  .header-section.scrolled {
+    background: rgba(59, 130, 246, 0.05);
+    backdrop-filter: blur(10px);
+    transform: translateY(-100%);
   }
 
   .home-button {
