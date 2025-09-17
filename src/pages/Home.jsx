@@ -290,49 +290,186 @@ const Home = () => {
         clipPath: 'none !important'
       }}>
         <div className="header-left">
-          <div className="profile-section">
-            <div className="profile-avatar">🎮</div>
-            <div className="profile-info">
-              <div className="xp-badge">
-                <span className="xp-icon">⚡</span>
-                <span className="xp-amount">{userXP}</span>
-              </div>
-              <div className="level-badge">
-                <span className="level-text">Level {userLevel}</span>
-              </div>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="home-button"
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+            }}
+          >
+            <span>🏠</span>
+            <span>Home</span>
+          </button>
+        </div>
+        
+        <div className="header-center">
+          <div className="logo-section" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div className="logo" style={{
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px'
+            }}>
+              🎮
+            </div>
+            <div>
+              <h1 className="header-title" style={{
+                fontSize: '20px',
+                fontWeight: '700',
+                color: 'white',
+                margin: '0',
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+              }}>BaseHub</h1>
+              <p className="header-subtitle" style={{
+                fontSize: '12px',
+                color: 'rgba(255, 255, 255, 0.8)',
+                margin: '0'
+              }}>Play Games & Earn XP</p>
             </div>
           </div>
         </div>
         
-        <div className="header-center">
-          <h1 className="header-title">BaseHub</h1>
-          <p className="header-subtitle">Play Games & Earn XP</p>
-        </div>
-        
         <div className="header-right">
           {isConnected ? (
-            <div className="wallet-section">
-              <div className="wallet-info">
-                <div className="wallet-address">{formatAddress(address)}</div>
-                <div className="wallet-balance">
-                  <span className="balance-icon">🪙</span>
-                  <span className="balance-amount">0.00 ETH</span>
+            <div className="user-section" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div className="xp-token-info" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '2px'
+              }}>
+                <div className="xp-badge" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                  color: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: '600'
+                }}>
+                  <span>⚡</span>
+                  <span>{userXP} XP</span>
+                </div>
+                <div className="token-balance" style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: '11px',
+                  color: 'rgba(255, 255, 255, 0.8)'
+                }}>
+                  <span>🪙</span>
+                  <span>Level {userLevel}</span>
                 </div>
               </div>
-              <button
-                onClick={() => disconnect()}
-                className="disconnect-button"
-              >
-                <span className="disconnect-icon">↗️</span>
-              </button>
-            </div>
-          ) : (
-            <div className="connect-section">
-              <div className="connect-info">
-                <div className="connect-text">Connect Wallet</div>
-                <div className="connect-hint">Start earning XP</div>
+              <div className="wallet-info" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: '2px'
+              }}>
+                <div className="wallet-address" style={{
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: 'white',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  padding: '2px 6px',
+                  borderRadius: '4px'
+                }}>{formatAddress(address)}</div>
+                <button
+                  onClick={() => disconnect()}
+                  className="disconnect-button"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.2)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: 'white',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '10px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(239, 68, 68, 0.3)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(239, 68, 68, 0.2)'
+                  }}
+                >
+                  Disconnect
+                </button>
               </div>
             </div>
+          ) : (
+            <button
+              onClick={() => {
+                // Trigger wallet connection
+                const connectBtn = document.querySelector('w3m-button')
+                if (connectBtn) {
+                  connectBtn.click()
+                } else {
+                  // Fallback - try to find any connect button
+                  const btns = document.querySelectorAll('button')
+                  const connectButton = Array.from(btns).find(btn => 
+                    btn.textContent?.toLowerCase().includes('connect') ||
+                    btn.textContent?.toLowerCase().includes('wallet')
+                  )
+                  if (connectButton) {
+                    connectButton.click()
+                  }
+                }
+              }}
+              className="connect-button"
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                border: 'none',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+              }}
+            >
+              Connect Wallet
+            </button>
           )}
         </div>
       </div>
@@ -1096,35 +1233,62 @@ const styles = `
 
   @media (max-width: 768px) {
     .home {
-      padding-top: 140px;
+      padding-top: 120px;
     }
     
     .header-section {
-      flex-direction: column;
-      gap: 12px;
-      padding: 12px 16px;
+      flex-direction: row !important;
+      gap: 8px !important;
+      padding: 8px 12px !important;
+      flex-wrap: wrap;
     }
     
-    .header-left, .header-right {
-      justify-content: center;
+    .header-left {
+      order: 1;
+      flex: 0 0 auto;
     }
     
     .header-center {
-      order: -1;
+      order: 2;
+      flex: 1;
+      display: flex;
+      justify-content: center;
     }
     
-    .profile-section {
-      gap: 8px;
+    .header-right {
+      order: 3;
+      flex: 0 0 auto;
     }
     
-    .profile-avatar {
-      width: 40px;
-      height: 40px;
-      font-size: 20px;
+    .logo-section {
+      gap: 8px !important;
     }
     
-    .wallet-section {
-      gap: 8px;
+    .logo {
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 16px !important;
+    }
+    
+    .header-title {
+      font-size: 16px !important;
+    }
+    
+    .header-subtitle {
+      font-size: 10px !important;
+    }
+    
+    .home-button {
+      padding: 6px 8px !important;
+      font-size: 12px !important;
+    }
+    
+    .xp-token-info {
+      gap: 1px !important;
+    }
+    
+    .user-section {
+      gap: 8px !important;
     }
     
     .games-grid {
