@@ -352,14 +352,25 @@ const Header = () => {
           <div className="logo" style={{
             width: '40px',
             height: '40px',
-            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+            background: 'rgba(255, 255, 255, 0.1)',
             borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '20px'
+            padding: '4px',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
-            🎮
+            <img 
+              src="/icon.png" 
+              alt="BaseHub Logo" 
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                borderRadius: '4px'
+              }}
+            />
           </div>
           <div>
             <h1 className="header-title" style={{
@@ -640,9 +651,9 @@ const Header = () => {
             backdropFilter: 'blur(15px)',
             zIndex: 99999999,
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'center',
-            padding: '20px'
+            padding: '120px 20px 20px 20px'
           }} onClick={() => setShowWalletModal(false)}>
             {/* Direct Wallet Grid - No Modal Container */}
             <div className="wallet-grid" style={{
