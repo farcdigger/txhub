@@ -35,7 +35,18 @@ const Header = () => {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
   const [showWalletModal, setShowWalletModal] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
 
+  // Handle scroll to hide/show header
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY
+      setIsScrolled(scrollTop > 100)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Format address for display
   const formatAddress = (address) => {
@@ -258,15 +269,16 @@ const Header = () => {
       padding: '16px 20px !important',
       alignItems: 'center',
       justifyContent: 'space-between',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.3s ease !important',
       visibility: 'visible !important',
-      opacity: '1 !important',
+      opacity: isScrolled ? '0 !important' : '1 !important',
       height: 'auto !important',
       width: 'auto !important',
       overflow: 'visible !important',
-      transform: 'none !important',
+      transform: isScrolled ? 'translateY(-100%) !important' : 'translateY(0) !important',
       clip: 'none !important',
-      clipPath: 'none !important'
+      clipPath: 'none !important',
+      pointerEvents: isScrolled ? 'none !important' : 'auto !important'
     }}>
       {/* Left - Home Button */}
       <div className="header-left">

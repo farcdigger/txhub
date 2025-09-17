@@ -481,17 +481,17 @@ const Home = () => {
                   )}
 
                   <h3 style={{ 
-                    fontSize: '20px', 
+                    fontSize: '16px', 
                     fontWeight: 'bold', 
-                    marginBottom: '8px',
+                    marginBottom: '6px',
                     color: '#1f2937'
                   }}>
                     {game.title}
                   </h3>
                   <p style={{ 
                     color: '#6b7280',
-                    fontSize: '14px',
-                    lineHeight: '1.5'
+                    fontSize: '12px',
+                    lineHeight: '1.4'
                   }}>
                     {(game.id === 'gm' ? isLoadingGM : isLoadingGN) ? 'Sending...' : game.description}
                   </p>
@@ -553,17 +553,17 @@ const Home = () => {
                   )}
 
                   <h3 style={{ 
-                    fontSize: '20px', 
+                    fontSize: '16px', 
                     fontWeight: 'bold', 
-                    marginBottom: '8px',
+                    marginBottom: '6px',
                     color: '#1f2937'
                   }}>
                     {game.title}
                   </h3>
                   <p style={{ 
                     color: '#6b7280',
-                    fontSize: '14px',
-                    lineHeight: '1.5'
+                    fontSize: '12px',
+                    lineHeight: '1.4'
                   }}>
                     {game.description}
                   </p>
@@ -1016,21 +1016,21 @@ const styles = `
 
   .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
-    margin-top: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
   }
 
   .game-card {
     position: relative;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border-radius: 20px;
-    padding: 24px;
+    border-radius: 16px;
+    padding: 16px;
     text-align: center;
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     overflow: hidden;
   }
 
@@ -1051,14 +1051,14 @@ const styles = `
   }
 
   .game-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
   }
 
