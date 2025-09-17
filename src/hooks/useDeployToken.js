@@ -5,29 +5,8 @@ import { parseEther, encodeAbiParameters, parseAbiParameters } from 'viem'
 import { config } from '../config/wagmi'
 import { addXP, recordTransaction } from '../utils/xpUtils'
 
-// ERC20 ABI with 3 constructor parameters (name, symbol, initialSupply)
+// ERC20 ABI without constructor (for writeContractAsync compatibility)
 const ERC20_ABI = [
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "symbol",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "initialSupply",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "constructor"
-	},
 	{
 		"inputs": [
 			{
@@ -417,10 +396,11 @@ export const useDeployToken = () => {
         gasEstimate = 500000n // 500k gas should be enough for most ERC20 deployments
       }
       
-      // Use sendTransaction with encoded bytecode and gas limit
+      // Use sendTransaction with accessList disabled for Farcaster
       const deployTxHash = await sendTransaction(config, {
         data: deployData,
         gas: gasEstimate,
+        accessList: [], // Disable access list to prevent eth_createAccessList call
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)
