@@ -279,11 +279,28 @@ const Home = () => {
         buttonText="Play BaseHub"
       />
       
+      {/* FALLBACK SIMPLE HEADER */}
+      <div style={{
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        right: '0',
+        zIndex: '999999',
+        background: 'red',
+        color: 'white',
+        padding: '10px',
+        textAlign: 'center',
+        fontSize: '14px',
+        fontWeight: 'bold'
+      }}>
+        🔴 FALLBACK HEADER - XP: {userXP} - Connected: {isConnected ? 'YES' : 'NO'} - Address: {address || 'None'}
+      </div>
+
       {/* Header */}
       <div className="header-section" style={{
         display: 'flex',
         position: 'fixed',
-        top: '0',
+        top: '50px',
         left: '0',
         right: '0',
         zIndex: '999999',
