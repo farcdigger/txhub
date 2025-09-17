@@ -524,7 +524,7 @@ export const useMintNFT = () => {
             from: address,
             data: deployData, // Already has 0x prefix
             value: '0x0', // Hex string with 0x prefix
-            gas: '0x13880', // 80,000 gas limit (0x13880 in hex)
+            gas: '0x30d40', // 200,000 gas limit (0x30d40 in hex)
             gasPrice: '0x' + currentGasPrice.toString(16), // Legacy gas price
             // NO 'to' field for contract deployment - this prevents eth_call issues
             // NO type field - use legacy transaction to avoid EIP-1559 issues
@@ -544,7 +544,7 @@ export const useMintNFT = () => {
           deployTxHash = await sendTransaction(config, {
             data: deployData,
             value: 0n, // BigInt
-            gas: 80000n, // Gas limit for contract deployment
+            gas: 200000n, // Gas limit for contract deployment
             gasPrice: currentGasPrice, // Legacy gas price
             type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
             // @ts-expect-error - viem/wagmi forward eder
@@ -556,7 +556,7 @@ export const useMintNFT = () => {
         deployTxHash = await sendTransaction(config, {
           data: deployData,
           value: 0n, // BigInt
-          gas: 80000n, // Gas limit for contract deployment
+          gas: 200000n, // Gas limit for contract deployment
           gasPrice: currentGasPrice, // Legacy gas price
           type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
           // @ts-expect-error - viem/wagmi forward eder
@@ -588,7 +588,7 @@ export const useMintNFT = () => {
             from: address,
             to: deployReceipt.contractAddress,
             data: '0x40c10f19000000000000000000000000' + address.slice(2), // mint(address) function call
-            gas: '0x7530', // 30,000 gas limit for minting
+            gas: '0xea60', // 60,000 gas limit for minting
             gasPrice: '0x' + currentGasPrice.toString(16), // Legacy gas price
           }
           console.log('🔍 Mint transaction params:', JSON.stringify(mintTxParams, null, 2))
@@ -605,7 +605,7 @@ export const useMintNFT = () => {
           mintTxHash = await sendTransaction(config, {
             to: deployReceipt.contractAddress,
             data: '0x40c10f19000000000000000000000000' + address.slice(2), // mint(address) function call
-            gas: 30000n, // Gas limit for minting
+            gas: 60000n, // Gas limit for minting
             gasPrice: currentGasPrice, // Legacy gas price
             type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
             // @ts-expect-error - viem/wagmi forward eder
@@ -617,7 +617,7 @@ export const useMintNFT = () => {
         mintTxHash = await sendTransaction(config, {
           to: deployReceipt.contractAddress,
           data: '0x40c10f19000000000000000000000000' + address.slice(2), // mint(address) function call
-          gas: 30000n, // Gas limit for minting
+          gas: 60000n, // Gas limit for minting
           gasPrice: currentGasPrice, // Legacy gas price
           type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
           // @ts-expect-error - viem/wagmi forward eder
