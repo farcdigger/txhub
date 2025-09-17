@@ -159,8 +159,23 @@ const DeployToken = () => {
               className="deploy-button"
               disabled={!isConnected || isLoading}
             >
-              {isLoading ? 'Deploying...' : 'Deploy Token'}
+              {isLoading ? 'Deploying Token...' : 'Deploy Token'}
             </button>
+            
+            {isLoading && (
+              <div style={{
+                background: '#f0f9ff',
+                border: '1px solid #0ea5e9',
+                color: '#0369a1',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                marginTop: '16px',
+                fontSize: '14px',
+                textAlign: 'center'
+              }}>
+                ⏳ Please confirm the transaction in your wallet. This may take a few moments...
+              </div>
+            )}
           </form>
         ) : (
           <div className="deploy-success">

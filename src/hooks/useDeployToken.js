@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAccount, useWriteContract } from 'wagmi'
-import { waitForTransactionReceipt, sendTransaction } from 'wagmi/actions'
+import { waitForTransactionReceipt, sendTransaction, estimateGas } from 'wagmi/actions'
 import { parseEther, encodeAbiParameters, parseAbiParameters } from 'viem'
 import { config } from '../config/wagmi'
 import { addXP, recordTransaction } from '../utils/xpUtils'
@@ -389,9 +389,18 @@ export const useDeployToken = () => {
       // Combine bytecode with constructor data
       const deployData = ERC20_BYTECODE + constructorData.slice(2) // Remove '0x' from constructor data
       
-      // Use sendTransaction with encoded bytecode
+      // Estimate gas for deployment
+      console.log('⛽ Estimating gas for deployment...')
+      const gasEstimate = await estimateGas(config, {
+        data: deployData,
+      })
+      
+      console.log('⛽ Gas estimate:', gasEstimate.toString())
+      
+      // Use sendTransaction with encoded bytecode and gas limit
       const deployTxHash = await sendTransaction(config, {
         data: deployData,
+        gas: gasEstimate,
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)
