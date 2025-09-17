@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAccount, useDisconnect } from 'wagmi'
 import { useMintNFT } from '../hooks/useMintNFT'
+import { getUserXP } from '../utils/xpUtils'
 
 const NFTMint = () => {
   const navigate = useNavigate()
   const { mintNFT, isLoading, error, successMessage } = useMintNFT()
+  const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
   
   const [formData, setFormData] = useState({
     name: '',
@@ -15,6 +19,8 @@ const NFTMint = () => {
   })
 
   const [isScrolled, setIsScrolled] = useState(false)
+  const [userXP, setUserXP] = useState(0)
+  const [userLevel, setUserLevel] = useState(1)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +31,28 @@ const NFTMint = () => {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Load user XP
+  useEffect(() => {
+    const loadUserXP = async () => {
+      if (address) {
+        try {
+          const xpData = await getUserXP(address)
+          setUserXP(xpData.total_xp || 0)
+          setUserLevel(xpData.level || 1)
+        } catch (error) {
+          console.error('Error loading user XP:', error)
+        }
+      }
+    }
+
+    loadUserXP()
+  }, [address])
+
+  const formatAddress = (address) => {
+    if (!address) return ''
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -81,18 +109,56 @@ const NFTMint = () => {
       <div className="container">
         {/* Header */}
         <div className={`header-section ${isScrolled ? 'scrolled' : ''}`}>
-          <button
-            onClick={() => navigate('/')}
-            className="home-button"
-          >
-            ← Home
-          </button>
-          <div className="header-content">
-            <div className="header-icon">🎨</div>
+          {/* Left side - Profile and XP */}
+          <div className="header-left">
+            <div className="profile-section">
+              <div className="profile-avatar">🎨</div>
+              <div className="profile-info">
+                <div className="xp-badge">
+                  <span className="xp-icon">⚡</span>
+                  <span className="xp-amount">{userXP}</span>
+                </div>
+                <div className="level-badge">
+                  <span className="level-text">Level {userLevel}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Center - Title */}
+          <div className="header-center">
             <h1 className="header-title">NFT Mint</h1>
             <p className="header-subtitle">Create & Mint Your Unique NFT</p>
           </div>
-          <div className="header-spacer"></div>
+
+          {/* Right side - Wallet and Actions */}
+          <div className="header-right">
+            {isConnected ? (
+              <div className="wallet-section">
+                <div className="wallet-info">
+                  <div className="wallet-address">{formatAddress(address)}</div>
+                  <div className="wallet-balance">
+                    <span className="balance-icon">🪙</span>
+                    <span className="balance-amount">0.00 ETH</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => disconnect()}
+                  className="disconnect-button"
+                >
+                  <span className="disconnect-icon">↗️</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate('/')}
+                className="connect-button"
+              >
+                <span className="connect-icon">🔗</span>
+                <span className="connect-text">Connect</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Main Card */}
@@ -274,63 +340,178 @@ const styles = `
     left: 0;
     right: 0;
     z-index: 100;
-    padding: 20px;
-    background: rgba(59, 130, 246, 0.1);
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     transform: translateY(0);
   }
 
   .header-section.scrolled {
-    background: rgba(59, 130, 246, 0.05);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(10px);
     transform: translateY(-100%);
   }
 
-  .home-button {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 12px 20px;
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .profile-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .profile-avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+  }
+
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .xp-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
     font-weight: 600;
-    transition: all 0.3s ease;
-    cursor: pointer;
   }
 
-  .home-button:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
+  .xp-icon {
+    font-size: 14px;
   }
 
-  .header-content {
+  .level-badge {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .header-center {
     text-align: center;
     flex: 1;
   }
 
-  .header-icon {
-    font-size: 48px;
-    margin-bottom: 8px;
-  }
-
   .header-title {
-    font-size: 32px;
-    font-weight: 800;
-    color: white;
-    margin: 0 0 4px 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 2px 0;
   }
 
   .header-subtitle {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    color: #6b7280;
     margin: 0;
   }
 
-  .header-spacer {
-    width: 100px;
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .wallet-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .wallet-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .wallet-address {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+
+  .wallet-balance {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #6b7280;
+  }
+
+  .balance-icon {
+    font-size: 12px;
+  }
+
+  .disconnect-button {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .disconnect-button:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+
+  .disconnect-icon {
+    font-size: 14px;
+  }
+
+  .connect-button {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .connect-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .connect-icon {
+    font-size: 14px;
   }
 
   /* Main Card Styles */
@@ -719,12 +900,30 @@ const styles = `
 
     .header-section {
       flex-direction: column;
-      gap: 16px;
-      text-align: center;
+      gap: 12px;
+      padding: 12px 16px;
     }
 
-    .header-spacer {
-      display: none;
+    .header-left, .header-right {
+      justify-content: center;
+    }
+
+    .header-center {
+      order: -1;
+    }
+
+    .profile-section {
+      gap: 8px;
+    }
+
+    .profile-avatar {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+
+    .wallet-section {
+      gap: 8px;
     }
   }
 `
