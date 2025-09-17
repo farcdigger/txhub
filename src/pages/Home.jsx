@@ -38,6 +38,96 @@ const Home = () => {
     return () => clearInterval(interval)
   }, [])
 
+  // AGGRESSIVE: Remove Farcaster headers with JavaScript
+  useEffect(() => {
+    const removeHeaders = () => {
+      // Remove all possible header elements
+      const headerSelectors = [
+        '*[class*="header"]',
+        '*[id*="header"]',
+        '*[data-testid*="header"]',
+        '*[data-testid*="Header"]',
+        '*[class*="Header"]',
+        '*[id*="Header"]',
+        'header',
+        '.farcaster-header',
+        '.app-header',
+        '.main-header',
+        '.top-header',
+        '.fixed-header',
+        '.sticky-header',
+        'div[class*="header"][class*="top"]',
+        'div[class*="header"][class*="fixed"]',
+        'div[class*="header"][class*="absolute"]',
+        'div[class*="header"][class*="sticky"]',
+        'div[class*="Header"][class*="Top"]',
+        'div[class*="Header"][class*="Fixed"]',
+        'div[class*="Header"][class*="Absolute"]',
+        'div[class*="Header"][class*="Sticky"]',
+        'div[class*="farcaster"]',
+        'div[class*="Farcaster"]',
+        'div[id*="farcaster"]',
+        'div[id*="Farcaster"]',
+        'div[data-testid*="farcaster"]',
+        'div[data-testid*="Farcaster"]'
+      ]
+
+      headerSelectors.forEach(selector => {
+        try {
+          const elements = document.querySelectorAll(selector)
+          elements.forEach(element => {
+            if (element && element.parentNode) {
+              element.style.display = 'none'
+              element.style.visibility = 'hidden'
+              element.style.opacity = '0'
+              element.style.height = '0'
+              element.style.width = '0'
+              element.style.overflow = 'hidden'
+              element.style.position = 'absolute'
+              element.style.left = '-9999px'
+              element.style.top = '-9999px'
+              element.style.zIndex = '-9999'
+              // Try to remove completely
+              try {
+                element.remove()
+              } catch (e) {
+                // If can't remove, just hide
+              }
+            }
+          })
+        } catch (e) {
+          // Ignore errors
+        }
+      })
+
+      // Force body to start from top
+      document.body.style.paddingTop = '0'
+      document.body.style.marginTop = '0'
+      document.documentElement.style.paddingTop = '0'
+      document.documentElement.style.marginTop = '0'
+    }
+
+    // Run immediately
+    removeHeaders()
+
+    // Run on DOM changes
+    const observer = new MutationObserver(removeHeaders)
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'id', 'style']
+    })
+
+    // Run periodically
+    const interval = setInterval(removeHeaders, 100)
+
+    return () => {
+      observer.disconnect()
+      clearInterval(interval)
+    }
+  }, [])
+
 
 
   const formatAddress = (address) => {
@@ -594,33 +684,76 @@ export default Home
 
 // Modern CSS Styles
 const styles = `
-  /* Hide Farcaster Header */
-  [data-testid="header"],
-  [data-testid="app-header"],
+  /* AGGRESSIVE: Hide ALL Farcaster Headers */
+  *[class*="header"],
+  *[id*="header"],
+  *[data-testid*="header"],
+  *[data-testid*="Header"],
+  *[class*="Header"],
+  *[id*="Header"],
+  header,
   .farcaster-header,
-  header[class*="header"],
+  .app-header,
+  .main-header,
+  .top-header,
+  .fixed-header,
+  .sticky-header,
   div[class*="header"][class*="top"],
   div[class*="header"][class*="fixed"],
   div[class*="header"][class*="absolute"],
-  div[class*="header"][class*="sticky"] {
+  div[class*="header"][class*="sticky"],
+  div[class*="Header"][class*="Top"],
+  div[class*="Header"][class*="Fixed"],
+  div[class*="Header"][class*="Absolute"],
+  div[class*="Header"][class*="Sticky"] {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
     height: 0 !important;
+    width: 0 !important;
     overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    z-index: -9999 !important;
   }
 
   /* Hide any element that looks like a header */
   div[style*="position: fixed"][style*="top: 0"],
   div[style*="position: sticky"][style*="top: 0"],
-  div[style*="position: absolute"][style*="top: 0"] {
+  div[style*="position: absolute"][style*="top: 0"],
+  div[style*="position: fixed"][style*="top: 0px"],
+  div[style*="position: sticky"][style*="top: 0px"],
+  div[style*="position: absolute"][style*="top: 0px"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Hide specific Farcaster elements */
+  div[class*="farcaster"],
+  div[class*="Farcaster"],
+  div[id*="farcaster"],
+  div[id*="Farcaster"],
+  div[data-testid*="farcaster"],
+  div[data-testid*="Farcaster"] {
     display: none !important;
   }
 
-  /* Force body to start from top */
-  body {
+  /* Force body and html to start from top */
+  html, body {
     padding-top: 0 !important;
     margin-top: 0 !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Hide any top-level containers that might be headers */
+  body > div:first-child,
+  html > body > div:first-child,
+  #root > div:first-child,
+  .app > div:first-child {
+    display: none !important;
   }
 
   .home {
