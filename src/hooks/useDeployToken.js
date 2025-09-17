@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAccount, useWriteContract } from 'wagmi'
-import { waitForTransactionReceipt, estimateGas } from 'wagmi/actions'
+import { waitForTransactionReceipt, sendTransaction } from 'wagmi/actions'
 import { parseEther, encodeAbiParameters, parseAbiParameters } from 'viem'
 import { config } from '../config/wagmi'
 import { addXP, recordTransaction } from '../utils/xpUtils'
