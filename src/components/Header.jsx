@@ -479,24 +479,28 @@ const Header = () => {
             backdropFilter: 'blur(15px)',
             zIndex: 99999999,
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'center',
-            padding: '20px'
+            padding: '140px 20px 20px 20px',
+            overflowY: 'auto'
           }} onClick={() => setShowWalletModal(false)}>
             {/* Wallet Selection Container */}
             <div className="wallet-container" style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              maxWidth: '500px',
-              width: '100%'
+              maxWidth: '600px',
+              width: '100%',
+              maxHeight: 'calc(100vh - 160px)',
+              overflowY: 'auto'
             }} onClick={(e) => e.stopPropagation()}>
               {/* Wallet Grid */}
               <div className="wallet-grid" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '20px',
-                width: '100%'
+                gap: '16px',
+                width: '100%',
+                marginBottom: '8px'
               }}>
               {walletOptions.map((wallet) => (
                 <button
@@ -507,15 +511,15 @@ const Header = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '12px',
-                    padding: '24px 16px',
+                    gap: '10px',
+                    padding: '20px 12px',
                     background: 'rgba(255, 255, 255, 0.95)',
                     border: '2px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '20px',
+                    borderRadius: '16px',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
                     textAlign: 'center',
-                    minHeight: '130px',
+                    minHeight: '110px',
                     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
                     backdropFilter: 'blur(20px)'
                   }}
@@ -539,14 +543,14 @@ const Header = () => {
                   }}
                 >
                   <div style={{
-                    fontSize: '48px',
-                    width: '64px',
-                    height: '64px',
+                    fontSize: '40px',
+                    width: '56px',
+                    height: '56px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
-                    borderRadius: '16px',
+                    borderRadius: '12px',
                     marginBottom: '4px'
                   }}>{wallet.icon}</div>
                   <div>
@@ -573,13 +577,13 @@ const Header = () => {
             <button
               onClick={() => setShowWalletModal(false)}
               style={{
-                marginTop: '24px',
-                padding: '12px 24px',
+                marginTop: '16px',
+                padding: '10px 20px',
                 background: 'rgba(255, 255, 255, 0.9)',
                 border: '2px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '12px',
+                borderRadius: '10px',
                 color: '#6b7280',
-                fontSize: '14px',
+                fontSize: '13px',
                 fontWeight: '600',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
