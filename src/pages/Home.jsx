@@ -14,6 +14,7 @@ const Home = () => {
   const [successMessage, setSuccessMessage] = useState('')
   const [isLoadingGM, setIsLoadingGM] = useState(false)
   const [isLoadingGN, setIsLoadingGN] = useState(false)
+  const [showAllPlayers, setShowAllPlayers] = useState(false)
 
   // Load leaderboard
   useEffect(() => {
@@ -438,7 +439,7 @@ const Home = () => {
             </div>
 
             <div style={{ marginBottom: '16px' }}>
-              {leaderboard.length > 0 ? leaderboard.slice(0, 5).map((player, index) => (
+              {leaderboard.length > 0 ? leaderboard.slice(0, showAllPlayers ? 10 : 5).map((player, index) => (
                 <div
                   key={player.wallet_address}
                   className="leaderboard-item"
@@ -532,20 +533,50 @@ const Home = () => {
               )}
             </div>
 
-            {leaderboard.length > 5 && (
-              <div style={{ 
-                textAlign: 'center',
-                padding: '12px',
-                background: 'rgba(59, 130, 246, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
-              }}>
-                <p style={{ 
+            {leaderboard.length > 5 && !showAllPlayers && (
+              <button
+                onClick={() => setShowAllPlayers(true)}
+                style={{ 
+                  width: '100%',
+                  textAlign: 'center',
+                  padding: '12px',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                   color: '#6b7280',
                   fontSize: '12px',
                   margin: 0
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(59, 130, 246, 0.2)'
+                  e.target.style.borderColor = 'rgba(59, 130, 246, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(59, 130, 246, 0.1)'
+                  e.target.style.borderColor = 'rgba(59, 130, 246, 0.2)'
+                }}
+              >
+                And {leaderboard.length - 5} more players...
+              </button>
+            )}
+            
+            {showAllPlayers && leaderboard.length > 10 && (
+              <div style={{ 
+                textAlign: 'center',
+                padding: '12px',
+                background: 'rgba(34, 197, 94, 0.1)',
+                borderRadius: '8px',
+                border: '1px solid rgba(34, 197, 94, 0.2)'
+              }}>
+                <p style={{ 
+                  color: '#059669',
+                  fontSize: '12px',
+                  margin: 0,
+                  fontWeight: 'bold'
                 }}>
-                  And {leaderboard.length - 5} more players...
+                  Showing top 10 players out of {leaderboard.length} total players
                 </p>
               </div>
             )}
