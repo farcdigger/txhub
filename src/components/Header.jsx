@@ -1,381 +1,274 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { useAccount, useChainId } from 'wagmi'
-import { Wallet, Home, Wifi, WifiOff, Gamepad2, Zap, Shield } from 'lucide-react'
-import { useFarcaster } from '../contexts/FarcasterContext'
-import { getCurrentConfig } from '../config/base'
-import WalletConnect from './WalletConnect'
+import { useAccount, useDisconnect } from 'wagmi'
+import { getXP } from '../utils/xpUtils'
 
 const Header = () => {
-  const location = useLocation()
-  const { isConnected, address } = useAccount()
-  const chainId = useChainId()
-  const { isInFarcaster, user } = useFarcaster()
-  const baseConfig = getCurrentConfig()
-  const [isScrolled, setIsScrolled] = useState(false)
+  const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
+  const [userXP, setUserXP] = useState(0)
+  const [userLevel, setUserLevel] = useState(1)
 
-  // Handle scroll detection
+  // Load user XP
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      setIsScrolled(scrollTop > 100)
+    const loadUserXP = async () => {
+      if (address) {
+        try {
+          console.log('🔍 Loading XP for address:', address)
+          const totalXP = await getXP(address)
+          console.log('✅ XP loaded:', totalXP)
+          setUserXP(totalXP || 0)
+          setUserLevel(Math.floor((totalXP || 0) / 100) + 1)
+        } catch (error) {
+          console.error('❌ Error loading user XP:', error)
+        }
+      }
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    loadUserXP()
+  }, [address])
 
-  const formatAddress = (addr) => {
-    if (!addr) return ''
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  // Format address for display
+  const formatAddress = (address) => {
+    if (!address) return ''
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  const isOnBaseNetwork = chainId === baseConfig.chainId
+  // Handle wallet connection
+  const handleConnect = () => {
+    console.log('🔗 Attempting to connect wallet...')
+    
+    // Try to find WalletConnect button
+    const connectBtn = document.querySelector('w3m-button')
+    if (connectBtn) {
+      console.log('✅ Found w3m-button, clicking...')
+      connectBtn.click()
+      return
+    }
+
+    // Try to find any connect button
+    const btns = document.querySelectorAll('button')
+    const connectButton = Array.from(btns).find(btn => {
+      const text = btn.textContent?.toLowerCase() || ''
+      return text.includes('connect') || text.includes('wallet')
+    })
+    
+    if (connectButton && connectButton !== event.target) {
+      console.log('✅ Found connect button:', connectButton.textContent)
+      connectButton.click()
+    } else {
+      console.log('❌ No connect button found')
+      // Try to trigger wallet connection via window
+      if (window.ethereum) {
+        window.ethereum.request({ method: 'eth_requestAccounts' })
+          .then(() => console.log('✅ Wallet connected via window.ethereum'))
+          .catch(err => console.log('❌ Wallet connection failed:', err))
+      }
+    }
+  }
+
+  console.log('🔍 Header Debug:', {
+    isConnected,
+    address,
+    userXP,
+    userLevel
+  })
 
   return (
-    <header className={`modern-header ${isScrolled ? 'hidden' : ''}`}>
-      <div className="header-container">
-        <div className="header-content">
-          {/* Logo Section */}
-          <Link to="/" className="logo-section">
-            <div className="logo-icon">
-              <Gamepad2 size={24} />
-            </div>
-            <div className="logo-text">
-              <span className="logo-title">BaseHub</span>
-              <span className="logo-subtitle">Gaming Platform</span>
-            </div>
-          </Link>
-          
-          {/* Navigation & Status */}
-          <div className="header-right">
-            {location.pathname !== '/' && (
-              <Link to="/" className="nav-button">
-                <Home size={16} />
-                <span>Home</span>
-              </Link>
-            )}
-
-            {/* Status Indicators */}
-            <div className="status-indicators">
-              {/* Farcaster Status */}
-              {isInFarcaster && (
-                <div className="status-badge farcaster">
-                  <Zap size={14} />
-                  <span>Farcaster</span>
-                </div>
-              )}
-
-              {/* Network Status */}
-              {isConnected && !isInFarcaster && (
-                <div className={`status-badge ${isOnBaseNetwork ? 'connected' : 'error'}`}>
-                  {isOnBaseNetwork ? (
-                    <Wifi size={14} />
-                  ) : (
-                    <WifiOff size={14} />
-                  )}
-                  <span>{isOnBaseNetwork ? 'Base' : 'Wrong Network'}</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Wallet Section */}
-            <WalletConnect />
+    <div className="header-section" style={{
+      display: 'flex !important',
+      position: 'fixed !important',
+      top: '0 !important',
+      left: '0 !important', 
+      right: '0 !important',
+      zIndex: '999999 !important',
+      background: 'rgba(59, 130, 246, 0.1) !important',
+      backdropFilter: 'blur(20px)',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      padding: '16px 20px !important',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      transition: 'all 0.3s ease',
+      visibility: 'visible !important',
+      opacity: '1 !important',
+      height: 'auto !important',
+      width: 'auto !important',
+      overflow: 'visible !important',
+      transform: 'none !important',
+      clip: 'none !important',
+      clipPath: 'none !important'
+    }}>
+      {/* Left - Home Button */}
+      <div className="header-left">
+        <button
+          onClick={() => window.location.href = '/'}
+          className="home-button"
+          style={{
+            background: 'rgba(255, 255, 255, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            color: 'white',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.3)'
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+          }}
+        >
+          <span>🏠</span>
+          <span>Home</span>
+        </button>
+      </div>
+      
+      {/* Center - Logo */}
+      <div className="header-center">
+        <div className="logo-section" style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <div className="logo" style={{
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '20px'
+          }}>
+            🎮
+          </div>
+          <div>
+            <h1 className="header-title" style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              color: 'white',
+              margin: '0',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            }}>BaseHub</h1>
+            <p className="header-subtitle" style={{
+              fontSize: '12px',
+              color: 'rgba(255, 255, 255, 0.8)',
+              margin: '0'
+            }}>Play Games & Earn XP</p>
           </div>
         </div>
       </div>
-    </header>
+      
+      {/* Right - XP, Token, Wallet */}
+      <div className="header-right">
+        {isConnected ? (
+          <div className="user-section" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div className="xp-token-info" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              gap: '2px'
+            }}>
+              <div className="xp-badge" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '8px',
+                fontSize: '11px',
+                fontWeight: '600'
+              }}>
+                <span>⚡</span>
+                <span>{userXP} XP</span>
+              </div>
+              <div className="token-balance" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '11px',
+                color: 'rgba(255, 255, 255, 0.8)'
+              }}>
+                <span>🪙</span>
+                <span>Level {userLevel}</span>
+              </div>
+            </div>
+            <div className="wallet-info" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              gap: '2px'
+            }}>
+              <div className="wallet-address" style={{
+                fontSize: '11px',
+                fontWeight: '600',
+                color: 'white',
+                background: 'rgba(255, 255, 255, 0.2)',
+                padding: '2px 6px',
+                borderRadius: '4px'
+              }}>{formatAddress(address)}</div>
+              <button
+                onClick={() => disconnect()}
+                className="disconnect-button"
+                style={{
+                  background: 'rgba(239, 68, 68, 0.2)',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  color: 'white',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '10px',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(239, 68, 68, 0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(239, 68, 68, 0.2)'
+                }}
+              >
+                Disconnect
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={handleConnect}
+            className="connect-button"
+            style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              border: 'none',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+            }}
+          >
+            Connect Wallet
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 
 export default Header
-
-// Modern Header Styles
-const headerStyles = `
-  .modern-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    transform: translateY(0);
-  }
-
-  .modern-header.hidden {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-
-  .header-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-
-  .header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 80px;
-    gap: 24px;
-  }
-
-  .logo-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-
-  .logo-section:hover {
-    transform: translateY(-2px);
-  }
-
-  .logo-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-    transition: all 0.3s ease;
-  }
-
-  .logo-section:hover .logo-icon {
-    transform: scale(1.05) rotate(5deg);
-    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
-  }
-
-  .logo-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .logo-title {
-    font-size: 24px;
-    font-weight: 800;
-    color: #1f2937;
-    line-height: 1;
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .logo-subtitle {
-    font-size: 12px;
-    color: #6b7280;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .nav-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-    text-decoration: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(59, 130, 246, 0.2);
-  }
-
-  .nav-button:hover {
-    background: rgba(59, 130, 246, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
-  }
-
-  .status-indicators {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .status-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-  }
-
-  .status-badge.farcaster {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  }
-
-  .status-badge.connected {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  }
-
-  .status-badge.error {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-  }
-
-  .wallet-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .wallet-address {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
-    font-size: 14px;
-    font-weight: 600;
-    color: #374151;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  }
-
-  .action-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-  }
-
-  .action-button.primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
-    color: white;
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
-  }
-
-  .action-button.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
-  }
-
-  .action-button.secondary {
-    background: rgba(107, 114, 128, 0.1);
-    color: #6b7280;
-    border: 1px solid rgba(107, 114, 128, 0.2);
-  }
-
-  .action-button.secondary:hover {
-    background: rgba(107, 114, 128, 0.2);
-    transform: translateY(-2px);
-  }
-
-  .action-button.danger {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
-  }
-
-  .action-button.danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(239, 68, 68, 0.4);
-  }
-
-  @media (max-width: 768px) {
-    .header-container {
-      padding: 0 16px;
-    }
-
-    .header-content {
-      height: 70px;
-      gap: 16px;
-    }
-
-    .logo-icon {
-      width: 40px;
-      height: 40px;
-    }
-
-    .logo-title {
-      font-size: 20px;
-    }
-
-    .logo-subtitle {
-      font-size: 10px;
-    }
-
-    .header-right {
-      gap: 12px;
-    }
-
-    .nav-button,
-    .action-button {
-      padding: 8px 12px;
-      font-size: 13px;
-    }
-
-    .wallet-address {
-      padding: 8px 12px;
-      font-size: 13px;
-    }
-
-    .status-badge {
-      padding: 4px 8px;
-      font-size: 11px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .logo-subtitle {
-      display: none;
-    }
-
-    .wallet-address span {
-      display: none;
-    }
-
-    .nav-button span {
-      display: none;
-    }
-
-    .action-button span {
-      display: none;
-    }
-  }
-`
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style')
-  styleSheet.textContent = headerStyles
-  document.head.appendChild(styleSheet)
-}

@@ -4,6 +4,7 @@ import { useDeployToken } from '../hooks/useDeployToken'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Coins, Zap, CheckCircle, ExternalLink } from 'lucide-react'
 import EmbedMeta from '../components/EmbedMeta'
+import Header from '../components/Header'
 
 const DeployToken = () => {
   const { isConnected } = useAccount()
@@ -62,12 +63,9 @@ const DeployToken = () => {
         buttonText="Deploy Token"
       />
       
-      <div className="back-button" onClick={() => navigate('/')}>
-        <ArrowLeft size={16} />
-        <span>Home</span>
-      </div>
+      <Header />
 
-      <div className="deploy-container">
+      <div className="deploy-container" style={{ paddingTop: '100px' }}>
         <div className="deploy-header">
           <div className="deploy-icon">
             <Coins size={32} />

@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAccount, useDisconnect } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useMintNFT } from '../hooks/useMintNFT'
-import { getXP } from '../utils/xpUtils'
+import Header from '../components/Header'
 
 const NFTMint = () => {
   const navigate = useNavigate()
   const { mintNFT, isLoading, error, successMessage } = useMintNFT()
   const { address, isConnected } = useAccount()
-  const { disconnect } = useDisconnect()
   
   const [formData, setFormData] = useState({
     name: '',
@@ -18,41 +17,6 @@ const NFTMint = () => {
     imagePreview: null
   })
 
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [userXP, setUserXP] = useState(0)
-  const [userLevel, setUserLevel] = useState(1)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      setIsScrolled(scrollTop > 50)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Load user XP
-  useEffect(() => {
-    const loadUserXP = async () => {
-      if (address) {
-        try {
-          const totalXP = await getXP(address)
-          setUserXP(totalXP || 0)
-          setUserLevel(Math.floor(totalXP / 100) + 1)
-        } catch (error) {
-          console.error('Error loading user XP:', error)
-        }
-      }
-    }
-
-    loadUserXP()
-  }, [address])
-
-  const formatAddress = (address) => {
-    if (!address) return ''
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -106,60 +70,8 @@ const NFTMint = () => {
 
   return (
     <div className="nft-mint-page">
-      <div className="container">
-        {/* Header */}
-        <div className={`header-section ${isScrolled ? 'scrolled' : ''}`}>
-          {/* Left side - Profile and XP */}
-          <div className="header-left">
-            <div className="profile-section">
-              <div className="profile-avatar">🎨</div>
-              <div className="profile-info">
-                <div className="xp-badge">
-                  <span className="xp-icon">⚡</span>
-                  <span className="xp-amount">{userXP}</span>
-                </div>
-                <div className="level-badge">
-                  <span className="level-text">Level {userLevel}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Center - Title */}
-          <div className="header-center">
-            <h1 className="header-title">NFT Mint</h1>
-            <p className="header-subtitle">Create & Mint Your Unique NFT</p>
-          </div>
-
-          {/* Right side - Wallet and Actions */}
-          <div className="header-right">
-            {isConnected ? (
-              <div className="wallet-section">
-                <div className="wallet-info">
-                  <div className="wallet-address">{formatAddress(address)}</div>
-                  <div className="wallet-balance">
-                    <span className="balance-icon">🪙</span>
-                    <span className="balance-amount">0.00 ETH</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => disconnect()}
-                  className="disconnect-button"
-                >
-                  <span className="disconnect-icon">↗️</span>
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => navigate('/')}
-                className="connect-button"
-              >
-                <span className="connect-icon">🔗</span>
-                <span className="connect-text">Connect</span>
-              </button>
-            )}
-          </div>
-        </div>
+      <Header />
+      <div className="container" style={{ paddingTop: '100px' }}>
 
         {/* Main Card */}
         <div className="main-card">
