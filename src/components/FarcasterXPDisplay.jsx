@@ -104,7 +104,7 @@ const FarcasterXPDisplay = () => {
         )}
         <div className="player-info">
           <Trophy size={16} />
-          <span className="wallet-address">{address.slice(0, 6)}...{address.slice(-4)}</span>
+          <span className="wallet-address">{address.slice(0, 4)}..{address.slice(-2)}</span>
         </div>
       </div>
       
