@@ -86,9 +86,13 @@ const DeployToken = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="e.g., MyAwesomeToken"
+                placeholder="e.g., My Token"
+                maxLength="20"
                 required
               />
+              <small style={{ color: '#6b7280', fontSize: '12px' }}>
+                Max 20 characters for Farcaster compatibility
+              </small>
             </div>
 
             <div className="form-group">
@@ -99,10 +103,13 @@ const DeployToken = () => {
                 name="symbol"
                 value={formData.symbol}
                 onChange={handleInputChange}
-                placeholder="e.g., MAT"
+                placeholder="e.g., MTK"
                 maxLength="10"
                 required
               />
+              <small style={{ color: '#6b7280', fontSize: '12px' }}>
+                Max 10 characters for Farcaster compatibility
+              </small>
             </div>
 
             <div className="form-group">

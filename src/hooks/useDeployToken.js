@@ -380,21 +380,27 @@ export const useDeployToken = () => {
       // Now deploy the actual ERC20 contract
       console.log('🚀 Deploying ERC20 contract...')
       
-      // Manually encode constructor parameters
+      // Manually encode constructor parameters (limit string lengths for Farcaster)
+      const shortName = name.substring(0, 20) // Limit to 20 chars
+      const shortSymbol = symbol.substring(0, 10) // Limit to 10 chars
+      
+      console.log('📝 Using shortened parameters:', { shortName, shortSymbol, initialSupply })
+      
       const constructorData = encodeAbiParameters(
         parseAbiParameters('string name, string symbol, uint256 initialSupply'),
-        [name, symbol, BigInt(initialSupply)]
+        [shortName, shortSymbol, BigInt(initialSupply)]
       )
       
       // Combine bytecode with constructor data
       const deployData = ERC20_BYTECODE + constructorData.slice(2) // Remove '0x' from constructor data
       
-      // Check data size (some wallets have limits)
+      // Check data size (Farcaster has stricter limits)
       const dataSize = (deployData.length - 2) / 2 // Remove '0x' and convert to bytes
       console.log('📊 Deployment data size:', dataSize, 'bytes')
       
-      if (dataSize > 100000) { // 100KB limit
-        console.warn('⚠️ Large deployment data size:', dataSize, 'bytes')
+      if (dataSize > 50000) { // 50KB limit for Farcaster
+        console.warn('⚠️ Large deployment data size for Farcaster:', dataSize, 'bytes')
+        throw new Error(`Deployment data too large for Farcaster wallet: ${dataSize} bytes. Please use shorter token name/symbol.`)
       }
       
       // Estimate gas for deployment (with fallback)
