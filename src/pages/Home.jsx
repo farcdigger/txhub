@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAccount, useDisconnect } from 'wagmi'
-import { getLeaderboard, getXP } from '../utils/xpUtils'
+import { useAccount } from 'wagmi'
+import { getLeaderboard } from '../utils/xpUtils'
 import { useTransactions } from '../hooks/useTransactions'
 import EmbedMeta from '../components/EmbedMeta'
 import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp, Image } from 'lucide-react'
 
 const Home = () => {
-  const { address, isConnected } = useAccount()
-  const { disconnect } = useDisconnect()
+  const { isConnected } = useAccount()
   const { sendGMTransaction, sendGNTransaction, isLoading: transactionLoading } = useTransactions()
   const [leaderboard, setLeaderboard] = useState([])
   const [leaderboardLoading, setLeaderboardLoading] = useState(false)
@@ -16,9 +15,6 @@ const Home = () => {
   const [isLoadingGM, setIsLoadingGM] = useState(false)
   const [isLoadingGN, setIsLoadingGN] = useState(false)
   const [showAllPlayers, setShowAllPlayers] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [userXP, setUserXP] = useState(0)
-  const [userLevel, setUserLevel] = useState(1)
 
   // Load leaderboard
   useEffect(() => {
@@ -42,33 +38,6 @@ const Home = () => {
     return () => clearInterval(interval)
   }, [])
 
-  // Scroll listener for header
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-      setIsScrolled(scrollTop > 50)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Load user XP
-  useEffect(() => {
-    const loadUserXP = async () => {
-      if (address) {
-        try {
-          const totalXP = await getXP(address)
-          setUserXP(totalXP || 0)
-          setUserLevel(Math.floor(totalXP / 100) + 1)
-        } catch (error) {
-          console.error('Error loading user XP:', error)
-        }
-      }
-    }
-
-    loadUserXP()
-  }, [address])
 
 
   const formatAddress = (address) => {
@@ -217,58 +186,6 @@ const Home = () => {
         buttonText="Play BaseHub"
       />
       
-      {/* Header */}
-      <div className={`header-section ${isScrolled ? 'scrolled' : ''}`}>
-        {/* Left side - Profile and XP */}
-        <div className="header-left">
-          <div className="profile-section">
-            <div className="profile-avatar">🎮</div>
-            <div className="profile-info">
-              <div className="xp-badge">
-                <span className="xp-icon">⚡</span>
-                <span className="xp-amount">{userXP}</span>
-              </div>
-              <div className="level-badge">
-                <span className="level-text">Level {userLevel}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Center - Title */}
-        <div className="header-center">
-          <h1 className="header-title">BaseHub</h1>
-          <p className="header-subtitle">Play Games & Earn XP</p>
-        </div>
-
-        {/* Right side - Wallet and Actions */}
-        <div className="header-right">
-          {isConnected ? (
-            <div className="wallet-section">
-              <div className="wallet-info">
-                <div className="wallet-address">{formatAddress(address)}</div>
-                <div className="wallet-balance">
-                  <span className="balance-icon">🪙</span>
-                  <span className="balance-amount">0.00 ETH</span>
-                </div>
-              </div>
-              <button
-                onClick={() => disconnect()}
-                className="disconnect-button"
-              >
-                <span className="disconnect-icon">↗️</span>
-              </button>
-            </div>
-          ) : (
-            <div className="connect-section">
-              <div className="connect-info">
-                <div className="connect-text">Connect Wallet</div>
-                <div className="connect-hint">Start earning XP</div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
 
       <div className="welcome-section">
         <div className="card">
@@ -681,195 +598,6 @@ const styles = `
     min-height: 100vh;
     background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     padding: 20px;
-    padding-top: 120px;
-  }
-
-  /* Header Styles */
-  .header-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    padding: 16px 20px;
-    background: rgba(59, 130, 246, 0.1);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    transform: translateY(0);
-  }
-
-  .header-section.scrolled {
-    background: rgba(59, 130, 246, 0.05);
-    backdrop-filter: blur(10px);
-    transform: translateY(-100%);
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .profile-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .profile-avatar {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: white;
-  }
-
-  .profile-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .xp-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .xp-icon {
-    font-size: 14px;
-  }
-
-  .level-badge {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-    padding: 2px 6px;
-    border-radius: 8px;
-    font-size: 10px;
-    font-weight: 600;
-    text-align: center;
-  }
-
-  .header-center {
-    text-align: center;
-    flex: 1;
-  }
-
-  .header-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: white;
-    margin: 0 0 2px 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .header-subtitle {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-    margin: 0;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .wallet-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .wallet-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-  }
-
-  .wallet-address {
-    font-size: 12px;
-    font-weight: 600;
-    color: white;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 2px 6px;
-    border-radius: 6px;
-  }
-
-  .wallet-balance {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.8);
-  }
-
-  .balance-icon {
-    font-size: 12px;
-  }
-
-  .disconnect-button {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .disconnect-button:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
-  }
-
-  .disconnect-icon {
-    font-size: 14px;
-  }
-
-  .connect-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .connect-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-  }
-
-  .connect-text {
-    font-size: 12px;
-    font-weight: 600;
-    color: white;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 2px 6px;
-    border-radius: 6px;
-  }
-
-  .connect-hint {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.6);
   }
 
   .welcome-section {
@@ -987,38 +715,6 @@ const styles = `
   }
 
   @media (max-width: 768px) {
-    .home {
-      padding-top: 140px;
-    }
-
-    .header-section {
-      flex-direction: column;
-      gap: 12px;
-      padding: 12px 16px;
-    }
-
-    .header-left, .header-right {
-      justify-content: center;
-    }
-
-    .header-center {
-      order: -1;
-    }
-
-    .profile-section {
-      gap: 8px;
-    }
-
-    .profile-avatar {
-      width: 40px;
-      height: 40px;
-      font-size: 20px;
-    }
-
-    .wallet-section {
-      gap: 8px;
-    }
-
     .games-grid {
       grid-template-columns: 1fr;
       gap: 16px;
