@@ -89,11 +89,6 @@ const NFTMint = () => {
             <div className="card-icon">✨</div>
             <h2 className="card-title">Create Your NFT</h2>
             <p className="card-subtitle">Upload an image and mint your unique NFT on Base network</p>
-            <div className="fee-badge">
-              <span className="fee-icon">💰</span>
-              <span className="fee-text">Mint Fee: 0.000001 ETH</span>
-              <span className="reward-text">| 🎉 Reward: 100 XP</span>
-            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="nft-form">
@@ -220,8 +215,7 @@ const NFTMint = () => {
                 </div>
               ) : (
                 <div className="button-content">
-                  <span className="button-icon">🚀</span>
-                  <span>Mint NFT (0.000001 ETH + 100 XP)</span>
+                  <span>Mint</span>
                 </div>
               )}
             </button>
@@ -230,40 +224,10 @@ const NFTMint = () => {
 
         {/* Info Card */}
         <div className="info-card">
-          <div className="info-header">
-            <div className="info-icon">💡</div>
-            <h3 className="info-title">How it works</h3>
-          </div>
-          <div className="info-steps">
-            <div className="info-step">
-              <div className="step-number">1</div>
-              <div className="step-content">
-                <div className="step-icon">📤</div>
-                <p>Upload your image and fill in the NFT details</p>
-              </div>
-            </div>
-            <div className="info-step">
-              <div className="step-number">2</div>
-              <div className="step-content">
-                <div className="step-icon">💰</div>
-                <p>Pay 0.000001 ETH minting fee</p>
-              </div>
-            </div>
-            <div className="info-step">
-              <div className="step-number">3</div>
-              <div className="step-content">
-                <div className="step-icon">⛓️</div>
-                <p>Your NFT is minted on Base network</p>
-              </div>
-            </div>
-            <div className="info-step">
-              <div className="step-number">4</div>
-              <div className="step-content">
-                <div className="step-icon">🎉</div>
-                <p>Earn 100 XP for successful minting!</p>
-              </div>
-            </div>
-          </div>
+          <p className="info-description">
+            Upload your image, fill in the details, and mint your unique NFT on Base network. 
+            Earn 100 XP for successful minting!
+          </p>
         </div>
       </div>
     </div>
@@ -276,7 +240,7 @@ export default NFTMint
 const styles = `
   .nft-mint-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
     padding: 20px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   }
@@ -292,6 +256,8 @@ const styles = `
     align-items: center;
     justify-content: space-between;
     margin-bottom: 32px;
+    position: relative;
+    z-index: 10;
   }
 
   .home-button {
@@ -630,6 +596,14 @@ const styles = `
     padding: 32px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .info-description {
+    font-size: 16px;
+    color: #6b7280;
+    text-align: center;
+    margin: 0;
+    line-height: 1.6;
   }
 
   .info-header {
