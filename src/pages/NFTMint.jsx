@@ -341,15 +341,15 @@ const styles = `
     right: 0;
     z-index: 100;
     padding: 16px 20px;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(59, 130, 246, 0.1);
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
     transform: translateY(0);
   }
 
   .header-section.scrolled {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(59, 130, 246, 0.05);
     backdrop-filter: blur(10px);
     transform: translateY(-100%);
   }
@@ -418,13 +418,14 @@ const styles = `
   .header-title {
     font-size: 24px;
     font-weight: 700;
-    color: #1f2937;
+    color: white;
     margin: 0 0 2px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .header-subtitle {
     font-size: 14px;
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.8);
     margin: 0;
   }
 
@@ -450,8 +451,8 @@ const styles = `
   .wallet-address {
     font-size: 12px;
     font-weight: 600;
-    color: #374151;
-    background: rgba(59, 130, 246, 0.1);
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
     padding: 2px 6px;
     border-radius: 6px;
   }
@@ -461,7 +462,7 @@ const styles = `
     align-items: center;
     gap: 4px;
     font-size: 11px;
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.8);
   }
 
   .balance-icon {
@@ -469,9 +470,9 @@ const styles = `
   }
 
   .disconnect-button {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
     padding: 8px;
     border-radius: 8px;
     cursor: pointer;
@@ -482,8 +483,8 @@ const styles = `
   }
 
   .disconnect-button:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
   }
 
   .disconnect-icon {
