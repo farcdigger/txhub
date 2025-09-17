@@ -37,6 +37,9 @@ const Header = () => {
   const { disconnect } = useDisconnect()
   const [userXP, setUserXP] = useState(0)
   const [showWalletModal, setShowWalletModal] = useState(false)
+  
+  // Calculate BHUB tokens from XP (100 XP = 1 BHUB)
+  const bhubTokens = Math.floor(userXP / 100)
 
   // Load user XP
   useEffect(() => {
@@ -168,7 +171,8 @@ const Header = () => {
   console.log('🔍 Header Debug:', {
     isConnected,
     address,
-    userXP
+    userXP,
+    bhubTokens
   })
 
   // Wallet options for connection
@@ -380,13 +384,15 @@ const Header = () => {
             <div className="user-section" style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '16px'
+              gap: '12px',
+              flexWrap: 'wrap'
             }}>
               {/* XP & Level Cards */}
               <div className="stats-container" style={{
                 display: 'flex',
-                gap: '8px',
-                alignItems: 'center'
+                gap: '6px',
+                alignItems: 'center',
+                flexWrap: 'wrap'
               }}>
                 {/* XP Card */}
                 <div className="stat-card xp-card" style={{
@@ -474,7 +480,7 @@ const Header = () => {
                       fontSize: '14px',
                       fontWeight: '700',
                       lineHeight: '1'
-                    }}>0</div>
+                    }}>{bhubTokens.toLocaleString()}</div>
                     <div style={{
                       color: 'rgba(255, 255, 255, 0.8)',
                       fontSize: '10px',
@@ -485,31 +491,54 @@ const Header = () => {
                 </div>
 
                 {/* Claim Button */}
-                <button 
+                <button
                   className="claim-button"
-                  disabled
+                  disabled={bhubTokens === 0}
+                  onClick={() => {
+                    if (bhubTokens > 0) {
+                      console.log('🪙 Claiming BHUB tokens:', bhubTokens)
+                      // TODO: Implement actual claiming logic
+                      alert(`Coming Soon! You would claim ${bhubTokens} BHUB tokens`)
+                    }
+                  }}
                   style={{
-                    background: 'linear-gradient(135deg, rgba(156, 163, 175, 0.8) 0%, rgba(107, 114, 128, 0.8) 100%)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '12px',
-                    padding: '6px 12px',
-                    color: 'white',
-                    fontSize: '12px',
+                    background: bhubTokens > 0 
+                      ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(22, 163, 74, 0.8) 100%)'
+                      : 'linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(107, 114, 128, 0.3) 100%)',
+                    border: bhubTokens > 0 
+                      ? '1px solid rgba(34, 197, 94, 0.6)' 
+                      : '1px solid rgba(156, 163, 175, 0.4)',
+                    borderRadius: '8px',
+                    padding: '4px 8px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '10px',
                     fontWeight: '600',
-                    cursor: 'not-allowed',
+                    cursor: bhubTokens > 0 ? 'pointer' : 'not-allowed',
                     backdropFilter: 'blur(10px)',
                     transition: 'all 0.3s ease',
-                    opacity: '0.7'
-                  }}
-                >
-                  <div style={{
+                    opacity: bhubTokens > 0 ? '1' : '0.6',
+                    whiteSpace: 'nowrap',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px'
-                  }}>
-                    <span>⏰</span>
-                    <span>Coming Soon</span>
-                  </div>
+                    gap: '3px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (bhubTokens > 0) {
+                      e.target.style.transform = 'scale(1.05)'
+                      e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (bhubTokens > 0) {
+                      e.target.style.transform = 'scale(1)'
+                      e.target.style.boxShadow = 'none'
+                    }
+                  }}
+                >
+                  <span style={{ fontSize: '8px' }}>
+                    {bhubTokens > 0 ? '🪙' : '⏰'}
+                  </span>
+                  <span>{bhubTokens > 0 ? `Claim ${bhubTokens}` : 'Soon'}</span>
                 </button>
               </div>
 
