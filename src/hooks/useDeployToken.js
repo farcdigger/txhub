@@ -389,13 +389,27 @@ export const useDeployToken = () => {
       // Combine bytecode with constructor data
       const deployData = ERC20_BYTECODE + constructorData.slice(2) // Remove '0x' from constructor data
       
-      // Estimate gas for deployment
-      console.log('⛽ Estimating gas for deployment...')
-      const gasEstimate = await estimateGas(config, {
-        data: deployData,
-      })
+      // Check data size (some wallets have limits)
+      const dataSize = (deployData.length - 2) / 2 // Remove '0x' and convert to bytes
+      console.log('📊 Deployment data size:', dataSize, 'bytes')
       
-      console.log('⛽ Gas estimate:', gasEstimate.toString())
+      if (dataSize > 100000) { // 100KB limit
+        console.warn('⚠️ Large deployment data size:', dataSize, 'bytes')
+      }
+      
+      // Estimate gas for deployment (with fallback)
+      let gasEstimate
+      try {
+        console.log('⛽ Estimating gas for deployment...')
+        gasEstimate = await estimateGas(config, {
+          data: deployData,
+        })
+        console.log('⛽ Gas estimate:', gasEstimate.toString())
+      } catch (gasError) {
+        console.warn('⚠️ Gas estimation failed, using default:', gasError)
+        // Use a reasonable default gas limit for contract deployment
+        gasEstimate = 500000n // 500k gas should be enough for most ERC20 deployments
+      }
       
       // Use sendTransaction with encoded bytecode and gas limit
       const deployTxHash = await sendTransaction(config, {
