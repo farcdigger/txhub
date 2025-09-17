@@ -41,72 +41,27 @@ const Home = () => {
     return () => clearInterval(interval)
   }, [])
 
-  // AGGRESSIVE: Remove Farcaster headers with JavaScript
+  // SIMPLE: Just hide specific Farcaster headers
   useEffect(() => {
-    const removeHeaders = () => {
-      // Remove all possible header elements
-      const headerSelectors = [
-        '*[class*="header"]',
-        '*[id*="header"]',
-        '*[data-testid*="header"]',
-        '*[data-testid*="Header"]',
-        '*[class*="Header"]',
-        '*[id*="Header"]',
-        'header',
+    const hideFarcasterHeaders = () => {
+      // Only hide very specific Farcaster elements
+      const farcasterSelectors = [
+        '[data-testid="header"]',
+        '[data-testid="app-header"]',
         '.farcaster-header',
         '.app-header',
         '.main-header',
         '.top-header',
         '.fixed-header',
-        '.sticky-header',
-        'div[class*="header"][class*="top"]',
-        'div[class*="header"][class*="fixed"]',
-        'div[class*="header"][class*="absolute"]',
-        'div[class*="header"][class*="sticky"]',
-        'div[class*="Header"][class*="Top"]',
-        'div[class*="Header"][class*="Fixed"]',
-        'div[class*="Header"][class*="Absolute"]',
-        'div[class*="Header"][class*="Sticky"]',
-        'div[class*="farcaster"]',
-        'div[class*="Farcaster"]',
-        'div[id*="farcaster"]',
-        'div[id*="Farcaster"]',
-        'div[data-testid*="farcaster"]',
-        'div[data-testid*="Farcaster"]'
+        '.sticky-header'
       ]
 
-      headerSelectors.forEach(selector => {
+      farcasterSelectors.forEach(selector => {
         try {
           const elements = document.querySelectorAll(selector)
           elements.forEach(element => {
-            if (element && element.parentNode) {
-              // Don't hide our app elements
-              if (element.id === 'root' || 
-                  element.classList.contains('home') || 
-                  element.classList.contains('app') ||
-                  element.classList.contains('header-section') ||
-                  element.id.includes('app') ||
-                  element.classList.contains('nft-mint-page') ||
-                  element.classList.contains('deploy-page')) {
-                return // Skip our app elements
-              }
-              
+            if (element && !element.classList.contains('header-section')) {
               element.style.display = 'none'
-              element.style.visibility = 'hidden'
-              element.style.opacity = '0'
-              element.style.height = '0'
-              element.style.width = '0'
-              element.style.overflow = 'hidden'
-              element.style.position = 'absolute'
-              element.style.left = '-9999px'
-              element.style.top = '-9999px'
-              element.style.zIndex = '-9999'
-              // Try to remove completely
-              try {
-                element.remove()
-              } catch (e) {
-                // If can't remove, just hide
-              }
             }
           })
         } catch (e) {
@@ -114,31 +69,32 @@ const Home = () => {
         }
       })
 
-      // Force body to start from top
-      document.body.style.paddingTop = '0'
-      document.body.style.marginTop = '0'
-      document.documentElement.style.paddingTop = '0'
-      document.documentElement.style.marginTop = '0'
+      // Force our header to be visible
+      const ourHeader = document.querySelector('.header-section')
+      if (ourHeader) {
+        ourHeader.style.display = 'flex'
+        ourHeader.style.visibility = 'visible'
+        ourHeader.style.opacity = '1'
+        ourHeader.style.position = 'fixed'
+        ourHeader.style.top = '0'
+        ourHeader.style.left = '0'
+        ourHeader.style.right = '0'
+        ourHeader.style.zIndex = '999999'
+      }
     }
 
     // Run immediately
-    removeHeaders()
+    hideFarcasterHeaders()
 
     // Run on DOM changes
-    const observer = new MutationObserver(removeHeaders)
+    const observer = new MutationObserver(hideFarcasterHeaders)
     observer.observe(document.body, {
       childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'id', 'style']
+      subtree: true
     })
-
-    // Run periodically
-    const interval = setInterval(removeHeaders, 100)
 
     return () => {
       observer.disconnect()
-      clearInterval(interval)
     }
   }, [])
 
@@ -764,51 +720,38 @@ export default Home
 
 // Modern CSS Styles
 const styles = `
-  /* SELECTIVE: Hide ONLY Farcaster Headers - NOT our app */
-  [data-testid="header"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  [data-testid="app-header"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  .farcaster-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  .app-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  .main-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  .top-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  .fixed-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  .sticky-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="header"][class*="top"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="header"][class*="fixed"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="header"][class*="absolute"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="header"][class*="sticky"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]) {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    overflow: hidden !important;
-    position: absolute !important;
-    left: -9999px !important;
-    top: -9999px !important;
-    z-index: -9999 !important;
+  /* FORCE OUR HEADER TO BE VISIBLE - OVERRIDE EVERYTHING */
+  .header-section {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    width: 100% !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 999999 !important;
+    background: rgba(59, 130, 246, 0.1) !important;
+    backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 16px 20px !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    transform: none !important;
+    clip: none !important;
+    clip-path: none !important;
   }
 
-  /* Hide any element that looks like a header */
-  div[style*="position: fixed"][style*="top: 0"],
-  div[style*="position: sticky"][style*="top: 0"],
-  div[style*="position: absolute"][style*="top: 0"],
-  div[style*="position: fixed"][style*="top: 0px"],
-  div[style*="position: sticky"][style*="top: 0px"],
-  div[style*="position: absolute"][style*="top: 0px"] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-  }
-
-  /* Hide specific Farcaster elements - BUT NOT our app */
-  div[class*="farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="Farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
-  div[id*="farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
-  div[id*="Farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
-  div[data-testid*="farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
-  div[data-testid*="Farcaster"]:not(.home):not([class*="app"]):not([id*="app"]) {
+  /* Hide ONLY specific Farcaster elements - be very specific */
+  [data-testid="header"]:not(.header-section),
+  [data-testid="app-header"]:not(.header-section),
+  .farcaster-header:not(.header-section),
+  .app-header:not(.header-section),
+  .main-header:not(.header-section),
+  .top-header:not(.header-section),
+  .fixed-header:not(.header-section),
+  .sticky-header:not(.header-section) {
     display: none !important;
   }
 
@@ -817,12 +760,6 @@ const styles = `
     padding-top: 0 !important;
     margin-top: 0 !important;
     overflow-x: hidden !important;
-  }
-
-  /* Hide any top-level containers that might be headers - BUT NOT OUR APP */
-  body > div:first-child:not(#root):not(.home):not([class*="app"]):not([id*="app"]),
-  html > body > div:first-child:not(#root):not(.home):not([class*="app"]):not([id*="app"]) {
-    display: none !important;
   }
 
   .home {
