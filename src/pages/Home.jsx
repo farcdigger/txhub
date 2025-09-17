@@ -71,9 +71,7 @@ const Home = () => {
 
       // Force our header to be visible
       const ourHeader = document.querySelector('.header-section')
-      console.log('🔍 Header element found:', ourHeader)
       if (ourHeader) {
-        console.log('🔧 Forcing header visibility')
         ourHeader.style.display = 'flex'
         ourHeader.style.visibility = 'visible'
         ourHeader.style.opacity = '1'
@@ -82,11 +80,7 @@ const Home = () => {
         ourHeader.style.left = '0'
         ourHeader.style.right = '0'
         ourHeader.style.zIndex = '999999'
-        ourHeader.style.background = 'rgba(59, 130, 246, 0.9)'
-        ourHeader.style.border = '3px solid lime' // Debug border
-        console.log('✅ Header style applied')
-      } else {
-        console.log('❌ Header not found in DOM')
+        ourHeader.style.background = 'rgba(59, 130, 246, 0.1)'
       }
     }
 
@@ -262,14 +256,6 @@ const Home = () => {
     },
   ]
 
-  // Debug log
-  console.log('🔍 Header Debug:', {
-    isConnected,
-    address,
-    userXP,
-    userLevel,
-    headerExists: true
-  })
 
   return (
     <div className="home">
@@ -279,34 +265,29 @@ const Home = () => {
         buttonText="Play BaseHub"
       />
       
-      {/* FALLBACK SIMPLE HEADER */}
-      <div style={{
-        position: 'fixed',
-        top: '0',
-        left: '0',
-        right: '0',
-        zIndex: '999999',
-        background: 'red',
-        color: 'white',
-        padding: '10px',
-        textAlign: 'center',
-        fontSize: '14px',
-        fontWeight: 'bold'
-      }}>
-        🔴 FALLBACK HEADER - XP: {userXP} - Connected: {isConnected ? 'YES' : 'NO'} - Address: {address || 'None'}
-      </div>
-
       {/* Header */}
       <div className="header-section" style={{
-        display: 'flex',
-        position: 'fixed',
-        top: '50px',
-        left: '0',
-        right: '0',
-        zIndex: '999999',
-        background: 'rgba(59, 130, 246, 0.9)',
-        padding: '16px 20px',
-        border: '2px solid red' // Debug border
+        display: 'flex !important',
+        position: 'fixed !important',
+        top: '0 !important',
+        left: '0 !important', 
+        right: '0 !important',
+        zIndex: '999999 !important',
+        background: 'rgba(59, 130, 246, 0.1) !important',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        padding: '16px 20px !important',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        transition: 'all 0.3s ease',
+        visibility: 'visible !important',
+        opacity: '1 !important',
+        height: 'auto !important',
+        width: 'auto !important',
+        overflow: 'visible !important',
+        transform: 'none !important',
+        clip: 'none !important',
+        clipPath: 'none !important'
       }}>
         <div className="header-left">
           <div className="profile-section">
@@ -810,7 +791,7 @@ const styles = `
     background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     padding: 20px;
     margin-top: 0 !important;
-    padding-top: 120px !important;
+    padding-top: 100px !important;
   }
 
   /* Header Styles */
