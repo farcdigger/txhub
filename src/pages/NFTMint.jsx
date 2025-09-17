@@ -86,7 +86,7 @@ const NFTMint = () => {
             <p className="text-blue-100">Upload an image and mint your unique NFT on Base</p>
             <div className="mt-4 bg-yellow-400/20 border border-yellow-400/30 rounded-lg p-3">
               <p className="text-yellow-200 text-sm">
-                💰 Mint Fee: 0.0002 ETH | 🎉 Reward: 100 XP
+                💰 Mint Fee: 0.000001 ETH | 🎉 Reward: 100 XP
               </p>
             </div>
           </div>
@@ -206,7 +206,7 @@ const NFTMint = () => {
                   Minting NFT...
                 </div>
               ) : (
-                '🚀 Mint NFT (0.0002 ETH + 100 XP)'
+                '🚀 Mint NFT (0.000001 ETH + 100 XP)'
               )}
             </button>
           </form>
@@ -222,7 +222,7 @@ const NFTMint = () => {
             </div>
             <div className="flex items-start">
               <span className="text-blue-400 mr-3">2.</span>
-              <p>Pay 0.0002 ETH minting fee</p>
+              <p>Pay 0.000001 ETH minting fee</p>
             </div>
             <div className="flex items-start">
               <span className="text-blue-400 mr-3">3.</span>

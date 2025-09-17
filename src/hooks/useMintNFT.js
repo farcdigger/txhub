@@ -441,7 +441,7 @@ export const useMintNFT = () => {
           const feeTxParams = {
             from: address,
             to: feeWallet,
-            value: '0x' + parseEther('0.0002').toString(16), // Hex string with 0x prefix
+            value: '0x' + parseEther('0.000001').toString(16), // Hex string with 0x prefix
             gasPrice: '0x' + currentGasPrice.toString(16), // Legacy gas price
             // NO type field - use legacy transaction to avoid EIP-1559 issues
           }
@@ -458,7 +458,7 @@ export const useMintNFT = () => {
           // Fallback to regular method if direct ethereum provider fails
           feeTxHash = await sendTransaction(config, {
             to: feeWallet,
-            value: parseEther('0.0002'),
+            value: parseEther('0.000001'),
             gasPrice: currentGasPrice, // Legacy gas price
             type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
             // @ts-expect-error - viem/wagmi forward eder
@@ -469,7 +469,7 @@ export const useMintNFT = () => {
         // Use regular sendTransaction for external wallets
         feeTxHash = await sendTransaction(config, {
           to: feeWallet,
-          value: parseEther('0.0002'),
+          value: parseEther('0.000001'),
           gasPrice: currentGasPrice, // Legacy gas price
           type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
           // @ts-expect-error - viem/wagmi forward eder
@@ -665,7 +665,7 @@ export const useMintNFT = () => {
         txHash: mintTxHash,
         contractAddress: deployReceipt.contractAddress,
         feeTxHash,
-        fee: '0.0002 ETH',
+        fee: '0.000001 ETH',
         feeWallet,
         xpEarned: 100,
         status: 'NFT minted successfully! +100 XP earned!'
