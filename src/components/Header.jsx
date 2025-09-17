@@ -38,8 +38,8 @@ const Header = () => {
   const [userXP, setUserXP] = useState(0)
   const [showWalletModal, setShowWalletModal] = useState(false)
   
-  // Calculate BHUB tokens from XP (100 XP = 1 BHUB)
-  const bhubTokens = Math.floor(userXP / 100)
+  // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
+  const bhubTokens = userXP * 10
 
   // Load user XP
   useEffect(() => {
@@ -493,52 +493,27 @@ const Header = () => {
                 {/* Claim Button */}
                 <button
                   className="claim-button"
-                  disabled={bhubTokens === 0}
-                  onClick={() => {
-                    if (bhubTokens > 0) {
-                      console.log('🪙 Claiming BHUB tokens:', bhubTokens)
-                      // TODO: Implement actual claiming logic
-                      alert(`Coming Soon! You would claim ${bhubTokens} BHUB tokens`)
-                    }
-                  }}
+                  disabled
                   style={{
-                    background: bhubTokens > 0 
-                      ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(22, 163, 74, 0.8) 100%)'
-                      : 'linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(107, 114, 128, 0.3) 100%)',
-                    border: bhubTokens > 0 
-                      ? '1px solid rgba(34, 197, 94, 0.6)' 
-                      : '1px solid rgba(156, 163, 175, 0.4)',
+                    background: 'linear-gradient(135deg, rgba(156, 163, 175, 0.3) 0%, rgba(107, 114, 128, 0.3) 100%)',
+                    border: '1px solid rgba(156, 163, 175, 0.4)',
                     borderRadius: '8px',
                     padding: '4px 8px',
                     color: 'rgba(255, 255, 255, 0.9)',
                     fontSize: '10px',
                     fontWeight: '600',
-                    cursor: bhubTokens > 0 ? 'pointer' : 'not-allowed',
+                    cursor: 'not-allowed',
                     backdropFilter: 'blur(10px)',
                     transition: 'all 0.3s ease',
-                    opacity: bhubTokens > 0 ? '1' : '0.6',
+                    opacity: '0.6',
                     whiteSpace: 'nowrap',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '3px'
                   }}
-                  onMouseEnter={(e) => {
-                    if (bhubTokens > 0) {
-                      e.target.style.transform = 'scale(1.05)'
-                      e.target.style.boxShadow = '0 4px 12px rgba(34, 197, 94, 0.3)'
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (bhubTokens > 0) {
-                      e.target.style.transform = 'scale(1)'
-                      e.target.style.boxShadow = 'none'
-                    }
-                  }}
                 >
-                  <span style={{ fontSize: '8px' }}>
-                    {bhubTokens > 0 ? '🪙' : '⏰'}
-                  </span>
-                  <span>{bhubTokens > 0 ? `Claim ${bhubTokens}` : 'Soon'}</span>
+                  <span style={{ fontSize: '8px' }}>⏰</span>
+                  <span>Soon</span>
                 </button>
               </div>
 
@@ -653,144 +628,99 @@ const Header = () => {
           )}
         </div>
 
-        {/* Wallet Selection Modal */}
+        {/* Wallet Selection Overlay */}
         {showWalletModal && (
-          <div className="wallet-modal-overlay" style={{
+          <div className="wallet-selection-overlay" style={{
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
-            backdropFilter: 'blur(12px)',
+            background: 'rgba(0, 0, 0, 0.9)',
+            backdropFilter: 'blur(15px)',
             zIndex: 99999999,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '20px'
           }} onClick={() => setShowWalletModal(false)}>
-            <div className="wallet-modal" style={{
-              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: '20px',
-              padding: '24px',
-              maxWidth: '400px',
-              width: '90%',
-              maxHeight: '80vh',
-              overflowY: 'auto',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.3)',
-              border: '1px solid rgba(255, 255, 255, 0.4)',
-              animation: 'modalSlideIn 0.3s ease-out',
-              position: 'relative',
-              margin: 'auto'
+            {/* Direct Wallet Grid - No Modal Container */}
+            <div className="wallet-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '20px',
+              maxWidth: '500px',
+              width: '100%'
             }} onClick={(e) => e.stopPropagation()}>
-              <div className="modal-header" style={{
-                textAlign: 'center',
-                marginBottom: '20px'
-              }}>
-                <h3 style={{
-                  margin: '0 0 6px 0',
-                  fontSize: '18px',
-                  fontWeight: '700',
-                  color: '#1f2937'
-                }}>Connect Wallet</h3>
-                <p style={{
-                  margin: 0,
-                  color: '#6b7280',
-                  fontSize: '13px',
-                  fontWeight: '500'
-                }}>Choose your preferred wallet</p>
-              </div>
-
-              <div className="wallet-options" style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '12px'
-              }}>
-                {walletOptions.map((wallet) => (
-                  <button
-                    key={wallet.id}
-                    onClick={() => connectWithWallet(wallet.id)}
-                    className="wallet-option"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '12px 8px',
-                      background: 'rgba(255, 255, 255, 0.7)',
-                      border: '1px solid rgba(0, 0, 0, 0.08)',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease',
-                      textAlign: 'center',
-                      minHeight: '85px'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'rgba(59, 130, 246, 0.1)'
-                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.3)'
-                      e.target.style.transform = 'translateY(-4px) scale(1.02)'
-                      e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.15)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'rgba(255, 255, 255, 0.7)'
-                      e.target.style.borderColor = 'rgba(0, 0, 0, 0.08)'
-                      e.target.style.transform = 'translateY(0px) scale(1)'
-                      e.target.style.boxShadow = 'none'
-                    }}
-                  >
-                    <div style={{
-                      fontSize: '24px',
-                      width: '40px',
-                      height: '40px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
-                      borderRadius: '10px',
-                      marginBottom: '2px'
-                    }}>{wallet.icon}</div>
-                    <div>
-                      <div style={{
-                        fontWeight: '600',
-                        color: '#1f2937',
-                        fontSize: '13px',
-                        marginBottom: '2px',
-                        lineHeight: '1.2'
-                      }}>{wallet.name}</div>
-                      <div style={{
-                        color: '#6b7280',
-                        fontSize: '10px',
-                        lineHeight: '1.3'
-                      }}>{wallet.description}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={() => setShowWalletModal(false)}
-                style={{
-                  marginTop: '12px',
-                  width: '100%',
-                  padding: '8px',
-                  background: 'rgba(0, 0, 0, 0.05)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  color: '#6b7280',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(0, 0, 0, 0.1)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(0, 0, 0, 0.05)'
-                }}
-              >
-                Cancel
-              </button>
+              {walletOptions.map((wallet) => (
+                <button
+                  key={wallet.id}
+                  onClick={() => connectWithWallet(wallet.id)}
+                  className="wallet-card-option"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '24px 16px',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    textAlign: 'center',
+                    minHeight: '130px',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+                    backdropFilter: 'blur(20px)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(59, 130, 246, 0.95)'
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.6)'
+                    e.target.style.transform = 'translateY(-8px) scale(1.05)'
+                    e.target.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)'
+                    // Change text color on hover
+                    e.target.querySelector('.wallet-name').style.color = 'white'
+                    e.target.querySelector('.wallet-desc').style.color = 'rgba(255, 255, 255, 0.8)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(255, 255, 255, 0.95)'
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                    e.target.style.transform = 'translateY(0px) scale(1)'
+                    e.target.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)'
+                    // Reset text color
+                    e.target.querySelector('.wallet-name').style.color = '#1f2937'
+                    e.target.querySelector('.wallet-desc').style.color = '#6b7280'
+                  }}
+                >
+                  <div style={{
+                    fontSize: '48px',
+                    width: '64px',
+                    height: '64px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
+                    borderRadius: '16px',
+                    marginBottom: '4px'
+                  }}>{wallet.icon}</div>
+                  <div>
+                    <div className="wallet-name" style={{
+                      fontWeight: '700',
+                      color: '#1f2937',
+                      fontSize: '16px',
+                      marginBottom: '4px',
+                      lineHeight: '1.2',
+                      transition: 'color 0.3s ease'
+                    }}>{wallet.name}</div>
+                    <div className="wallet-desc" style={{
+                      color: '#6b7280',
+                      fontSize: '12px',
+                      lineHeight: '1.3',
+                      transition: 'color 0.3s ease'
+                    }}>{wallet.description}</div>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         )}
