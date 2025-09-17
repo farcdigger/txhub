@@ -84,6 +84,7 @@ const Home = () => {
               if (element.id === 'root' || 
                   element.classList.contains('home') || 
                   element.classList.contains('app') ||
+                  element.classList.contains('header-section') ||
                   element.id.includes('app') ||
                   element.classList.contains('nft-mint-page') ||
                   element.classList.contains('deploy-page')) {
@@ -764,18 +765,18 @@ export default Home
 // Modern CSS Styles
 const styles = `
   /* SELECTIVE: Hide ONLY Farcaster Headers - NOT our app */
-  [data-testid="header"]:not(.home):not([class*="app"]):not([id*="app"]),
-  [data-testid="app-header"]:not(.home):not([class*="app"]):not([id*="app"]),
-  .farcaster-header:not(.home):not([class*="app"]):not([id*="app"]),
-  .app-header:not(.home):not([class*="app"]):not([id*="app"]),
-  .main-header:not(.home):not([class*="app"]):not([id*="app"]),
-  .top-header:not(.home):not([class*="app"]):not([id*="app"]),
-  .fixed-header:not(.home):not([class*="app"]):not([id*="app"]),
-  .sticky-header:not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="header"][class*="top"]:not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="header"][class*="fixed"]:not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="header"][class*="absolute"]:not(.home):not([class*="app"]):not([id*="app"]),
-  div[class*="header"][class*="sticky"]:not(.home):not([class*="app"]):not([id*="app"]) {
+  [data-testid="header"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  [data-testid="app-header"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  .farcaster-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  .app-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  .main-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  .top-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  .fixed-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  .sticky-header:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="header"][class*="top"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="header"][class*="fixed"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="header"][class*="absolute"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="header"][class*="sticky"]:not(.header-section):not(.home):not([class*="app"]):not([id*="app"]) {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
@@ -834,19 +835,24 @@ const styles = `
 
   /* Header Styles */
   .header-section {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: space-between;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
     padding: 16px 20px;
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(59, 130, 246, 0.1) !important;
     backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
   }
 
   .header-left {
