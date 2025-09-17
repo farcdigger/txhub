@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi'
 import { getLeaderboard } from '../utils/xpUtils'
 import { useTransactions } from '../hooks/useTransactions'
 import EmbedMeta from '../components/EmbedMeta'
-import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp } from 'lucide-react'
+import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp, Image } from 'lucide-react'
 
 const Home = () => {
   const { isConnected } = useAccount()
@@ -162,6 +162,16 @@ const Home = () => {
       path: '/deploy',
       color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
       xpReward: '50 XP',
+      bonusXP: null
+    },
+    {
+      id: 'nft',
+      title: 'NFT Mint',
+      description: 'Create and mint your own NFT',
+      icon: <Image size={20} />,
+      path: '/nft',
+      color: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+      xpReward: '100 XP',
       bonusXP: null
     },
   ]

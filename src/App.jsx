@@ -15,6 +15,7 @@ import LuckyNumberGame from './pages/LuckyNumberGame'
 import DiceRollGame from './pages/DiceRollGame'
 import Leaderboard from './pages/Leaderboard'
 import DeployToken from './pages/DeployToken'
+import NFTMint from './pages/NFTMint'
 import './styles/index.css'
 
 const queryClient = new QueryClient()
@@ -60,6 +61,7 @@ function AppContent() {
             <Route path="/dice" element={<DiceRollGame />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/deploy" element={<DeployToken />} />
+            <Route path="/nft" element={<NFTMint />} />
           </Routes>
         </main>
       </div>
