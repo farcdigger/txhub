@@ -71,7 +71,9 @@ const Home = () => {
 
       // Force our header to be visible
       const ourHeader = document.querySelector('.header-section')
+      console.log('🔍 Header element found:', ourHeader)
       if (ourHeader) {
+        console.log('🔧 Forcing header visibility')
         ourHeader.style.display = 'flex'
         ourHeader.style.visibility = 'visible'
         ourHeader.style.opacity = '1'
@@ -80,6 +82,11 @@ const Home = () => {
         ourHeader.style.left = '0'
         ourHeader.style.right = '0'
         ourHeader.style.zIndex = '999999'
+        ourHeader.style.background = 'rgba(59, 130, 246, 0.9)'
+        ourHeader.style.border = '3px solid lime' // Debug border
+        console.log('✅ Header style applied')
+      } else {
+        console.log('❌ Header not found in DOM')
       }
     }
 
@@ -255,6 +262,15 @@ const Home = () => {
     },
   ]
 
+  // Debug log
+  console.log('🔍 Header Debug:', {
+    isConnected,
+    address,
+    userXP,
+    userLevel,
+    headerExists: true
+  })
+
   return (
     <div className="home">
       <EmbedMeta 
@@ -264,7 +280,17 @@ const Home = () => {
       />
       
       {/* Header */}
-      <div className="header-section">
+      <div className="header-section" style={{
+        display: 'flex',
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        right: '0',
+        zIndex: '999999',
+        background: 'rgba(59, 130, 246, 0.9)',
+        padding: '16px 20px',
+        border: '2px solid red' // Debug border
+      }}>
         <div className="header-left">
           <div className="profile-section">
             <div className="profile-avatar">🎮</div>
