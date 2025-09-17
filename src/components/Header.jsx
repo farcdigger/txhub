@@ -7,6 +7,7 @@ const Header = () => {
   const { disconnect } = useDisconnect()
   const [userXP, setUserXP] = useState(0)
   const [userLevel, setUserLevel] = useState(1)
+  const [showWalletModal, setShowWalletModal] = useState(false)
 
   // Load user XP
   useEffect(() => {
@@ -144,6 +145,45 @@ const Header = () => {
     userLevel
   })
 
+  // Wallet options for connection
+  const walletOptions = [
+    {
+      id: 'injected',
+      name: 'Browser Wallet',
+      icon: '🌐',
+      description: 'MetaMask, Brave, etc.'
+    },
+    {
+      id: 'metaMask',
+      name: 'MetaMask',
+      icon: '🦊',
+      description: 'Connect with MetaMask'
+    },
+    {
+      id: 'farcaster',
+      name: 'Farcaster',
+      icon: '🎭',
+      description: 'Farcaster Mini App'
+    },
+    {
+      id: 'coinbase',
+      name: 'Coinbase Wallet',
+      icon: '🔵',
+      description: 'Coinbase Wallet'
+    }
+  ]
+
+  const connectWithWallet = async (walletId) => {
+    console.log('🔗 Connecting with wallet:', walletId)
+    setShowWalletModal(false)
+    
+    if (window.__walletConnect) {
+      window.__walletConnect(walletId)
+    } else {
+      await handleConnect()
+    }
+  }
+
   return (
     <div className="header-section" style={{
       display: 'flex !important',
@@ -235,114 +275,360 @@ const Header = () => {
         </div>
       </div>
       
-      {/* Right - XP, Token, Wallet */}
-      <div className="header-right">
-        {isConnected ? (
-          <div className="user-section" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <div className="xp-token-info" style={{
+        {/* Right - Modern XP, Token, Wallet */}
+        <div className="header-right">
+          {isConnected ? (
+            <div className="user-section" style={{
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-              gap: '2px'
+              alignItems: 'center',
+              gap: '16px'
             }}>
-              <div className="xp-badge" style={{
+              {/* XP & Level Cards */}
+              <div className="stats-container" style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                color: 'white',
-                padding: '2px 6px',
-                borderRadius: '8px',
-                fontSize: '11px',
-                fontWeight: '600'
+                gap: '8px',
+                alignItems: 'center'
               }}>
-                <span>⚡</span>
-                <span>{userXP} XP</span>
+                {/* XP Card */}
+                <div className="stat-card xp-card" style={{
+                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                  borderRadius: '12px',
+                  padding: '6px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px) scale(1.05)'
+                  e.target.style.boxShadow = '0 6px 16px rgba(251, 191, 36, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0px) scale(1)'
+                  e.target.style.boxShadow = '0 4px 12px rgba(251, 191, 36, 0.3)'
+                }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px'
+                  }}>⚡</div>
+                  <div>
+                    <div style={{
+                      color: 'white',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      lineHeight: '1'
+                    }}>{userXP.toLocaleString()}</div>
+                    <div style={{
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: '10px',
+                      fontWeight: '500',
+                      lineHeight: '1'
+                    }}>XP</div>
+                  </div>
+                </div>
+
+                {/* Level Card */}
+                <div className="stat-card level-card" style={{
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                  borderRadius: '12px',
+                  padding: '6px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px) scale(1.05)'
+                  e.target.style.boxShadow = '0 6px 16px rgba(139, 92, 246, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0px) scale(1)'
+                  e.target.style.boxShadow = '0 4px 12px rgba(139, 92, 246, 0.3)'
+                }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px'
+                  }}>🏆</div>
+                  <div>
+                    <div style={{
+                      color: 'white',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      lineHeight: '1'
+                    }}>{userLevel}</div>
+                    <div style={{
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: '10px',
+                      fontWeight: '500',
+                      lineHeight: '1'
+                    }}>Level</div>
+                  </div>
+                </div>
               </div>
-              <div className="token-balance" style={{
+
+              {/* Wallet Card */}
+              <div className="wallet-card" style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
+                padding: '8px 12px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(20px)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
-                fontSize: '11px',
-                color: 'rgba(255, 255, 255, 0.8)'
+                gap: '10px',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
               }}>
-                <span>🪙</span>
-                <span>Level {userLevel}</span>
+                <div className="wallet-avatar" style={{
+                  width: '32px',
+                  height: '32px',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '14px',
+                  color: 'white'
+                }}>👤</div>
+                <div className="wallet-details">
+                  <div style={{
+                    color: 'white',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    lineHeight: '1'
+                  }}>{formatAddress(address)}</div>
+                  <div style={{
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '10px',
+                    lineHeight: '1',
+                    marginTop: '2px'
+                  }}>Connected</div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    disconnect()
+                  }}
+                  className="disconnect-btn"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.2)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    color: 'white',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = 'rgba(239, 68, 68, 0.4)'
+                    e.target.style.transform = 'scale(1.1)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(239, 68, 68, 0.2)'
+                    e.target.style.transform = 'scale(1)'
+                  }}
+                  title="Disconnect Wallet"
+                >×</button>
               </div>
             </div>
-            <div className="wallet-info" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-              gap: '2px'
-            }}>
-              <div className="wallet-address" style={{
-                fontSize: '11px',
-                fontWeight: '600',
+          ) : (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                console.log('🖱️ Connect button clicked!')
+                setShowWalletModal(true)
+              }}
+              className="connect-button"
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                border: 'none',
                 color: 'white',
-                background: 'rgba(255, 255, 255, 0.2)',
-                padding: '2px 6px',
-                borderRadius: '4px'
-              }}>{formatAddress(address)}</div>
+                padding: '10px 20px',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                e.target.style.transform = 'translateY(-2px)'
+                e.target.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                e.target.style.transform = 'translateY(0px)'
+                e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+              }}
+            >
+              <span>🔗</span>
+              <span>Connect Wallet</span>
+            </button>
+          )}
+        </div>
+
+        {/* Wallet Selection Modal */}
+        {showWalletModal && (
+          <div className="wallet-modal-overlay" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+          }} onClick={() => setShowWalletModal(false)}>
+            <div className="wallet-modal" style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '20px',
+              padding: '24px',
+              maxWidth: '400px',
+              width: '100%',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }} onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header" style={{
+                textAlign: 'center',
+                marginBottom: '20px'
+              }}>
+                <h3 style={{
+                  margin: '0 0 8px 0',
+                  fontSize: '20px',
+                  fontWeight: '700',
+                  color: '#1f2937'
+                }}>Connect Your Wallet</h3>
+                <p style={{
+                  margin: 0,
+                  color: '#6b7280',
+                  fontSize: '14px'
+                }}>Choose how you'd like to connect</p>
+              </div>
+
+              <div className="wallet-options" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                {walletOptions.map((wallet) => (
+                  <button
+                    key={wallet.id}
+                    onClick={() => connectWithWallet(wallet.id)}
+                    className="wallet-option"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '16px',
+                      background: 'rgba(255, 255, 255, 0.5)',
+                      border: '1px solid rgba(0, 0, 0, 0.1)',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      textAlign: 'left'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'rgba(59, 130, 246, 0.1)'
+                      e.target.style.borderColor = 'rgba(59, 130, 246, 0.2)'
+                      e.target.style.transform = 'translateY(-2px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.5)'
+                      e.target.style.borderColor = 'rgba(0, 0, 0, 0.1)'
+                      e.target.style.transform = 'translateY(0px)'
+                    }}
+                  >
+                    <div style={{
+                      fontSize: '24px',
+                      width: '40px',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      borderRadius: '8px'
+                    }}>{wallet.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{
+                        fontWeight: '600',
+                        color: '#1f2937',
+                        fontSize: '14px',
+                        marginBottom: '2px'
+                      }}>{wallet.name}</div>
+                      <div style={{
+                        color: '#6b7280',
+                        fontSize: '12px'
+                      }}>{wallet.description}</div>
+                    </div>
+                    <div style={{
+                      color: '#6b7280',
+                      fontSize: '16px'
+                    }}>→</div>
+                  </button>
+                ))}
+              </div>
+
               <button
-                onClick={() => disconnect()}
-                className="disconnect-button"
+                onClick={() => setShowWalletModal(false)}
                 style={{
-                  background: 'rgba(239, 68, 68, 0.2)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  color: 'white',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
+                  marginTop: '16px',
+                  width: '100%',
+                  padding: '12px',
+                  background: 'rgba(0, 0, 0, 0.05)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#6b7280',
+                  fontSize: '14px',
                   cursor: 'pointer',
-                  fontSize: '10px',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(239, 68, 68, 0.3)'
+                  e.target.style.background = 'rgba(0, 0, 0, 0.1)'
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(239, 68, 68, 0.2)'
+                  e.target.style.background = 'rgba(0, 0, 0, 0.05)'
                 }}
               >
-                Disconnect
+                Cancel
               </button>
             </div>
           </div>
-        ) : (
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              console.log('🖱️ Connect button clicked!')
-              handleConnect()
-            }}
-            className="connect-button"
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              border: 'none',
-              color: 'white',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)'
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-            }}
-          >
-            Connect Wallet
-          </button>
         )}
-      </div>
     </div>
   )
 }
