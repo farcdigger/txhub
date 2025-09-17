@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useMintNFT } from '../hooks/useMintNFT'
-import { getUserXP } from '../utils/xpUtils'
+import { getXP } from '../utils/xpUtils'
 
 const NFTMint = () => {
   const navigate = useNavigate()
@@ -37,9 +37,9 @@ const NFTMint = () => {
     const loadUserXP = async () => {
       if (address) {
         try {
-          const xpData = await getUserXP(address)
-          setUserXP(xpData.total_xp || 0)
-          setUserLevel(xpData.level || 1)
+          const totalXP = await getXP(address)
+          setUserXP(totalXP || 0)
+          setUserLevel(Math.floor(totalXP / 100) + 1)
         } catch (error) {
           console.error('Error loading user XP:', error)
         }
