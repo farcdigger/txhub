@@ -179,7 +179,7 @@ const Home = () => {
             <div style={{ 
               fontSize: '48px', 
               marginBottom: '16px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
@@ -526,9 +526,9 @@ const Home = () => {
               <div style={{ 
                 textAlign: 'center',
                 padding: '12px',
-                background: 'rgba(102, 126, 234, 0.1)',
+                background: 'rgba(59, 130, 246, 0.1)',
                 borderRadius: '8px',
-                border: '1px solid rgba(102, 126, 234, 0.2)'
+                border: '1px solid rgba(59, 130, 246, 0.2)'
               }}>
                 <p style={{ 
                   color: '#6b7280',
@@ -552,7 +552,7 @@ export default Home
 const styles = `
   .home {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     padding: 20px;
   }
 
@@ -607,7 +607,7 @@ const styles = `
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
     border-radius: 20px 20px 0 0;
   }
 
@@ -660,7 +660,7 @@ const styles = `
     width: 20px;
     height: 20px;
     border: 2px solid #f3f3f3;
-    border-top: 2px solid #667eea;
+    border-top: 2px solid #3b82f6;
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }

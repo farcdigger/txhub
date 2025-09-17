@@ -140,19 +140,19 @@ const headerStyles = `
   .logo-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
     transition: all 0.3s ease;
   }
 
   .logo-section:hover .logo-icon {
     transform: scale(1.05) rotate(5deg);
-    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
   }
 
   .logo-text {
@@ -166,7 +166,7 @@ const headerStyles = `
     font-weight: 800;
     color: #1f2937;
     line-height: 1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -191,20 +191,20 @@ const headerStyles = `
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: rgba(102, 126, 234, 0.1);
-    color: #667eea;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
     text-decoration: none;
     border-radius: 10px;
     font-weight: 600;
     font-size: 14px;
     transition: all 0.3s ease;
-    border: 1px solid rgba(102, 126, 234, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.2);
   }
 
   .nav-button:hover {
-    background: rgba(102, 126, 234, 0.2);
+    background: rgba(59, 130, 246, 0.2);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
   }
 
   .status-indicators {
@@ -278,14 +278,14 @@ const headerStyles = `
   }
 
   .action-button.primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
     color: white;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
   }
 
   .action-button.primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
   }
 
   .action-button.secondary {

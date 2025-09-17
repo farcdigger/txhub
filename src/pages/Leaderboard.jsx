@@ -61,7 +61,7 @@ const Leaderboard = () => {
       case 3:
         return 'linear-gradient(135deg, #CD7F32 0%, #B8860B 100%)'
       default:
-        return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        return 'linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%)'
     }
   }
 
