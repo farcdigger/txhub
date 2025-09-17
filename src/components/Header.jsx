@@ -376,7 +376,7 @@ const Header = () => {
       
         {/* Right - Modern XP, Token, Wallet */}
         <div className="header-right">
-          {isConnected ? (
+            {isConnected ? (
             <div className="user-section" style={{
               display: 'flex',
               alignItems: 'center',
@@ -485,7 +485,7 @@ const Header = () => {
                 </div>
 
                 {/* Claim Button */}
-                <button
+                <button 
                   className="claim-button"
                   disabled
                   style={{
@@ -582,9 +582,9 @@ const Header = () => {
                   title="Disconnect Wallet"
                 >×</button>
               </div>
-            </div>
-          ) : (
-            <button
+              </div>
+            ) : (
+              <button 
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -632,9 +632,9 @@ const Header = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.7)',
-            backdropFilter: 'blur(8px)',
-            zIndex: 9999999,
+            background: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(12px)',
+            zIndex: 99999999,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -643,45 +643,34 @@ const Header = () => {
             <div className="wallet-modal" style={{
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)',
               backdropFilter: 'blur(20px)',
-              borderRadius: '24px',
-              padding: '28px',
-              maxWidth: '420px',
-              width: '100%',
-              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.3)',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              animation: 'modalSlideIn 0.3s ease-out'
+              borderRadius: '20px',
+              padding: '24px',
+              maxWidth: '400px',
+              width: '90%',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.3)',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+              animation: 'modalSlideIn 0.3s ease-out',
+              position: 'relative',
+              margin: 'auto'
             }} onClick={(e) => e.stopPropagation()}>
               <div className="modal-header" style={{
                 textAlign: 'center',
-                marginBottom: '24px'
+                marginBottom: '20px'
               }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 16px auto',
-                  fontSize: '20px'
-                }}>🔗</div>
                 <h3 style={{
-                  margin: '0 0 8px 0',
-                  fontSize: '22px',
+                  margin: '0 0 6px 0',
+                  fontSize: '18px',
                   fontWeight: '700',
-                  color: '#1f2937',
-                  background: 'linear-gradient(135deg, #1f2937 0%, #3b82f6 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
+                  color: '#1f2937'
                 }}>Connect Wallet</h3>
                 <p style={{
                   margin: 0,
                   color: '#6b7280',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: '500'
-                }}>Choose your preferred wallet to connect</p>
+                }}>Choose your preferred wallet</p>
               </div>
 
               <div className="wallet-options" style={{
@@ -698,15 +687,15 @@ const Header = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '8px',
-                      padding: '16px 12px',
+                      gap: '6px',
+                      padding: '12px 8px',
                       background: 'rgba(255, 255, 255, 0.7)',
                       border: '1px solid rgba(0, 0, 0, 0.08)',
-                      borderRadius: '16px',
+                      borderRadius: '12px',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
                       textAlign: 'center',
-                      minHeight: '100px'
+                      minHeight: '85px'
                     }}
                     onMouseEnter={(e) => {
                       e.target.style.background = 'rgba(59, 130, 246, 0.1)'
@@ -722,15 +711,15 @@ const Header = () => {
                     }}
                   >
                     <div style={{
-                      fontSize: '28px',
-                      width: '48px',
-                      height: '48px',
+                      fontSize: '24px',
+                      width: '40px',
+                      height: '40px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
-                      borderRadius: '12px',
-                      marginBottom: '4px'
+                      borderRadius: '10px',
+                      marginBottom: '2px'
                     }}>{wallet.icon}</div>
                     <div>
                       <div style={{
@@ -753,14 +742,14 @@ const Header = () => {
               <button
                 onClick={() => setShowWalletModal(false)}
                 style={{
-                  marginTop: '16px',
+                  marginTop: '12px',
                   width: '100%',
-                  padding: '12px',
+                  padding: '8px',
                   background: 'rgba(0, 0, 0, 0.05)',
                   border: 'none',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   color: '#6b7280',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}
@@ -776,7 +765,7 @@ const Header = () => {
             </div>
           </div>
         )}
-    </div>
+      </div>
   )
 }
 
