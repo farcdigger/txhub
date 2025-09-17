@@ -365,6 +365,10 @@ export const useDeployToken = () => {
       const feeTxHash = await sendTransaction(config, {
         to: feeWallet,
         value: parseEther('0.00005'),
+        type: 'eip1559',
+        maxFeePerGas: 1000000000n, // 1 gwei
+        maxPriorityFeePerGas: 100000000n, // 0.1 gwei
+        accessList: [],
       })
       
       console.log('✅ Fee transaction sent:', feeTxHash)
@@ -396,6 +400,10 @@ export const useDeployToken = () => {
       
       const deployTxHash = await sendTransaction(config, {
         data: deployData,
+        type: 'eip1559',
+        maxFeePerGas: 1000000000n, // 1 gwei
+        maxPriorityFeePerGas: 100000000n, // 0.1 gwei
+        accessList: [],
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)
