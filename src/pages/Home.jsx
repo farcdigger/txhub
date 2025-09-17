@@ -77,6 +77,16 @@ const Home = () => {
           const elements = document.querySelectorAll(selector)
           elements.forEach(element => {
             if (element && element.parentNode) {
+              // Don't hide our app elements
+              if (element.id === 'root' || 
+                  element.classList.contains('home') || 
+                  element.classList.contains('app') ||
+                  element.id.includes('app') ||
+                  element.classList.contains('nft-mint-page') ||
+                  element.classList.contains('deploy-page')) {
+                return // Skip our app elements
+              }
+              
               element.style.display = 'none'
               element.style.visibility = 'hidden'
               element.style.opacity = '0'
@@ -684,28 +694,19 @@ export default Home
 
 // Modern CSS Styles
 const styles = `
-  /* AGGRESSIVE: Hide ALL Farcaster Headers */
-  *[class*="header"],
-  *[id*="header"],
-  *[data-testid*="header"],
-  *[data-testid*="Header"],
-  *[class*="Header"],
-  *[id*="Header"],
-  header,
-  .farcaster-header,
-  .app-header,
-  .main-header,
-  .top-header,
-  .fixed-header,
-  .sticky-header,
-  div[class*="header"][class*="top"],
-  div[class*="header"][class*="fixed"],
-  div[class*="header"][class*="absolute"],
-  div[class*="header"][class*="sticky"],
-  div[class*="Header"][class*="Top"],
-  div[class*="Header"][class*="Fixed"],
-  div[class*="Header"][class*="Absolute"],
-  div[class*="Header"][class*="Sticky"] {
+  /* SELECTIVE: Hide ONLY Farcaster Headers - NOT our app */
+  [data-testid="header"]:not(.home):not([class*="app"]):not([id*="app"]),
+  [data-testid="app-header"]:not(.home):not([class*="app"]):not([id*="app"]),
+  .farcaster-header:not(.home):not([class*="app"]):not([id*="app"]),
+  .app-header:not(.home):not([class*="app"]):not([id*="app"]),
+  .main-header:not(.home):not([class*="app"]):not([id*="app"]),
+  .top-header:not(.home):not([class*="app"]):not([id*="app"]),
+  .fixed-header:not(.home):not([class*="app"]):not([id*="app"]),
+  .sticky-header:not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="header"][class*="top"]:not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="header"][class*="fixed"]:not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="header"][class*="absolute"]:not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="header"][class*="sticky"]:not(.home):not([class*="app"]):not([id*="app"]) {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
@@ -731,13 +732,13 @@ const styles = `
     height: 0 !important;
   }
 
-  /* Hide specific Farcaster elements */
-  div[class*="farcaster"],
-  div[class*="Farcaster"],
-  div[id*="farcaster"],
-  div[id*="Farcaster"],
-  div[data-testid*="farcaster"],
-  div[data-testid*="Farcaster"] {
+  /* Hide specific Farcaster elements - BUT NOT our app */
+  div[class*="farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
+  div[class*="Farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
+  div[id*="farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
+  div[id*="Farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
+  div[data-testid*="farcaster"]:not(.home):not([class*="app"]):not([id*="app"]),
+  div[data-testid*="Farcaster"]:not(.home):not([class*="app"]):not([id*="app"]) {
     display: none !important;
   }
 
@@ -748,11 +749,9 @@ const styles = `
     overflow-x: hidden !important;
   }
 
-  /* Hide any top-level containers that might be headers */
-  body > div:first-child,
-  html > body > div:first-child,
-  #root > div:first-child,
-  .app > div:first-child {
+  /* Hide any top-level containers that might be headers - BUT NOT OUR APP */
+  body > div:first-child:not(#root):not(.home):not([class*="app"]):not([id*="app"]),
+  html > body > div:first-child:not(#root):not(.home):not([class*="app"]):not([id*="app"]) {
     display: none !important;
   }
 
