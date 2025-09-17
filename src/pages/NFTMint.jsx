@@ -65,74 +65,83 @@ const NFTMint = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 p-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="nft-mint-page">
+      <div className="container">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="header-section">
           <button
             onClick={() => navigate('/')}
-            className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors"
+            className="home-button"
           >
             ← Home
           </button>
-          <h1 className="text-3xl font-bold text-white">NFT Mint</h1>
-          <div className="w-20"></div> {/* Spacer */}
+          <div className="header-content">
+            <div className="header-icon">🎨</div>
+            <h1 className="header-title">NFT Mint</h1>
+            <p className="header-subtitle">Create & Mint Your Unique NFT</p>
+          </div>
+          <div className="header-spacer"></div>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-white mb-2">Create Your NFT</h2>
-            <p className="text-blue-100">Upload an image and mint your unique NFT on Base</p>
-            <div className="mt-4 bg-yellow-400/20 border border-yellow-400/30 rounded-lg p-3">
-              <p className="text-yellow-200 text-sm">
-                💰 Mint Fee: 0.000001 ETH | 🎉 Reward: 100 XP
-              </p>
+        <div className="main-card">
+          <div className="card-header">
+            <div className="card-icon">✨</div>
+            <h2 className="card-title">Create Your NFT</h2>
+            <p className="card-subtitle">Upload an image and mint your unique NFT on Base network</p>
+            <div className="fee-badge">
+              <span className="fee-icon">💰</span>
+              <span className="fee-text">Mint Fee: 0.000001 ETH</span>
+              <span className="reward-text">| 🎉 Reward: 100 XP</span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="nft-form">
             {/* Image Upload */}
-            <div>
-              <label className="block text-white font-medium mb-2">
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">🖼️</span>
                 NFT Image *
               </label>
-              <div className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center hover:border-white/50 transition-colors">
+              <div className="image-upload-area">
                 {formData.imagePreview ? (
-                  <div className="space-y-4">
+                  <div className="image-preview">
                     <img
                       src={formData.imagePreview}
                       alt="Preview"
-                      className="max-w-full max-h-64 mx-auto rounded-lg"
+                      className="preview-image"
                     />
-                    <p className="text-white/80 text-sm">{formData.image.name}</p>
-                    <button
-                      type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, image: null, imagePreview: null }))}
-                      className="text-red-400 hover:text-red-300 text-sm"
-                    >
-                      Remove Image
-                    </button>
+                    <div className="image-info">
+                      <p className="image-name">{formData.image.name}</p>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, image: null, imagePreview: null }))}
+                        className="remove-button"
+                      >
+                        🗑️ Remove
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <div>
-                    <div className="text-4xl text-white/50 mb-2">📷</div>
-                    <p className="text-white/80 mb-2">Click to upload your NFT image</p>
-                    <p className="text-white/60 text-sm">Max 5MB, JPG/PNG/GIF</p>
+                  <div className="upload-placeholder">
+                    <div className="upload-icon">📷</div>
+                    <p className="upload-text">Click to upload your NFT image</p>
+                    <p className="upload-hint">Max 5MB, JPG/PNG/GIF</p>
                   </div>
                 )}
                 <input
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  className="file-input"
                 />
               </div>
             </div>
 
             {/* NFT Name */}
-            <div>
-              <label className="block text-white font-medium mb-2">
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">🏷️</span>
                 NFT Name *
               </label>
               <input
@@ -142,14 +151,15 @@ const NFTMint = () => {
                 onChange={handleInputChange}
                 placeholder="Enter NFT name"
                 maxLength={50}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/50"
+                className="form-input"
                 required
               />
             </div>
 
             {/* NFT Symbol */}
-            <div>
-              <label className="block text-white font-medium mb-2">
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">🔤</span>
                 NFT Symbol *
               </label>
               <input
@@ -159,14 +169,15 @@ const NFTMint = () => {
                 onChange={handleInputChange}
                 placeholder="Enter NFT symbol (e.g., MYNFT)"
                 maxLength={10}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/50"
+                className="form-input"
                 required
               />
             </div>
 
             {/* Description */}
-            <div>
-              <label className="block text-white font-medium mb-2">
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">📝</span>
                 Description
               </label>
               <textarea
@@ -176,21 +187,23 @@ const NFTMint = () => {
                 placeholder="Describe your NFT (optional)"
                 maxLength={200}
                 rows={3}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/50 resize-none"
+                className="form-textarea"
               />
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-4">
-                <p className="text-red-200 text-sm">{error}</p>
+              <div className="error-message">
+                <span className="error-icon">❌</span>
+                <p className="error-text">{error}</p>
               </div>
             )}
 
             {/* Success Message */}
             {successMessage && (
-              <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
-                <p className="text-green-200 text-sm">{successMessage}</p>
+              <div className="success-message">
+                <span className="success-icon">✅</span>
+                <p className="success-text">{successMessage}</p>
               </div>
             )}
 
@@ -198,39 +211,57 @@ const NFTMint = () => {
             <button
               type="submit"
               disabled={isLoading || !formData.name || !formData.symbol || !formData.image}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-500 disabled:to-gray-600 text-white font-bold py-4 px-6 rounded-lg transition-all duration-200 disabled:cursor-not-allowed"
+              className="mint-button"
             >
               {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Minting NFT...
+                <div className="button-loading">
+                  <div className="loading-spinner"></div>
+                  <span>Minting NFT...</span>
                 </div>
               ) : (
-                '🚀 Mint NFT (0.000001 ETH + 100 XP)'
+                <div className="button-content">
+                  <span className="button-icon">🚀</span>
+                  <span>Mint NFT (0.000001 ETH + 100 XP)</span>
+                </div>
               )}
             </button>
           </form>
         </div>
 
         {/* Info Card */}
-        <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-          <h3 className="text-xl font-bold text-white mb-4">How it works</h3>
-          <div className="space-y-3 text-white/80">
-            <div className="flex items-start">
-              <span className="text-blue-400 mr-3">1.</span>
-              <p>Upload your image and fill in the NFT details</p>
+        <div className="info-card">
+          <div className="info-header">
+            <div className="info-icon">💡</div>
+            <h3 className="info-title">How it works</h3>
+          </div>
+          <div className="info-steps">
+            <div className="info-step">
+              <div className="step-number">1</div>
+              <div className="step-content">
+                <div className="step-icon">📤</div>
+                <p>Upload your image and fill in the NFT details</p>
+              </div>
             </div>
-            <div className="flex items-start">
-              <span className="text-blue-400 mr-3">2.</span>
-              <p>Pay 0.000001 ETH minting fee</p>
+            <div className="info-step">
+              <div className="step-number">2</div>
+              <div className="step-content">
+                <div className="step-icon">💰</div>
+                <p>Pay 0.000001 ETH minting fee</p>
+              </div>
             </div>
-            <div className="flex items-start">
-              <span className="text-blue-400 mr-3">3.</span>
-              <p>Your NFT is minted on Base network</p>
+            <div className="info-step">
+              <div className="step-number">3</div>
+              <div className="step-content">
+                <div className="step-icon">⛓️</div>
+                <p>Your NFT is minted on Base network</p>
+              </div>
             </div>
-            <div className="flex items-start">
-              <span className="text-blue-400 mr-3">4.</span>
-              <p>Earn 100 XP for successful minting!</p>
+            <div className="info-step">
+              <div className="step-number">4</div>
+              <div className="step-content">
+                <div className="step-icon">🎉</div>
+                <p>Earn 100 XP for successful minting!</p>
+              </div>
             </div>
           </div>
         </div>
@@ -240,3 +271,465 @@ const NFTMint = () => {
 }
 
 export default NFTMint
+
+// Modern CSS Styles
+const styles = `
+  .nft-mint-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Header Styles */
+  .header-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .home-button {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .home-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .header-content {
+    text-align: center;
+    flex: 1;
+  }
+
+  .header-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+  }
+
+  .header-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 4px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .header-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+  }
+
+  .header-spacer {
+    width: 100px;
+  }
+
+  /* Main Card Styles */
+  .main-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 24px;
+  }
+
+  .card-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .card-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+  }
+
+  .card-subtitle {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0 0 20px 0;
+  }
+
+  .fee-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  }
+
+  .fee-icon {
+    font-size: 16px;
+  }
+
+  /* Form Styles */
+  .nft-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 14px;
+  }
+
+  .label-icon {
+    font-size: 16px;
+  }
+
+  /* Image Upload Styles */
+  .image-upload-area {
+    position: relative;
+    border: 2px dashed #d1d5db;
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: #f9fafb;
+  }
+
+  .image-upload-area:hover {
+    border-color: #8b5cf6;
+    background: #f3f4f6;
+  }
+
+  .upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .upload-icon {
+    font-size: 48px;
+    color: #9ca3af;
+  }
+
+  .upload-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+  }
+
+  .upload-hint {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .image-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .image-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .image-name {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .remove-button {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .remove-button:hover {
+    background: #dc2626;
+  }
+
+  .file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  /* Input Styles */
+  .form-input, .form-textarea {
+    width: 100%;
+    padding: 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+    color: #374151;
+  }
+
+  .form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  }
+
+  .form-input::placeholder, .form-textarea::placeholder {
+    color: #9ca3af;
+  }
+
+  .form-textarea {
+    resize: none;
+    min-height: 100px;
+  }
+
+  /* Message Styles */
+  .error-message, .success-message {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .error-message {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+  }
+
+  .success-message {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+  }
+
+  .error-icon, .success-icon {
+    font-size: 20px;
+  }
+
+  /* Button Styles */
+  .mint-button {
+    width: 100%;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    padding: 20px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+  }
+
+  .mint-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(139, 92, 246, 0.4);
+  }
+
+  .mint-button:disabled {
+    background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .button-icon {
+    font-size: 20px;
+  }
+
+  .button-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Info Card Styles */
+  .info-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .info-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .info-icon {
+    font-size: 24px;
+  }
+
+  .info-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  .info-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .info-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .step-number {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .step-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .step-icon {
+    font-size: 20px;
+  }
+
+  .step-content p {
+    margin: 0;
+    color: #374151;
+    font-weight: 500;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .nft-mint-page {
+      padding: 16px;
+    }
+
+    .main-card, .info-card {
+      padding: 24px;
+    }
+
+    .header-title {
+      font-size: 24px;
+    }
+
+    .card-title {
+      font-size: 24px;
+    }
+
+    .header-section {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .header-spacer {
+      display: none;
+    }
+  }
+`
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style')
+  styleSheet.textContent = styles
+  document.head.appendChild(styleSheet)
+}
