@@ -1,17 +1,21 @@
 import { http, createConfig } from 'wagmi'
 import { base } from 'wagmi/chains'
+import { injected, metaMask } from 'wagmi/connectors'
 import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector'
 
-// Simple Wagmi config for Farcaster-only app
+// Wagmi config with multiple wallet support
 export const config = createConfig({
   chains: [base],
   transports: {
     [base.id]: http(),
   },
   connectors: [
-    // Only Farcaster Mini App connector for dedicated Mini App
+    // Farcaster Mini App connector
     farcasterMiniApp(),
+    // Other wallet connectors for web
+    injected(),
+    metaMask(),
   ],
 })
 
-console.log('✅ Wagmi configured for Farcaster-only Mini App')
+console.log('✅ Wagmi configured with multiple wallet support')

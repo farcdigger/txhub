@@ -1338,3 +1338,68 @@ body {
     min-height: 100px;
   }
 }
+
+/* Wallet dropdown styles */
+.wallet-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.wallet-dropdown:hover .wallet-options {
+  display: block;
+}
+
+.wallet-options {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+  min-width: 180px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.wallet-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.wallet-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Disconnect button styles */
+.disconnect-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.disconnect-button:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateY(-1px);
+}

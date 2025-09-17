@@ -10,5 +10,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets'
-  }
+  },
+  define: {
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    include: ['buffer']
+  },
+  resolve: {
+    alias: {
+      buffer: 'buffer',
+    },
+  },
 })

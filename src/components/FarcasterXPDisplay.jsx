@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useAccount, useConnect } from 'wagmi'
-import { Star, Coins, Zap, Trophy, Wallet, Clock, Home } from 'lucide-react'
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { Star, Coins, Zap, Trophy, Wallet, Clock, Home, LogOut } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getXP, calculateTokens } from '../utils/xpUtils'
 import { useFarcaster } from '../contexts/FarcasterContext'
@@ -8,6 +8,7 @@ import { useFarcaster } from '../contexts/FarcasterContext'
 const FarcasterXPDisplay = () => {
   const { isConnected, address } = useAccount()
   const { connect, connectors } = useConnect()
+  const { disconnect } = useDisconnect()
   const { isInFarcaster } = useFarcaster()
   const navigate = useNavigate()
   const location = useLocation()
@@ -42,11 +43,12 @@ const FarcasterXPDisplay = () => {
 
   const tokenBalance = calculateTokens(totalXP)
 
-  const handleConnect = () => {
-    const farcasterConnector = connectors.find(c => c.id === 'farcasterMiniApp')
-    if (farcasterConnector) {
-      connect({ connector: farcasterConnector })
-    }
+  const handleConnect = (connector) => {
+    connect({ connector })
+  }
+
+  const handleDisconnect = () => {
+    disconnect()
   }
 
   const handleHomeClick = () => {
@@ -70,12 +72,23 @@ const FarcasterXPDisplay = () => {
         </div>
         
         <div className="header-right">
-          <button 
-            className="header-connect-button"
-            onClick={handleConnect}
-          >
-            <span>Connect</span>
-          </button>
+          <div className="wallet-dropdown">
+            <button className="header-connect-button">
+              <span>Connect Wallet</span>
+            </button>
+            <div className="wallet-options">
+              {connectors.map((connector) => (
+                <button
+                  key={connector.id}
+                  className="wallet-option"
+                  onClick={() => handleConnect(connector)}
+                >
+                  <Wallet size={16} />
+                  <span>{connector.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -112,6 +125,10 @@ const FarcasterXPDisplay = () => {
         <button className="claim-button coming-soon" disabled title="Claim feature coming soon!">
           <Clock size={14} />
           <span>Claim</span>
+        </button>
+        
+        <button className="disconnect-button" onClick={handleDisconnect} title="Disconnect Wallet">
+          <LogOut size={14} />
         </button>
       </div>
     </div>
