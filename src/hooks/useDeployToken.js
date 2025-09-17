@@ -1,12 +1,33 @@
 import { useState } from 'react'
 import { useAccount, useWriteContract } from 'wagmi'
-import { waitForTransactionReceipt, sendTransaction, estimateGas } from 'wagmi/actions'
+import { waitForTransactionReceipt, estimateGas } from 'wagmi/actions'
 import { parseEther, encodeAbiParameters, parseAbiParameters } from 'viem'
 import { config } from '../config/wagmi'
 import { addXP, recordTransaction } from '../utils/xpUtils'
 
-// ERC20 ABI without constructor (for writeContractAsync compatibility)
+// ERC20 ABI with constructor for writeContractAsync
 const ERC20_ABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "symbol",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "initialSupply",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
 	{
 		"inputs": [
 			{
@@ -359,48 +380,17 @@ export const useDeployToken = () => {
       // Now deploy the actual ERC20 contract
       console.log('🚀 Deploying ERC20 contract...')
       
-      // Manually encode constructor parameters (limit string lengths for Farcaster)
+      // Limit string lengths for Farcaster compatibility
       const shortName = name.substring(0, 20) // Limit to 20 chars
       const shortSymbol = symbol.substring(0, 10) // Limit to 10 chars
       
       console.log('📝 Using shortened parameters:', { shortName, shortSymbol, initialSupply })
       
-      const constructorData = encodeAbiParameters(
-        parseAbiParameters('string name, string symbol, uint256 initialSupply'),
-        [shortName, shortSymbol, BigInt(initialSupply)]
-      )
-      
-      // Combine bytecode with constructor data
-      const deployData = ERC20_BYTECODE + constructorData.slice(2) // Remove '0x' from constructor data
-      
-      // Check data size (Farcaster has stricter limits)
-      const dataSize = (deployData.length - 2) / 2 // Remove '0x' and convert to bytes
-      console.log('📊 Deployment data size:', dataSize, 'bytes')
-      
-      if (dataSize > 50000) { // 50KB limit for Farcaster
-        console.warn('⚠️ Large deployment data size for Farcaster:', dataSize, 'bytes')
-        throw new Error(`Deployment data too large for Farcaster wallet: ${dataSize} bytes. Please use shorter token name/symbol.`)
-      }
-      
-      // Estimate gas for deployment (with fallback)
-      let gasEstimate
-      try {
-        console.log('⛽ Estimating gas for deployment...')
-        gasEstimate = await estimateGas(config, {
-          data: deployData,
-        })
-        console.log('⛽ Gas estimate:', gasEstimate.toString())
-      } catch (gasError) {
-        console.warn('⚠️ Gas estimation failed, using default:', gasError)
-        // Use a reasonable default gas limit for contract deployment
-        gasEstimate = 500000n // 500k gas should be enough for most ERC20 deployments
-      }
-      
-      // Use sendTransaction with accessList disabled for Farcaster
-      const deployTxHash = await sendTransaction(config, {
-        data: deployData,
-        gas: gasEstimate,
-        accessList: [], // Disable access list to prevent eth_createAccessList call
+      // Use writeContractAsync for Farcaster compatibility
+      const deployTxHash = await writeContractAsync({
+        abi: ERC20_ABI,
+        bytecode: ERC20_BYTECODE,
+        args: [shortName, shortSymbol, BigInt(initialSupply)],
       })
       
       console.log('✅ Deploy transaction sent:', deployTxHash)
