@@ -10,6 +10,8 @@ const Header = () => {
 
   // Load user XP
   useEffect(() => {
+    console.log('🔄 XP useEffect triggered, address:', address)
+    
     const loadUserXP = async () => {
       if (address) {
         try {
@@ -21,10 +23,24 @@ const Header = () => {
         } catch (error) {
           console.error('❌ Error loading user XP:', error)
         }
+      } else {
+        console.log('⚠️ No address available for XP loading')
+        setUserXP(0)
+        setUserLevel(1)
       }
     }
 
     loadUserXP()
+    
+    // Also try to load XP every 5 seconds if connected
+    let interval
+    if (address) {
+      interval = setInterval(loadUserXP, 5000)
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval)
+    }
   }, [address])
 
   // Format address for display
@@ -34,35 +50,90 @@ const Header = () => {
   }
 
   // Handle wallet connection
-  const handleConnect = () => {
+  const handleConnect = async () => {
     console.log('🔗 Attempting to connect wallet...')
     
-    // Try to find WalletConnect button
-    const connectBtn = document.querySelector('w3m-button')
-    if (connectBtn) {
-      console.log('✅ Found w3m-button, clicking...')
-      connectBtn.click()
-      return
-    }
-
-    // Try to find any connect button
-    const btns = document.querySelectorAll('button')
-    const connectButton = Array.from(btns).find(btn => {
-      const text = btn.textContent?.toLowerCase() || ''
-      return text.includes('connect') || text.includes('wallet')
-    })
-    
-    if (connectButton && connectButton !== event.target) {
-      console.log('✅ Found connect button:', connectButton.textContent)
-      connectButton.click()
-    } else {
-      console.log('❌ No connect button found')
-      // Try to trigger wallet connection via window
-      if (window.ethereum) {
-        window.ethereum.request({ method: 'eth_requestAccounts' })
-          .then(() => console.log('✅ Wallet connected via window.ethereum'))
-          .catch(err => console.log('❌ Wallet connection failed:', err))
+    try {
+      // Method 1: Use our global wallet connect function
+      if (window.__walletConnect) {
+        console.log('✅ Using global wallet connect function')
+        console.log('Available connectors:', window.__walletConnectors?.map(c => c.name))
+        
+        // Try different connector types
+        const connectorPreferences = ['injected', 'metaMask', 'farcaster']
+        
+        for (const pref of connectorPreferences) {
+          try {
+            window.__walletConnect(pref)
+            console.log(`🔄 Attempted connection with ${pref}`)
+            return
+          } catch (err) {
+            console.log(`❌ ${pref} connection failed:`, err)
+          }
+        }
+        
+        // If no specific connector worked, try the first available one
+        window.__walletConnect()
+        return
       }
+
+      // Method 2: Try w3m-button (WalletConnect)
+      const w3mButton = document.querySelector('w3m-button')
+      if (w3mButton) {
+        console.log('✅ Found w3m-button, clicking...')
+        w3mButton.click()
+        return
+      }
+
+      // Method 3: Try any button with "Connect" text (excluding our own)
+      const buttons = Array.from(document.querySelectorAll('button'))
+      console.log('🔍 Found buttons:', buttons.map(b => b.textContent?.trim()).filter(t => t))
+      
+      const connectButton = buttons.find(btn => {
+        const text = btn.textContent?.toLowerCase().trim() || ''
+        const isOurButton = btn.classList.contains('connect-button') || btn.closest('.header-section')
+        return !isOurButton && (text.includes('connect') || text.includes('wallet'))
+      })
+      
+      if (connectButton) {
+        console.log('✅ Found external connect button:', connectButton.textContent?.trim())
+        connectButton.click()
+        return
+      }
+
+      // Method 4: Direct ethereum request
+      if (window.ethereum) {
+        console.log('🔗 Trying direct ethereum connection...')
+        await window.ethereum.request({ method: 'eth_requestAccounts' })
+        console.log('✅ Direct ethereum connection successful')
+        return
+      }
+
+      // Method 5: Check for other wallet providers
+      if (window.coinbaseWalletExtension) {
+        console.log('🔗 Trying Coinbase Wallet...')
+        await window.coinbaseWalletExtension.request({ method: 'eth_requestAccounts' })
+        return
+      }
+
+      if (window.okxwallet) {
+        console.log('🔗 Trying OKX Wallet...')
+        await window.okxwallet.request({ method: 'eth_requestAccounts' })
+        return
+      }
+
+      console.log('❌ No wallet connection method found')
+      console.log('Available methods:', {
+        globalConnect: !!window.__walletConnect,
+        ethereum: !!window.ethereum,
+        coinbase: !!window.coinbaseWalletExtension,
+        okx: !!window.okxwallet,
+        w3mButton: !!document.querySelector('w3m-button'),
+        buttonsCount: document.querySelectorAll('button').length
+      })
+      
+    } catch (error) {
+      console.error('❌ Wallet connection error:', error)
     }
   }
 
@@ -243,7 +314,12 @@ const Header = () => {
           </div>
         ) : (
           <button
-            onClick={handleConnect}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              console.log('🖱️ Connect button clicked!')
+              handleConnect()
+            }}
             className="connect-button"
             style={{
               background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',

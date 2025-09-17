@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiProvider } from 'wagmi'
+import { WagmiProvider, useConnect, useAccount } from 'wagmi'
 import { HelmetProvider } from 'react-helmet-async'
 import { FarcasterProvider, useFarcaster } from './contexts/FarcasterContext'
 import { config } from './config/wagmi'
@@ -19,6 +19,41 @@ import NFTMint from './pages/NFTMint'
 import './styles/index.css'
 
 const queryClient = new QueryClient()
+
+// Hidden Wallet Connector Component
+function HiddenWalletConnector() {
+  const { connectors, connect } = useConnect()
+  const { isConnected } = useAccount()
+  
+  React.useEffect(() => {
+    // Expose connect function globally for our Header component
+    window.__walletConnect = (connectorId) => {
+      console.log('🔗 Global wallet connect called with:', connectorId)
+      const connector = connectors.find(c => 
+        c.id === connectorId || 
+        c.name.toLowerCase().includes(connectorId?.toLowerCase())
+      )
+      
+      if (connector) {
+        console.log('✅ Found connector:', connector.name)
+        connect({ connector })
+      } else {
+        console.log('❌ Connector not found, available:', connectors.map(c => c.name))
+        // Try first available connector
+        if (connectors[0]) {
+          console.log('🔄 Trying first connector:', connectors[0].name)
+          connect({ connector: connectors[0] })
+        }
+      }
+    }
+    
+    // Also expose connectors info
+    window.__walletConnectors = connectors
+    console.log('🔍 Available connectors:', connectors.map(c => ({ id: c.id, name: c.name })))
+  }, [connectors, connect])
+  
+  return null // This component is invisible
+}
 
 // AppContent component - Works in both Farcaster and Web
 function AppContent() {
@@ -50,6 +85,7 @@ function AppContent() {
   return (
     <Router>
       <div className="App">
+        <HiddenWalletConnector />
         <FarcasterXPDisplay />
         <main className="container">
           <Routes>
