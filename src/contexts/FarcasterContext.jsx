@@ -21,16 +21,18 @@ export const FarcasterProvider = ({ children }) => {
   useEffect(() => {
     const initializeFarcaster = async () => {
       try {
-        console.log('🚀 Initializing Farcaster Mini App...')
+        console.log('🚀 Initializing App...')
         
-        // Mark as initialized immediately
+        // Mark as initialized immediately for faster loading
         setIsInitialized(true)
-        console.log('✅ Farcaster context initialized')
+        setIsReady(true)
+        console.log('✅ App context initialized')
         
       } catch (err) {
-        console.error('❌ Failed to initialize Farcaster:', err)
+        console.error('❌ Failed to initialize App:', err)
         setError(err.message)
         setIsInitialized(true) // Still set to true to allow app to continue
+        setIsReady(true)
       }
     }
 

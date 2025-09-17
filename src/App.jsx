@@ -19,7 +19,7 @@ import './styles/index.css'
 
 const queryClient = new QueryClient()
 
-// AppContent component - Farcaster Only
+// AppContent component - Works in both Farcaster and Web
 function AppContent() {
   const { isInitialized, isReady } = useFarcaster()
 
@@ -40,7 +40,7 @@ function AppContent() {
       }}>
         <SkeletonLoader />
         <p style={{ marginTop: '20px', opacity: 0.8 }}>
-          {!isInitialized ? 'Initializing Farcaster...' : 'Loading Mini App...'}
+          {!isInitialized ? 'Initializing...' : 'Loading App...'}
         </p>
       </div>
     )
@@ -48,9 +48,9 @@ function AppContent() {
 
   return (
     <Router>
-      <div className="App farcaster-app">
+      <div className="App">
         <FarcasterXPDisplay />
-        <main className="container farcaster-main">
+        <main className="container">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/gm" element={<GMGame />} />
