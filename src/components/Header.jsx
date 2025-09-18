@@ -502,10 +502,10 @@ const Header = () => {
           background: 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(10px)',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
           zIndex: 1000000,
-          padding: '20px'
+          padding: '140px 20px 20px 20px'
         }}
         onClick={() => setShowWalletDropdown(false)}
         >
@@ -518,6 +518,8 @@ const Header = () => {
             padding: '24px',
             maxWidth: '400px',
             width: '100%',
+            maxHeight: 'calc(100vh - 180px)',
+            overflowY: 'auto',
             animation: 'modalSlideIn 0.3s ease-out'
           }}
           onClick={(e) => e.stopPropagation()}
