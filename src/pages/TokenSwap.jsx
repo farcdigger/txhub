@@ -1,0 +1,850 @@
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAccount, useDisconnect } from 'wagmi'
+import { getXP } from '../utils/xpUtils'
+
+const TokenSwap = () => {
+  const navigate = useNavigate()
+  const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
+  const [userXP, setUserXP] = useState(0)
+  const [userLevel, setUserLevel] = useState(1)
+  
+  // 1inch API Configuration
+  const INCH_API_KEY = 'HWcp63JDwcGFuSoQOt0figfwVW8a2tmU'
+  const INCH_API_URL = 'https://api.1inch.dev'
+  const BASE_CHAIN_ID = 8453
+  const INTEGRATOR_FEE = 0.003 // 0.3%
+  const INTEGRATOR_ADDRESS = '0x742d35Cc6634C0532925a3b8D581C226C0Fc71fB'
+  
+  // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
+  const bhubTokens = userXP * 10
+
+  // Format address for display
+  const formatAddress = (address) => {
+    if (!address) return ''
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  // Load user XP and level
+  useEffect(() => {
+    const loadUserXP = async () => {
+      if (isConnected && address) {
+        try {
+          const xp = await getXP(address)
+          setUserXP(xp)
+          setUserLevel(Math.floor(xp / 100) + 1)
+        } catch (error) {
+          console.error('Error loading user XP:', error)
+          setUserXP(0)
+          setUserLevel(1)
+        }
+      }
+    }
+
+    loadUserXP()
+    const interval = setInterval(loadUserXP, 5000)
+    return () => clearInterval(interval)
+  }, [isConnected, address])
+
+  // Swap State
+  const [sellToken, setSellToken] = useState('0x4200000000000000000000000000000000000006') // WETH on Base
+  const [buyToken, setBuyToken] = useState('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913') // USDC on Base
+  const [sellAmount, setSellAmount] = useState('')
+  const [buyAmount, setBuyAmount] = useState('')
+  const [quote, setQuote] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
+
+  // Popular Base tokens
+  const tokens = [
+    { 
+      symbol: 'WETH', 
+      address: '0x4200000000000000000000000000000000000006',
+      name: 'Wrapped Ether',
+      decimals: 18
+    },
+    { 
+      symbol: 'USDC', 
+      address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+      name: 'USD Coin',
+      decimals: 6
+    },
+    { 
+      symbol: 'DAI', 
+      address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
+      name: 'Dai Stablecoin',
+      decimals: 18
+    },
+    { 
+      symbol: 'WBTC', 
+      address: '0x1C74Aa1E8471Af78c6eFa5C3FA57e54A99df4Ddd',
+      name: 'Wrapped Bitcoin',
+      decimals: 8
+    }
+  ]
+
+  // Get quote from 1inch API
+  const getQuote = async () => {
+    if (!sellAmount || !sellToken || !buyToken) {
+      setError('Please enter amount and select tokens')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+    
+    try {
+      const sellTokenData = tokens.find(t => t.address === sellToken)
+      const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
+      
+      const params = new URLSearchParams({
+        src: sellToken,
+        dst: buyToken,
+        amount: amount.toString(),
+        fee: INTEGRATOR_FEE.toString(),
+        includeTokensInfo: 'true',
+        includeProtocols: 'true'
+      })
+
+      const response = await fetch(
+        `${INCH_API_URL}/swap/v6.0/${BASE_CHAIN_ID}/quote?${params}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${INCH_API_KEY}`,
+            'accept': 'application/json'
+          }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`1inch API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      setQuote(data)
+      
+      const buyTokenData = tokens.find(t => t.address === buyToken)
+      const buyAmountFormatted = parseFloat(data.dstAmount) / Math.pow(10, buyTokenData.decimals)
+      setBuyAmount(buyAmountFormatted.toFixed(6))
+      
+    } catch (err) {
+      console.error('Quote error:', err)
+      setError('Failed to get quote. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Execute swap
+  const executeSwap = async () => {
+    if (!quote || !isConnected) {
+      setError('Please connect wallet and get a quote first')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const sellTokenData = tokens.find(t => t.address === sellToken)
+      const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
+      
+      const params = new URLSearchParams({
+        src: sellToken,
+        dst: buyToken,
+        amount: amount.toString(),
+        from: address,
+        slippage: '1',
+        fee: INTEGRATOR_FEE.toString(),
+        referrer: INTEGRATOR_ADDRESS
+      })
+
+      const response = await fetch(
+        `${INCH_API_URL}/swap/v6.0/${BASE_CHAIN_ID}/swap?${params}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${INCH_API_KEY}`,
+            'accept': 'application/json'
+          }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`1inch API error: ${response.status}`)
+      }
+
+      const swapData = await response.json()
+      
+      // Execute transaction (simplified - you'll need to implement actual transaction sending)
+      console.log('Swap transaction data:', swapData)
+      
+      // Award XP for successful swap
+      const newXP = userXP + 30
+      setUserXP(newXP)
+      setUserLevel(Math.floor(newXP / 100) + 1)
+      
+      setSuccessMessage(`✅ Swap successful! +30 XP earned. Revenue generated: ${(parseFloat(sellAmount) * 0.003).toFixed(4)} tokens`)
+      
+      // Reset form
+      setSellAmount('')
+      setBuyAmount('')
+      setQuote(null)
+      
+    } catch (err) {
+      console.error('Swap error:', err)
+      setError('Swap failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="token-swap-page">
+      {/* Header */}
+      <div className="header-section">
+        <div className="header-left">
+          <button
+            onClick={() => navigate('/')}
+            className="home-button"
+            style={{
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              color: '#1f2937',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>🏠</span>
+            <span>Home</span>
+          </button>
+        </div>
+        
+        <div className="header-center">
+          <h1 className="header-title">🔄 Token Swap</h1>
+          <p className="header-subtitle">Trade with best prices & earn revenue</p>
+        </div>
+        
+        <div className="header-right">
+          {isConnected ? (
+            <div className="user-section">
+              {/* XP Section */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}>
+                <span style={{ fontSize: '16px' }}>⚡</span>
+                <span style={{
+                  color: '#1f2937',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}>{userXP}</span>
+              </div>
+
+              {/* BHUB Token Section */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(255, 193, 7, 0.2)',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid rgba(255, 193, 7, 0.3)'
+              }}>
+                <span style={{ fontSize: '16px' }}>💎</span>
+                <span style={{
+                  color: '#1f2937',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}>{bhubTokens}</span>
+              </div>
+
+              {/* Claim Button */}
+              <button style={{
+                background: 'rgba(156, 163, 175, 0.3)',
+                border: '1px solid rgba(156, 163, 175, 0.3)',
+                borderRadius: '20px',
+                padding: '6px 16px',
+                color: '#6b7280',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'not-allowed',
+                opacity: 0.8
+              }} disabled>
+                Soon
+              </button>
+
+              {/* Wallet Section */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}>
+                <span style={{
+                  color: '#1f2937',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}>{formatAddress(address)}</span>
+                <button
+                  onClick={() => disconnect()}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                border: 'none',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              Connect Wallet
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="container" style={{ paddingTop: '100px' }}>
+        {/* Main Swap Card */}
+        <div className="swap-card">
+          <div className="card-header">
+            <div className="card-icon">🔄</div>
+            <h2 className="card-title">Token Swap</h2>
+            <p className="card-subtitle">Best prices from 80+ liquidity sources on Base network</p>
+          </div>
+
+          <div className="swap-form">
+            {/* Sell Token Section */}
+            <div className="token-section">
+              <label className="token-label">You Sell</label>
+              <div className="token-input-container">
+                <input
+                  type="number"
+                  value={sellAmount}
+                  onChange={(e) => setSellAmount(e.target.value)}
+                  placeholder="0.0"
+                  className="token-amount-input"
+                />
+                <select
+                  value={sellToken}
+                  onChange={(e) => setSellToken(e.target.value)}
+                  className="token-select"
+                >
+                  {tokens.map(token => (
+                    <option key={token.address} value={token.address}>
+                      {token.symbol}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Swap Direction */}
+            <div className="swap-direction">
+              <button className="swap-direction-btn">
+                ⇅
+              </button>
+            </div>
+
+            {/* Buy Token Section */}
+            <div className="token-section">
+              <label className="token-label">You Get</label>
+              <div className="token-input-container">
+                <input
+                  type="text"
+                  value={buyAmount}
+                  readOnly
+                  placeholder="0.0"
+                  className="token-amount-input"
+                />
+                <select
+                  value={buyToken}
+                  onChange={(e) => setBuyToken(e.target.value)}
+                  className="token-select"
+                >
+                  {tokens.map(token => (
+                    <option key={token.address} value={token.address}>
+                      {token.symbol}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Quote Info */}
+            {quote && (
+              <div className="quote-info">
+                <div className="quote-item">
+                  <span>Best Price:</span>
+                  <span>{buyAmount} {tokens.find(t => t.address === buyToken)?.symbol}</span>
+                </div>
+                <div className="quote-item">
+                  <span>Revenue (0.3%):</span>
+                  <span>{(parseFloat(sellAmount) * 0.003).toFixed(4)} {tokens.find(t => t.address === sellToken)?.symbol}</span>
+                </div>
+                <div className="quote-item">
+                  <span>Gas Estimate:</span>
+                  <span>{quote.gas ? `${Math.round(quote.gas / 1000)}K` : 'N/A'}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="action-buttons">
+              {!quote ? (
+                <button
+                  onClick={getQuote}
+                  disabled={!sellAmount || !isConnected || isLoading}
+                  className="quote-button"
+                >
+                  {isLoading ? 'Getting Quote...' : 'Get Best Price'}
+                </button>
+              ) : (
+                <button
+                  onClick={executeSwap}
+                  disabled={!isConnected || isLoading}
+                  className="swap-button"
+                >
+                  {isLoading ? 'Swapping...' : 'Confirm Swap'}
+                </button>
+              )}
+            </div>
+
+            {/* Messages */}
+            {error && (
+              <div className="error-message">
+                ❌ {error}
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="success-message">
+                {successMessage}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Info Section */}
+        <div className="info-section">
+          <div className="info-card">
+            <h3>💰 Revenue Model</h3>
+            <p>BaseHub earns 0.3% from every swap transaction. This creates sustainable revenue while providing users with the best trading experience.</p>
+          </div>
+          
+          <div className="info-card">
+            <h3>🎯 Powered by 1inch</h3>
+            <p>We use 1inch DEX aggregator to find the best prices across 80+ liquidity sources on Base network, ensuring optimal trade execution.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default TokenSwap
+
+// Inject styles
+const styles = `
+  .token-swap-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1d4ed8 100%);
+    padding: 20px;
+  }
+
+  .header-section {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-center {
+    text-align: center;
+    flex: 1;
+  }
+
+  .header-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 2px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .header-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .user-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .swap-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .card-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .card-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+  }
+
+  .card-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-subtitle {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .swap-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .token-section {
+    background: rgba(243, 244, 246, 0.8);
+    border-radius: 16px;
+    padding: 20px;
+    border: 2px solid rgba(229, 231, 235, 0.8);
+    transition: all 0.3s ease;
+  }
+
+  .token-section:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .token-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .token-input-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .token-amount-input {
+    flex: 1;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1f2937;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 12px 0;
+  }
+
+  .token-amount-input::placeholder {
+    color: #9ca3af;
+  }
+
+  .token-select {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+  }
+
+  .token-select:hover {
+    border-color: #3b82f6;
+  }
+
+  .swap-direction {
+    display: flex;
+    justify-content: center;
+    margin: -10px 0;
+    z-index: 1;
+    position: relative;
+  }
+
+  .swap-direction-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid rgba(229, 231, 235, 0.8);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .swap-direction-btn:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+    transform: rotate(180deg);
+  }
+
+  .quote-info {
+    background: rgba(239, 246, 255, 0.8);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .quote-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 14px;
+  }
+
+  .quote-item:not(:last-child) {
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+  }
+
+  .quote-item span:first-child {
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  .quote-item span:last-child {
+    color: #1f2937;
+    font-weight: 600;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .quote-button, .swap-button {
+    flex: 1;
+    padding: 16px 24px;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .quote-button {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  }
+
+  .quote-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  }
+
+  .swap-button {
+    background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  }
+
+  .swap-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+  }
+
+  .quote-button:disabled, .swap-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .error-message {
+    background: rgba(254, 242, 242, 0.9);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .success-message {
+    background: rgba(240, 253, 244, 0.9);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #16a34a;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .info-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 24px;
+  }
+
+  .info-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .info-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+  }
+
+  .info-card p {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .token-input-container {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .token-amount-input {
+      text-align: center;
+    }
+
+    .info-section {
+      grid-template-columns: 1fr;
+    }
+
+    .user-section {
+      gap: 4px;
+    }
+
+    .header-title {
+      font-size: 20px;
+    }
+
+    .header-subtitle {
+      font-size: 12px;
+    }
+  }
+`
+
+// Inject styles
+if (typeof document !== 'undefined' && !document.getElementById('token-swap-styles')) {
+  const style = document.createElement('style')
+  style.id = 'token-swap-styles'
+  style.textContent = styles
+  document.head.appendChild(style)
+}

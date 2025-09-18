@@ -230,6 +230,16 @@ const Home = () => {
       xpReward: '100 XP',
       bonusXP: null
     },
+    {
+      id: 'swap',
+      title: 'Token Swap',
+      description: 'Trade tokens with best prices',
+      icon: '🔄',
+      path: '/swap',
+      color: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+      xpReward: '30 XP',
+      bonusXP: '+0.3% Revenue'
+    },
   ]
 
 
