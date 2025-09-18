@@ -3,7 +3,7 @@ import { useAccount, useDisconnect } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { Home as HomeIcon } from 'lucide-react' // Renamed to avoid conflict
 
-// Add modal animation styles
+// Add modal animation styles and scroll hide CSS
 const modalStyles = `
   @keyframes modalSlideIn {
     from {
@@ -19,6 +19,16 @@ const modalStyles = `
   @keyframes modalFadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+  }
+
+  /* Scroll hide CSS rules */
+  .header-section.scrolled {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    transform: translateY(-100%) !important;
+    pointer-events: none !important;
   }
 `
 
@@ -41,12 +51,37 @@ const Header = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY
-      const shouldHide = scrollTop > 20 // Çok erken kaybolsun
+      const shouldHide = scrollTop > 20
+      console.log('🔄 Scroll detected:', scrollTop, 'Should hide:', shouldHide)
       setIsScrolled(shouldHide)
+      
+      // Force header hiding with aggressive DOM manipulation
+      const headerElements = document.querySelectorAll('.header-section')
+      headerElements.forEach(el => {
+        if (shouldHide) {
+          el.classList.add('scrolled')
+          el.style.setProperty('display', 'none', 'important')
+          el.style.setProperty('visibility', 'hidden', 'important')
+          el.style.setProperty('opacity', '0', 'important')
+          el.style.setProperty('height', '0', 'important')
+          el.style.setProperty('transform', 'translateY(-100%)', 'important')
+        } else {
+          el.classList.remove('scrolled')
+          el.style.setProperty('display', 'flex', 'important')
+          el.style.setProperty('visibility', 'visible', 'important')
+          el.style.setProperty('opacity', '1', 'important')
+          el.style.setProperty('height', 'auto', 'important')
+          el.style.setProperty('transform', 'translateY(0)', 'important')
+        }
+      })
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    document.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      document.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   // Handle escape key to close modal
