@@ -100,7 +100,7 @@ const TokenSwap = () => {
               })
               
               const balance = parseInt(balanceResponse, 16) / Math.pow(10, token.decimals)
-              balances[token.address] = balance.toFixed(6)
+              balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
               console.log(`${token.symbol} balance:`, balances[token.address])
             } catch (err) {
               console.error(`Error loading ${token.symbol} balance:`, err)
@@ -368,10 +368,12 @@ const TokenSwap = () => {
 
     // Check balance before quote
     const sellTokenData = tokens.find(t => t.address === sellToken)
-    const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
+    // For native ETH, use 'ETH' key, for other tokens use address
+    const balanceKey = sellTokenData?.isNative ? 'ETH' : sellToken
+    const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
     const requestedAmount = parseFloat(sellAmount)
     
-    console.log('Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Current Balance:', currentBalance, 'Requested:', requestedAmount, 'All Balances:', tokenBalances)
+    console.log('Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Balance Key:', balanceKey, 'Current Balance:', currentBalance, 'Requested:', requestedAmount, 'All Balances:', tokenBalances)
     
     if (currentBalance < requestedAmount) {
       setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to get quote for ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
@@ -506,8 +508,12 @@ const TokenSwap = () => {
 
     // Check balance before swap
     const sellTokenData = tokens.find(t => t.address === sellToken)
-    const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
+    // For native ETH, use 'ETH' key, for other tokens use address
+    const balanceKey = sellTokenData?.isNative ? 'ETH' : sellToken
+    const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
     const requestedAmount = parseFloat(sellAmount)
+    
+    console.log('Swap Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Balance Key:', balanceKey, 'Current Balance:', currentBalance, 'Requested:', requestedAmount)
     
     if (currentBalance < requestedAmount) {
       setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to swap ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
@@ -844,29 +850,56 @@ const TokenSwap = () => {
               </div>
                       <div className="token-balance-section">
                         <span className="balance-text">
-                          Balance: {tokenBalances[sellToken] || '0.0000'} {tokens.find(t => t.address === sellToken)?.symbol}
-                          {parseFloat(tokenBalances[sellToken] || '0') < parseFloat(sellAmount || '0') && (
-                            <span style={{ color: '#ef4444', fontWeight: '600', marginLeft: '8px' }}>
-                              ⚠️ Insufficient
-                            </span>
-                          )}
+                          Balance: {(() => {
+                            const token = tokens.find(t => t.address === sellToken)
+                            const balanceKey = token?.isNative ? 'ETH' : sellToken
+                            return tokenBalances[balanceKey] || '0.0000'
+                          })()} {tokens.find(t => t.address === sellToken)?.symbol}
+                          {(() => {
+                            const token = tokens.find(t => t.address === sellToken)
+                            const balanceKey = token?.isNative ? 'ETH' : sellToken
+                            const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
+                            const requestedAmount = parseFloat(sellAmount || '0')
+                            return currentBalance < requestedAmount && (
+                              <span style={{ color: '#ef4444', fontWeight: '600', marginLeft: '8px' }}>
+                                ⚠️ Insufficient
+                              </span>
+                            )
+                          })()}
                           {/* Debug info */}
                           <span style={{ fontSize: '10px', color: '#6b7280', marginLeft: '8px' }}>
-                            (Debug: {sellToken})
+                            (Debug: {(() => {
+                              const token = tokens.find(t => t.address === sellToken)
+                              return token?.isNative ? 'ETH' : sellToken
+                            })()})
                           </span>
                         </span>
                 <button
                   onClick={() => {
-                    const balance = tokenBalances[sellToken] || '0'
+                    const token = tokens.find(t => t.address === sellToken)
+                    const balanceKey = token?.isNative ? 'ETH' : sellToken
+                    const balance = tokenBalances[balanceKey] || '0'
                     setSellAmount(balance)
                   }}
                   className="max-button"
-                  disabled={!tokenBalances[sellToken] || parseFloat(tokenBalances[sellToken]) <= 0}
+                  disabled={(() => {
+                    const token = tokens.find(t => t.address === sellToken)
+                    const balanceKey = token?.isNative ? 'ETH' : sellToken
+                    return !tokenBalances[balanceKey] || parseFloat(tokenBalances[balanceKey]) <= 0
+                  })()}
                   style={{
-                    background: parseFloat(tokenBalances[sellToken] || '0') <= 0 
-                      ? '#9ca3af' 
-                      : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                    cursor: parseFloat(tokenBalances[sellToken] || '0') <= 0 ? 'not-allowed' : 'pointer'
+                    background: (() => {
+                      const token = tokens.find(t => t.address === sellToken)
+                      const balanceKey = token?.isNative ? 'ETH' : sellToken
+                      return parseFloat(tokenBalances[balanceKey] || '0') <= 0 
+                        ? '#9ca3af' 
+                        : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+                    })(),
+                    cursor: (() => {
+                      const token = tokens.find(t => t.address === sellToken)
+                      const balanceKey = token?.isNative ? 'ETH' : sellToken
+                      return parseFloat(tokenBalances[balanceKey] || '0') <= 0 ? 'not-allowed' : 'pointer'
+                    })()
                   }}
                 >
                   Max
