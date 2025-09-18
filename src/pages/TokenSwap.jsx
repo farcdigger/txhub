@@ -111,7 +111,7 @@ const TokenSwap = () => {
     }
 
     loadBalances()
-    const interval = setInterval(loadBalances, 30000) // Update every 30 seconds to reduce rate limiting
+    const interval = setInterval(loadBalances, 10000) // Update every 10 seconds for better balance tracking
     return () => clearInterval(interval)
   }, [isConnected, address])
 
@@ -347,6 +347,16 @@ const TokenSwap = () => {
       return
     }
 
+    // Check balance before quote
+    const sellTokenData = tokens.find(t => t.address === sellToken)
+    const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
+    const requestedAmount = parseFloat(sellAmount)
+    
+    if (currentBalance < requestedAmount) {
+      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to get quote for ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
+      return
+    }
+
     setIsLoading(true)
     setError('')
     
@@ -376,8 +386,26 @@ const TokenSwap = () => {
         const errorDetails = errorData.details || errorData.error || ''
         const errorString = typeof errorDetails === 'string' ? errorDetails : JSON.stringify(errorDetails)
         
-        if (errorString.includes('Not enough src balance')) {
-          throw new Error('Insufficient token balance for quote')
+        // Check for specific 1inch error patterns
+        if (errorString.includes('Not enough') && errorString.includes('balance')) {
+          // Extract balance information from error
+          const balanceMatch = errorString.match(/Balance: (\d+)/)
+          const amountMatch = errorString.match(/Amount: (\d+)/)
+          const tokenMatch = errorString.match(/Not enough (0x[a-fA-F0-9]+)/)
+          
+          let tokenSymbol = 'token'
+          if (tokenMatch) {
+            const tokenAddress = tokenMatch[1]
+            const token = tokens.find(t => t.address.toLowerCase() === tokenAddress.toLowerCase())
+            if (token) {
+              tokenSymbol = token.symbol
+            }
+          }
+          
+          const balance = balanceMatch ? (parseInt(balanceMatch[1]) / Math.pow(10, 18)).toFixed(6) : '0'
+          const amount = amountMatch ? (parseInt(amountMatch[1]) / Math.pow(10, 18)).toFixed(6) : 'unknown'
+          
+          throw new Error(`Insufficient ${tokenSymbol} balance! You have ${balance} ${tokenSymbol}, but trying to get quote for ${amount} ${tokenSymbol}. Please reduce the amount or add more ${tokenSymbol} to your wallet.`)
         } else if (errorString.includes('Insufficient liquidity')) {
           throw new Error('Insufficient liquidity for this quote. Try a smaller amount.')
         } else if (errorString.includes('Amount is not set')) {
@@ -455,6 +483,16 @@ const TokenSwap = () => {
       return
     }
 
+    // Check balance before swap
+    const sellTokenData = tokens.find(t => t.address === sellToken)
+    const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
+    const requestedAmount = parseFloat(sellAmount)
+    
+    if (currentBalance < requestedAmount) {
+      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to swap ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
+      return
+    }
+
     setIsLoading(true)
     setError('')
 
@@ -486,8 +524,26 @@ const TokenSwap = () => {
         const errorDetails = errorData.details || errorData.error || ''
         const errorString = typeof errorDetails === 'string' ? errorDetails : JSON.stringify(errorDetails)
         
-        if (errorString.includes('Not enough src balance')) {
-          throw new Error('Insufficient token balance for swap')
+        // Check for specific 1inch error patterns
+        if (errorString.includes('Not enough') && errorString.includes('balance')) {
+          // Extract balance information from error
+          const balanceMatch = errorString.match(/Balance: (\d+)/)
+          const amountMatch = errorString.match(/Amount: (\d+)/)
+          const tokenMatch = errorString.match(/Not enough (0x[a-fA-F0-9]+)/)
+          
+          let tokenSymbol = 'token'
+          if (tokenMatch) {
+            const tokenAddress = tokenMatch[1]
+            const token = tokens.find(t => t.address.toLowerCase() === tokenAddress.toLowerCase())
+            if (token) {
+              tokenSymbol = token.symbol
+            }
+          }
+          
+          const balance = balanceMatch ? (parseInt(balanceMatch[1]) / Math.pow(10, 18)).toFixed(6) : '0'
+          const amount = amountMatch ? (parseInt(amountMatch[1]) / Math.pow(10, 18)).toFixed(6) : 'unknown'
+          
+          throw new Error(`Insufficient ${tokenSymbol} balance! You have ${balance} ${tokenSymbol}, but trying to swap ${amount} ${tokenSymbol}. Please reduce the amount or add more ${tokenSymbol} to your wallet.`)
         } else if (errorString.includes('Not enough Allowance')) {
           throw new Error('Token allowance required. Please approve token spending first.')
         } else if (errorString.includes('Insufficient liquidity')) {
@@ -765,10 +821,15 @@ const TokenSwap = () => {
                   ))}
                 </select>
               </div>
-              <div className="token-balance-section">
-                <span className="balance-text">
-                  Balance: {tokenBalances[sellToken] || '0.0000'} {tokens.find(t => t.address === sellToken)?.symbol}
-                </span>
+                      <div className="token-balance-section">
+                        <span className="balance-text">
+                          Balance: {tokenBalances[sellToken] || '0.0000'} {tokens.find(t => t.address === sellToken)?.symbol}
+                          {parseFloat(tokenBalances[sellToken] || '0') < parseFloat(sellAmount || '0') && (
+                            <span style={{ color: '#ef4444', fontWeight: '600', marginLeft: '8px' }}>
+                              ⚠️ Insufficient
+                            </span>
+                          )}
+                        </span>
                 <button
                   onClick={() => {
                     const balance = tokenBalances[sellToken] || '0'
@@ -776,6 +837,12 @@ const TokenSwap = () => {
                   }}
                   className="max-button"
                   disabled={!tokenBalances[sellToken] || parseFloat(tokenBalances[sellToken]) <= 0}
+                  style={{
+                    background: parseFloat(tokenBalances[sellToken] || '0') <= 0 
+                      ? '#9ca3af' 
+                      : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                    cursor: parseFloat(tokenBalances[sellToken] || '0') <= 0 ? 'not-allowed' : 'pointer'
+                  }}
                 >
                   Max
                 </button>
