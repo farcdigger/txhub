@@ -360,52 +360,6 @@ const Header = () => {
         </button>
       </div>
       
-      {/* Center - Logo */}
-      <div className="header-center">
-        <div className="logo-section" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div className="logo" style={{
-            width: '40px',
-            height: '40px',
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '4px',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <img 
-              src="/icon.png" 
-              alt="BaseHub Logo" 
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                borderRadius: '4px'
-              }}
-            />
-          </div>
-          <div>
-            <h1 className="header-title" style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              color: 'white',
-              margin: '0',
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-            }}>BaseHub</h1>
-            <p className="header-subtitle" style={{
-              fontSize: '12px',
-              color: 'rgba(255, 255, 255, 0.8)',
-              margin: '0'
-            }}>Play Games & Earn XP</p>
-          </div>
-        </div>
-      </div>
       
         {/* Right - Modern XP, Token, Wallet */}
         <div className="header-right">
