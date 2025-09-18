@@ -153,48 +153,6 @@ const TokenSwap = () => {
     }
   ]
 
-  // Check token allowance
-  const checkAllowance = useCallback(async (tokenAddress, amount) => {
-    if (!address || tokenAddress === '0x4200000000000000000000000000000000000006') {
-      // WETH doesn't need approval or is native token
-      setAllowance(null)
-      setNeedsApproval(false)
-      return
-    }
-
-    try {
-      const params = new URLSearchParams({
-        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
-        tokenAddress: tokenAddress,
-        walletAddress: address.toLowerCase()
-      })
-
-      const response = await fetch(`/api/1inch-proxy?${params}`)
-      
-      if (!response.ok) {
-        throw new Error(`Allowance check failed: ${response.status}`)
-      }
-
-      const data = await response.json()
-      const currentAllowance = BigInt(data.allowance || '0')
-      const requiredAmount = BigInt(amount)
-      
-      setAllowance(currentAllowance.toString())
-      setNeedsApproval(currentAllowance < requiredAmount)
-      
-      console.log('Allowance check:', {
-        current: currentAllowance.toString(),
-        required: requiredAmount.toString(),
-        needsApproval: currentAllowance < requiredAmount
-      })
-      
-    } catch (err) {
-      console.error('Allowance check error:', err)
-      setAllowance(null)
-      setNeedsApproval(false)
-    }
-  }, [address])
-
   // Approve token spending
   const approveToken = async () => {
     if (!sellAmount || !address) return
@@ -239,11 +197,31 @@ const TokenSwap = () => {
         setSuccessMessage('✅ Token approval successful! You can now swap.')
         
         // Wait a bit then recheck allowance
-        setTimeout(() => {
-          if (sellAmount) {
-            const sellTokenData = tokens.find(t => t.address === sellToken)
-            const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
-            checkAllowance(sellToken, amount.toString())
+        setTimeout(async () => {
+          if (sellAmount && sellToken !== '0x4200000000000000000000000000000000000006') {
+            try {
+              const sellTokenData = tokens.find(t => t.address === sellToken)
+              const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
+              
+              const allowanceParams = new URLSearchParams({
+                endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
+                tokenAddress: sellToken,
+                walletAddress: address.toLowerCase()
+              })
+
+              const allowanceResponse = await fetch(`/api/1inch-proxy?${allowanceParams}`)
+              
+              if (allowanceResponse.ok) {
+                const allowanceData = await allowanceResponse.json()
+                const currentAllowance = BigInt(allowanceData.allowance || '0')
+                const requiredAmount = BigInt(amount)
+                
+                setAllowance(currentAllowance.toString())
+                setNeedsApproval(currentAllowance < requiredAmount)
+              }
+            } catch (allowanceErr) {
+              console.error('Allowance recheck error:', allowanceErr)
+            }
           }
         }, 3000)
       }
@@ -294,7 +272,33 @@ const TokenSwap = () => {
       setBuyAmount(buyAmountFormatted.toFixed(6))
       
       // Check allowance after getting quote
-      await checkAllowance(sellToken, amount.toString())
+      if (sellToken !== '0x4200000000000000000000000000000000000006') {
+        try {
+          const allowanceParams = new URLSearchParams({
+            endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
+            tokenAddress: sellToken,
+            walletAddress: address.toLowerCase()
+          })
+
+          const allowanceResponse = await fetch(`/api/1inch-proxy?${allowanceParams}`)
+          
+          if (allowanceResponse.ok) {
+            const allowanceData = await allowanceResponse.json()
+            const currentAllowance = BigInt(allowanceData.allowance || '0')
+            const requiredAmount = BigInt(amount)
+            
+            setAllowance(currentAllowance.toString())
+            setNeedsApproval(currentAllowance < requiredAmount)
+          }
+        } catch (allowanceErr) {
+          console.error('Allowance check error:', allowanceErr)
+          setAllowance(null)
+          setNeedsApproval(false)
+        }
+      } else {
+        setAllowance(null)
+        setNeedsApproval(false)
+      }
       
     } catch (err) {
       console.error('Quote error:', err)
@@ -302,7 +306,7 @@ const TokenSwap = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [sellAmount, sellToken, buyToken, address, checkAllowance])
+  }, [sellAmount, sellToken, buyToken, address])
 
   // Execute swap
   const executeSwap = async () => {
