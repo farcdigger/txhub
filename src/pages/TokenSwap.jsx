@@ -223,7 +223,7 @@ const TokenSwap = () => {
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
 
       const params = new URLSearchParams({
-        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/transaction`,
+        endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/approve/transaction`,
         tokenAddress: sellToken,
         amount: amount.toString()
       })
@@ -240,15 +240,38 @@ const TokenSwap = () => {
 
       // Send approval transaction via wallet
       if (window.ethereum) {
+        // Format approval transaction data for MetaMask compatibility
+        const approvalParams = {
+          from: address,
+          to: approvalTx.to,
+          data: approvalTx.data
+        }
+
+        // Add value if present (convert to hex string)
+        if (approvalTx.value) {
+          approvalParams.value = typeof approvalTx.value === 'string' 
+            ? approvalTx.value.startsWith('0x') 
+              ? approvalTx.value 
+              : `0x${parseInt(approvalTx.value).toString(16)}`
+            : `0x${approvalTx.value.toString(16)}`
+        } else {
+          approvalParams.value = '0x0'
+        }
+
+        // Add gasPrice if present (convert to hex string)
+        if (approvalTx.gasPrice) {
+          approvalParams.gasPrice = typeof approvalTx.gasPrice === 'string'
+            ? approvalTx.gasPrice.startsWith('0x')
+              ? approvalTx.gasPrice
+              : `0x${parseInt(approvalTx.gasPrice).toString(16)}`
+            : `0x${approvalTx.gasPrice.toString(16)}`
+        }
+
+        console.log('Formatted approval params:', approvalParams)
+
         const txHash = await window.ethereum.request({
           method: 'eth_sendTransaction',
-          params: [{
-            from: address,
-            to: approvalTx.to,
-            data: approvalTx.data,
-            value: approvalTx.value || '0x0',
-            gasPrice: approvalTx.gasPrice || undefined
-          }]
+          params: [approvalParams]
         })
 
         console.log('Approval transaction sent:', txHash)
@@ -262,11 +285,11 @@ const TokenSwap = () => {
               const sellTokenData = tokens.find(t => t.address === sellToken)
               const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
               
-              const allowanceParams = new URLSearchParams({
-                endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
-                tokenAddress: sellToken,
-                walletAddress: address.toLowerCase()
-              })
+        const allowanceParams = new URLSearchParams({
+          endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/approve/allowance`,
+          tokenAddress: sellToken,
+          walletAddress: address.toLowerCase()
+        })
 
               const allowanceResponse = await fetch(`/api/1inch-proxy?${allowanceParams}`)
               
@@ -308,7 +331,7 @@ const TokenSwap = () => {
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
       const params = new URLSearchParams({
-        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
+        endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/quote`,
         src: sellToken,
         dst: buyToken,
         amount: amount.toString(),
@@ -333,11 +356,11 @@ const TokenSwap = () => {
       if (sellToken !== '0x4200000000000000000000000000000000000006' && 
           sellToken !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
         try {
-          const allowanceParams = new URLSearchParams({
-            endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
-            tokenAddress: sellToken,
-            walletAddress: address.toLowerCase()
-          })
+        const allowanceParams = new URLSearchParams({
+          endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/approve/allowance`,
+          tokenAddress: sellToken,
+          walletAddress: address.toLowerCase()
+        })
 
           const allowanceResponse = await fetch(`/api/1inch-proxy?${allowanceParams}`)
           
@@ -387,7 +410,7 @@ const TokenSwap = () => {
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
       const params = new URLSearchParams({
-        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/swap`,
+        endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/swap`,
         src: sellToken,
         dst: buyToken,
         amount: amount.toString(),
@@ -407,16 +430,47 @@ const TokenSwap = () => {
       
       // Execute transaction via wallet
       if (window.ethereum && swapData.tx) {
+        // Format transaction data for MetaMask compatibility
+        const txParams = {
+          from: address,
+          to: swapData.tx.to,
+          data: swapData.tx.data
+        }
+
+        // Add value if present (convert to hex string)
+        if (swapData.tx.value) {
+          txParams.value = typeof swapData.tx.value === 'string' 
+            ? swapData.tx.value.startsWith('0x') 
+              ? swapData.tx.value 
+              : `0x${parseInt(swapData.tx.value).toString(16)}`
+            : `0x${swapData.tx.value.toString(16)}`
+        } else {
+          txParams.value = '0x0'
+        }
+
+        // Add gas if present (convert to hex string)
+        if (swapData.tx.gas) {
+          txParams.gas = typeof swapData.tx.gas === 'string'
+            ? swapData.tx.gas.startsWith('0x')
+              ? swapData.tx.gas
+              : `0x${parseInt(swapData.tx.gas).toString(16)}`
+            : `0x${swapData.tx.gas.toString(16)}`
+        }
+
+        // Add gasPrice if present (convert to hex string)
+        if (swapData.tx.gasPrice) {
+          txParams.gasPrice = typeof swapData.tx.gasPrice === 'string'
+            ? swapData.tx.gasPrice.startsWith('0x')
+              ? swapData.tx.gasPrice
+              : `0x${parseInt(swapData.tx.gasPrice).toString(16)}`
+            : `0x${swapData.tx.gasPrice.toString(16)}`
+        }
+
+        console.log('Formatted transaction params:', txParams)
+
         const txHash = await window.ethereum.request({
           method: 'eth_sendTransaction',
-          params: [{
-            from: address,
-            to: swapData.tx.to,
-            data: swapData.tx.data,
-            value: swapData.tx.value || '0x0',
-            gas: swapData.tx.gas || undefined,
-            gasPrice: swapData.tx.gasPrice || undefined
-          }]
+          params: [txParams]
         })
 
         console.log('Swap transaction sent:', txHash)
