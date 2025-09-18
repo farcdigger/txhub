@@ -682,10 +682,25 @@ const TokenSwap = () => {
                 >
                   {tokens.map(token => (
                     <option key={token.address} value={token.address}>
-                      {token.symbol} {tokenBalances[token.address] ? `(${tokenBalances[token.address]})` : ''}
+                      {token.symbol}
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="token-balance-section">
+                <span className="balance-text">
+                  Balance: {tokenBalances[sellToken] || '0.0000'} {tokens.find(t => t.address === sellToken)?.symbol}
+                </span>
+                <button
+                  onClick={() => {
+                    const balance = tokenBalances[sellToken] || '0'
+                    setSellAmount(balance)
+                  }}
+                  className="max-button"
+                  disabled={!tokenBalances[sellToken] || parseFloat(tokenBalances[sellToken]) <= 0}
+                >
+                  Max
+                </button>
               </div>
             </div>
 
@@ -714,10 +729,15 @@ const TokenSwap = () => {
                 >
                   {tokens.map(token => (
                     <option key={token.address} value={token.address}>
-                      {token.symbol} {tokenBalances[token.address] ? `(${tokenBalances[token.address]})` : ''}
+                      {token.symbol}
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="token-balance-section">
+                <span className="balance-text">
+                  Balance: {tokenBalances[buyToken] || '0.0000'} {tokens.find(t => t.address === buyToken)?.symbol}
+                </span>
               </div>
             </div>
 
@@ -995,6 +1015,45 @@ const styles = `
 
   .token-select:hover {
     border-color: #3b82f6;
+  }
+
+  .token-balance-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding: 0 4px;
+  }
+
+  .balance-text {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  .max-button {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  }
+
+  .max-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+  }
+
+  .max-button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 
   .swap-direction {
