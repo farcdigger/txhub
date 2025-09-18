@@ -17,9 +17,9 @@ const TokenSwap = () => {
   const INTEGRATOR_FEE = 0.003 // 0.3%
   const INTEGRATOR_ADDRESS = '0x7d2Ceb7a0e0C39A3d0f7B5b491659fDE4bb7BCFe' // BaseHub revenue wallet
   
-  // Native ETH address for 1inch API - trying both possibilities
-  const NATIVE_ETH_ADDRESS = '0x0000000000000000000000000000000000000000' // Base network native ETH
-  const NATIVE_ETH_ADDRESS_ALT = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' // Alternative standard
+  // Native ETH address for 1inch API (official 1inch standard)
+  const NATIVE_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' // 1inch API standard
+  const NATIVE_ETH_ADDRESS_ALT = '0x0000000000000000000000000000000000000000' // Base network native ETH
   
   // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
   const bhubTokens = userXP * 10
@@ -83,8 +83,8 @@ const TokenSwap = () => {
           console.log('ETH Balance Raw:', ethBalance, 'Formatted:', ethBalanceFormatted)
           
           // Store ETH balance for both ETH and WETH tokens
-          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // Base network native ETH address
-          balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted // Alternative standard address
+          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // 1inch API standard address
+          balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted // Base network native ETH address
           balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH address
           balances['ETH'] = ethBalanceFormatted // Also store as 'ETH' for native ETH
           balances['NATIVE_ETH'] = ethBalanceFormatted // Native ETH key
@@ -446,7 +446,8 @@ const TokenSwap = () => {
         currentBalance: tokenBalances[sellToken],
         allBalances: tokenBalances,
         nativeETHAddress: NATIVE_ETH_ADDRESS,
-        nativeETHAddressAlt: NATIVE_ETH_ADDRESS_ALT
+        nativeETHAddressAlt: NATIVE_ETH_ADDRESS_ALT,
+        note: 'Using 1inch API standard address for native ETH'
       })
 
       // Check balance from 1inch API for debugging
