@@ -5,14 +5,14 @@ import { Home as HomeIcon } from 'lucide-react' // Renamed to avoid conflict
 
 // Add modal animation styles
 const modalStyles = `
-  @keyframes modalSlideIn {
+  @keyframes dropdownSlideIn {
     from {
       opacity: 0;
-      transform: scale(0.9) translateY(10px);
+      transform: translateY(-10px) scale(0.95);
     }
     to {
       opacity: 1;
-      transform: scale(1) translateY(0px);
+      transform: translateY(0) scale(1);
     }
   }
   
@@ -34,7 +34,7 @@ const Header = () => {
   const navigate = useNavigate()
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
-  const [showWalletModal, setShowWalletModal] = useState(false)
+  const [showWalletDropdown, setShowWalletDropdown] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   // Handle scroll to hide/show header
@@ -47,6 +47,18 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showWalletDropdown && !event.target.closest('.header-right')) {
+        setShowWalletDropdown(false)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [showWalletDropdown])
 
   // Format address for display
   const formatAddress = (address) => {
@@ -185,7 +197,7 @@ const Header = () => {
 
   const connectWithWallet = async (walletId) => {
     console.log('🔗 Connecting with wallet:', walletId)
-    setShowWalletModal(false)
+    setShowWalletDropdown(false)
     
     try {
       // Specific wallet detection and connection
@@ -359,7 +371,7 @@ const Header = () => {
       </div>
       
         {/* Right - Modern XP, Token, Wallet */}
-        <div className="header-right">
+        <div className="header-right" style={{ position: 'relative' }}>
             {isConnected ? (
             <div className="user-section" style={{
               display: 'flex',
@@ -444,7 +456,7 @@ const Header = () => {
                 e.preventDefault()
                 e.stopPropagation()
                 console.log('🖱️ Connect button clicked!')
-                setShowWalletModal(true)
+                setShowWalletDropdown(!showWalletDropdown)
               }}
               className="connect-button"
               style={{
@@ -479,41 +491,30 @@ const Header = () => {
           )}
         </div>
 
-        {/* Wallet Selection Overlay */}
-        {showWalletModal && (
-          <div className="wallet-selection-overlay" style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(59, 130, 246, 0.1)',
-            backdropFilter: 'blur(15px)',
-            zIndex: 99999999,
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'center',
-            padding: '140px 20px 20px 20px',
-            overflowY: 'auto'
-          }} onClick={() => setShowWalletModal(false)}>
-            {/* Wallet Selection Container */}
-            <div className="wallet-container" style={{
+        {/* Wallet Selection Dropdown */}
+        {showWalletDropdown && (
+          <div className="wallet-dropdown" style={{
+            position: 'absolute',
+            top: '100%',
+            right: '0',
+            marginTop: '8px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
+            zIndex: 1000000,
+            minWidth: '250px',
+            maxWidth: '280px',
+            padding: '8px',
+            animation: 'dropdownSlideIn 0.2s ease-out'
+          }}>
+            {/* Wallet Options List */}
+            <div className="wallet-list" style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              maxWidth: '600px',
-              width: '100%',
-              maxHeight: 'calc(100vh - 160px)',
-              overflowY: 'auto'
-            }} onClick={(e) => e.stopPropagation()}>
-              {/* Wallet Grid */}
-              <div className="wallet-grid" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '16px',
-                width: '100%',
-                marginBottom: '8px'
-              }}>
+              gap: '4px'
+            }}>
               {walletOptions.map((wallet) => (
                 <button
                   key={wallet.id}
@@ -521,101 +522,83 @@ const Header = () => {
                   className="wallet-card-option"
                   style={{
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '10px',
-                    padding: '20px 12px',
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    border: '2px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '16px',
+                    gap: '12px',
+                    padding: '10px 12px',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: '8px',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    textAlign: 'center',
-                    minHeight: '110px',
-                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-                    backdropFilter: 'blur(20px)'
+                    transition: 'all 0.2s ease',
+                    textAlign: 'left',
+                    width: '100%'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.background = 'rgba(59, 130, 246, 0.95)'
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.6)'
-                    e.target.style.transform = 'translateY(-8px) scale(1.05)'
-                    e.target.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)'
-                    // Change text color on hover
-                    e.target.querySelector('.wallet-name').style.color = 'white'
-                    e.target.querySelector('.wallet-desc').style.color = 'rgba(255, 255, 255, 0.8)'
+                    e.target.style.background = 'rgba(59, 130, 246, 0.1)'
+                    e.target.style.transform = 'translateX(4px)'
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.95)'
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                    e.target.style.transform = 'translateY(0px) scale(1)'
-                    e.target.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)'
-                    // Reset text color
-                    e.target.querySelector('.wallet-name').style.color = '#1f2937'
-                    e.target.querySelector('.wallet-desc').style.color = '#6b7280'
+                    e.target.style.background = 'transparent'
+                    e.target.style.transform = 'translateX(0px)'
                   }}
                 >
                   <div style={{
-                    fontSize: '40px',
-                    width: '56px',
-                    height: '56px',
+                    fontSize: '20px',
+                    width: '32px',
+                    height: '32px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
-                    borderRadius: '12px',
-                    marginBottom: '4px'
+                    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                    borderRadius: '8px',
+                    flexShrink: 0
                   }}>{wallet.icon}</div>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div className="wallet-name" style={{
-                      fontWeight: '700',
+                      fontWeight: '600',
                       color: '#1f2937',
-                      fontSize: '16px',
-                      marginBottom: '4px',
-                      lineHeight: '1.2',
-                      transition: 'color 0.3s ease'
+                      fontSize: '14px'
                     }}>{wallet.name}</div>
-                    <div className="wallet-desc" style={{
-                      color: '#6b7280',
-                      fontSize: '12px',
-                      lineHeight: '1.3',
-                      transition: 'color 0.3s ease'
-                    }}>{wallet.description}</div>
                   </div>
                 </button>
               ))}
               </div>
             
-            {/* Cancel Button */}
+            {/* Divider & Cancel */}
+            <div style={{
+              height: '1px',
+              background: 'rgba(0, 0, 0, 0.1)',
+              margin: '4px 0'
+            }}></div>
             <button
-              onClick={() => setShowWalletModal(false)}
+              onClick={() => setShowWalletDropdown(false)}
               style={{
-                marginTop: '16px',
-                padding: '10px 20px',
-                background: 'rgba(255, 255, 255, 0.9)',
-                border: '2px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: '6px',
                 color: '#6b7280',
-                fontSize: '13px',
-                fontWeight: '600',
+                fontSize: '12px',
+                fontWeight: '500',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                backdropFilter: 'blur(20px)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                transition: 'all 0.2s ease',
+                textAlign: 'left',
+                width: '100%'
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(239, 68, 68, 0.9)'
-                e.target.style.color = 'white'
-                e.target.style.borderColor = 'rgba(239, 68, 68, 0.6)'
-                e.target.style.transform = 'scale(1.05)'
+                e.target.style.background = 'rgba(239, 68, 68, 0.1)'
+                e.target.style.color = '#dc2626'
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.9)'
+                e.target.style.background = 'transparent'
                 e.target.style.color = '#6b7280'
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                e.target.style.transform = 'scale(1)'
               }}
             >
-              ✕ Cancel
+              <span>✕</span>
+              <span>Cancel</span>
             </button>
             </div>
           </div>
