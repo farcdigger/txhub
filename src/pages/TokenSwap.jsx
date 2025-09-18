@@ -21,6 +21,15 @@ const TokenSwap = () => {
   const NATIVE_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' // 1inch API standard
   const NATIVE_ETH_ADDRESS_ALT = '0x0000000000000000000000000000000000000000' // Base network native ETH
   
+  // Helper function to check if address is native ETH
+  const isNative = (addr) => {
+    if (!addr) return false
+    const lowerAddr = addr.toLowerCase()
+    return lowerAddr === NATIVE_ETH_ADDRESS.toLowerCase() ||
+           lowerAddr === NATIVE_ETH_ADDRESS_ALT.toLowerCase() ||
+           lowerAddr === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+  }
+  
   // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
   const bhubTokens = userXP * 10
 
@@ -98,15 +107,22 @@ const TokenSwap = () => {
             console.log(`Native ${token.symbol} balance:`, balances[token.address])
           } else {
             try {
+              // Properly pad the address to 32 bytes (64 hex chars)
+              const fnSig = '0x70a08231'
+              const addrPadded = address.toLowerCase().replace(/^0x/, '').padStart(64, '0')
+              const data = fnSig + addrPadded
+              
               const balanceResponse = await window.ethereum.request({
                 method: 'eth_call',
                 params: [{
                   to: token.address,
-                  data: `0x70a08231000000000000000000000000${address.slice(2)}`
+                  data: data
                 }, 'latest']
               })
               
-              const balance = parseInt(balanceResponse, 16) / Math.pow(10, token.decimals)
+              // Use BigInt to handle large numbers properly
+              const rawBalance = BigInt(balanceResponse)
+              const balance = Number(rawBalance) / Math.pow(10, token.decimals)
               balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
               console.log(`${token.symbol} balance:`, balances[token.address])
             } catch (err) {
@@ -210,7 +226,7 @@ const TokenSwap = () => {
   const tokens = [
     { 
       symbol: 'ETH', 
-      address: '0x0000000000000000000000000000000000000000', // Native ETH (no contract)
+      address: NATIVE_ETH_ADDRESS, // Use 1inch API standard for consistency
       name: 'Ethereum',
       decimals: 18,
       isNative: true
@@ -244,6 +260,13 @@ const TokenSwap = () => {
   // Approve token spending
   const approveToken = async () => {
     if (!sellAmount || !address) return
+    
+    // Skip approval for native ETH
+    if (isNative(sellToken)) {
+      setAllowance(null)
+      setNeedsApproval(false)
+      return
+    }
 
     setIsApproving(true)
     setError('')
@@ -324,7 +347,7 @@ const TokenSwap = () => {
         
         // Wait a bit then recheck allowance
         setTimeout(async () => {
-          if (sellAmount && sellToken !== NATIVE_ETH_ADDRESS) {
+          if (sellAmount && !isNative(sellToken)) {
             try {
               const sellTokenData = tokens.find(t => t.address === sellToken)
               const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
@@ -395,15 +418,13 @@ const TokenSwap = () => {
 
     // Check balance before quote
     const sellTokenData = tokens.find(t => t.address === sellToken)
-    // For native ETH, use the native ETH address, for other tokens use address
-    const balanceKey = sellTokenData?.isNative ? sellToken : sellToken
-    const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
+    const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
     const requestedAmount = parseFloat(sellAmount)
     
-    console.log('Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Balance Key:', balanceKey, 'Current Balance:', currentBalance, 'Requested:', requestedAmount, 'All Balances:', tokenBalances)
+    console.log('Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Current Balance:', currentBalance, 'Requested:', requestedAmount, 'All Balances:', tokenBalances)
     
     // For native ETH, we need to reserve some for gas fees
-    const gasReserve = sellTokenData?.isNative ? 0.00005 : 0 // Reserve 0.00005 ETH for gas
+    const gasReserve = isNative(sellToken) ? 0.00005 : 0 // Reserve 0.00005 ETH for gas
     const availableBalance = currentBalance - gasReserve
     
     console.log('Gas Reserve Calculation:', {
@@ -435,7 +456,7 @@ const TokenSwap = () => {
       }
       
       // Use 1inch API standard address for native ETH
-      const srcTokenForAPI = sellTokenData?.isNative ? NATIVE_ETH_ADDRESS : sellToken
+      const srcTokenForAPI = isNative(sellToken) ? NATIVE_ETH_ADDRESS : sellToken
       
       const params = new URLSearchParams({
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
@@ -532,7 +553,7 @@ const TokenSwap = () => {
       setBuyAmount(buyAmountFormatted.toFixed(6))
       
       // Check allowance after getting quote (skip for native ETH)
-      if (sellToken !== NATIVE_ETH_ADDRESS) {
+      if (!isNative(sellToken)) {
         try {
         const allowanceParams = new URLSearchParams({
           endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
@@ -588,15 +609,13 @@ const TokenSwap = () => {
 
     // Check balance before swap
     const sellTokenData = tokens.find(t => t.address === sellToken)
-    // For native ETH, use the native ETH address, for other tokens use address
-    const balanceKey = sellTokenData?.isNative ? sellToken : sellToken
-    const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
+    const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
     const requestedAmount = parseFloat(sellAmount)
     
-    console.log('Swap Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Balance Key:', balanceKey, 'Current Balance:', currentBalance, 'Requested:', requestedAmount)
+    console.log('Swap Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Current Balance:', currentBalance, 'Requested:', requestedAmount)
     
     // For native ETH, we need to reserve some for gas fees
-    const gasReserve = sellTokenData?.isNative ? 0.00005 : 0 // Reserve 0.00005 ETH for gas
+    const gasReserve = isNative(sellToken) ? 0.00005 : 0 // Reserve 0.00005 ETH for gas
     const availableBalance = currentBalance - gasReserve
     
     console.log('Swap Gas Reserve Calculation:', {
@@ -628,7 +647,7 @@ const TokenSwap = () => {
       }
       
       // Use 1inch API standard address for native ETH
-      const srcTokenForAPI = sellTokenData?.isNative ? NATIVE_ETH_ADDRESS : sellToken
+      const srcTokenForAPI = isNative(sellToken) ? NATIVE_ETH_ADDRESS : sellToken
       
       const params = new URLSearchParams({
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/swap`,
@@ -722,11 +741,11 @@ const TokenSwap = () => {
               ? swapData.tx.value 
               : `0x${parseInt(swapData.tx.value).toString(16)}`
             : `0x${swapData.tx.value.toString(16)}`
-        } else if (sellToken === NATIVE_ETH_ADDRESS) {
-          // For ETH swaps, use the sell amount as value
+        } else if (isNative(sellToken)) {
+          // For native ETH swaps, use the sell amount as value
           const sellTokenData = tokens.find(t => t.address === sellToken)
-          const ethValue = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
-          txParams.value = `0x${ethValue.toString(16)}`
+          const ethValue = BigInt(Math.floor(parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)))
+          txParams.value = '0x' + ethValue.toString(16)
         } else {
           txParams.value = '0x0'
         }
