@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAccount } from 'wagmi'
+import { useAccount, useDisconnect } from 'wagmi'
 import { getLeaderboard, getXP } from '../utils/xpUtils'
 import { useTransactions } from '../hooks/useTransactions'
 import EmbedMeta from '../components/EmbedMeta'
-import Header from '../components/Header'
 import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp, Image } from 'lucide-react'
 
 const Home = () => {
   const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
   const { sendGMTransaction, sendGNTransaction, isLoading: transactionLoading } = useTransactions()
   const [leaderboard, setLeaderboard] = useState([])
   const [leaderboardLoading, setLeaderboardLoading] = useState(false)
@@ -17,9 +17,37 @@ const Home = () => {
   const [isLoadingGN, setIsLoadingGN] = useState(false)
   const [showAllPlayers, setShowAllPlayers] = useState(false)
   const [userXP, setUserXP] = useState(0)
+  const [userLevel, setUserLevel] = useState(1)
   
   // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
   const bhubTokens = userXP * 10
+
+  // Load user XP and level
+  useEffect(() => {
+    const loadUserXP = async () => {
+      if (isConnected && address) {
+        try {
+          const xp = await getXP(address)
+          setUserXP(xp)
+          setUserLevel(Math.floor(xp / 100) + 1)
+        } catch (error) {
+          console.error('Error loading user XP:', error)
+          setUserXP(0)
+          setUserLevel(1)
+        }
+      }
+    }
+
+    loadUserXP()
+    const interval = setInterval(loadUserXP, 5000)
+    return () => clearInterval(interval)
+  }, [isConnected, address])
+
+  // Format address for display
+  const formatAddress = (address) => {
+    if (!address) return ''
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
 
   // Load leaderboard
   useEffect(() => {
@@ -218,7 +246,138 @@ const Home = () => {
         buttonText="Play BaseHub"
       />
       
-      <Header />
+      {/* Header */}
+      <div className="header-section">
+        <div className="header-left">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="home-button"
+            style={{
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              color: '#1f2937',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>🏠</span>
+            <span>Home</span>
+          </button>
+        </div>
+        
+        <div className="header-center">
+          <h1 className="header-title">⚡ BaseHub</h1>
+          <p className="header-subtitle">Play games & earn XP</p>
+        </div>
+        
+        <div className="header-right">
+          {isConnected ? (
+            <div className="user-section">
+              {/* XP Section */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}>
+                <span style={{ fontSize: '16px' }}>⚡</span>
+                <span style={{
+                  color: '#1f2937',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}>{userXP}</span>
+              </div>
+
+              {/* BHUB Token Section */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(255, 193, 7, 0.2)',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid rgba(255, 193, 7, 0.3)'
+              }}>
+                <span style={{ fontSize: '16px' }}>💎</span>
+                <span style={{
+                  color: '#1f2937',
+                  fontSize: '14px',
+                  fontWeight: '600'
+                }}>{bhubTokens}</span>
+              </div>
+
+              {/* Claim Button */}
+              <button style={{
+                background: 'rgba(156, 163, 175, 0.3)',
+                border: '1px solid rgba(156, 163, 175, 0.3)',
+                borderRadius: '20px',
+                padding: '6px 16px',
+                color: '#6b7280',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'not-allowed',
+                opacity: 0.8
+              }} disabled>
+                Soon
+              </button>
+
+              {/* Wallet Section */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                padding: '6px 12px',
+                borderRadius: '20px',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}>
+                <span style={{
+                  color: '#1f2937',
+                  fontSize: '12px',
+                  fontWeight: '600'
+                }}>{formatAddress(address)}</span>
+                <button
+                  onClick={() => disconnect()}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                border: 'none',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              Connect Wallet
+            </button>
+          )}
+        </div>
+      </div>
 
       <div className="welcome-section">
         <div className="card">
@@ -445,17 +604,18 @@ const Home = () => {
                   {/* XP Reward Badge */}
                   <div style={{
                     position: 'absolute',
-                    top: '12px',
-                    right: '12px',
+                    top: '6px',
+                    right: '6px',
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(10px)',
-                    borderRadius: '20px',
-                    padding: '4px 8px',
-                    fontSize: '11px',
+                    borderRadius: '12px',
+                    padding: '2px 6px',
+                    fontSize: '9px',
                     fontWeight: 'bold',
                     color: '#059669',
                     border: '1px solid rgba(5, 150, 105, 0.2)',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                    zIndex: 10
                   }}>
                     {game.xpReward}
                   </div>
@@ -464,17 +624,18 @@ const Home = () => {
                   {game.bonusXP && (
                     <div style={{
                       position: 'absolute',
-                      top: '12px',
-                      left: '12px',
+                      top: '6px',
+                      left: '6px',
                       background: 'rgba(255, 215, 0, 0.95)',
                       backdropFilter: 'blur(10px)',
-                      borderRadius: '20px',
-                      padding: '4px 8px',
-                      fontSize: '11px',
+                      borderRadius: '12px',
+                      padding: '2px 6px',
+                      fontSize: '9px',
                       fontWeight: 'bold',
                       color: '#92400e',
                       border: '1px solid rgba(146, 64, 14, 0.2)',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                      zIndex: 10
                     }}>
                       {game.bonusXP}
                     </div>
@@ -517,17 +678,18 @@ const Home = () => {
                   {/* XP Reward Badge */}
                   <div style={{
                     position: 'absolute',
-                    top: '12px',
-                    right: '12px',
+                    top: '6px',
+                    right: '6px',
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(10px)',
-                    borderRadius: '20px',
-                    padding: '4px 8px',
-                    fontSize: '11px',
+                    borderRadius: '12px',
+                    padding: '2px 6px',
+                    fontSize: '9px',
                     fontWeight: 'bold',
                     color: '#059669',
                     border: '1px solid rgba(5, 150, 105, 0.2)',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                    zIndex: 10
                   }}>
                     {game.xpReward}
                   </div>
@@ -536,17 +698,18 @@ const Home = () => {
                   {game.bonusXP && (
                     <div style={{
                       position: 'absolute',
-                      top: '12px',
-                      left: '12px',
+                      top: '6px',
+                      left: '6px',
                       background: 'rgba(255, 215, 0, 0.95)',
                       backdropFilter: 'blur(10px)',
-                      borderRadius: '20px',
-                      padding: '4px 8px',
-                      fontSize: '11px',
+                      borderRadius: '12px',
+                      padding: '2px 6px',
+                      fontSize: '9px',
                       fontWeight: 'bold',
                       color: '#92400e',
                       border: '1px solid rgba(146, 64, 14, 0.2)',
-                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                      zIndex: 10
                     }}>
                       {game.bonusXP}
                     </div>
@@ -787,6 +950,65 @@ const styles = `
     max-width: 800px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .header-section {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-center {
+    text-align: center;
+    flex: 1;
+  }
+
+  .header-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 2px 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .header-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .user-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
 
