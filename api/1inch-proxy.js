@@ -36,6 +36,8 @@ export default async function handler(req, res) {
     const apiUrl = `${INCH_API_URL}${endpoint}?${params.toString()}`
     
     console.log('Proxying request to:', apiUrl)
+    console.log('API Key (first 10 chars):', INCH_API_KEY.substring(0, 10))
+    console.log('Full endpoint path:', endpoint)
     
     // Make request to 1inch API
     const response = await fetch(apiUrl, {
@@ -52,10 +54,14 @@ export default async function handler(req, res) {
       const errorText = await response.text()
       console.error('Error details:', errorText)
       console.error('Request URL:', apiUrl)
+      console.error('Request params:', queryParams)
+      console.error('Full endpoint:', endpoint)
       res.status(response.status).json({ 
         error: `1inch API error: ${response.status}`,
         details: errorText,
-        requestUrl: apiUrl
+        requestUrl: apiUrl,
+        requestParams: queryParams,
+        endpoint: endpoint
       })
       return
     }

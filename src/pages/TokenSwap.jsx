@@ -48,7 +48,7 @@ const TokenSwap = () => {
   }, [isConnected, address])
 
   // Swap State
-  const [sellToken, setSellToken] = useState('0x4200000000000000000000000000000000000006') // ETH on Base
+  const [sellToken, setSellToken] = useState('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') // ETH on Base
   const [buyToken, setBuyToken] = useState('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913') // USDC on Base
   const [sellAmount, setSellAmount] = useState('')
   const [buyAmount, setBuyAmount] = useState('')
@@ -75,7 +75,7 @@ const TokenSwap = () => {
             method: 'eth_getBalance',
             params: [address, 'latest']
           })
-          balances['0x4200000000000000000000000000000000000006'] = 
+          balances['0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'] = 
             (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(4)
         }
 
@@ -180,7 +180,7 @@ const TokenSwap = () => {
   const tokens = [
     { 
       symbol: 'ETH', 
-      address: '0x4200000000000000000000000000000000000006',
+      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
       name: 'Ethereum',
       decimals: 18,
       isNative: true
@@ -279,7 +279,7 @@ const TokenSwap = () => {
         
         // Wait a bit then recheck allowance
         setTimeout(async () => {
-          if (sellAmount && sellToken !== '0x4200000000000000000000000000000000000006') {
+          if (sellAmount && sellToken !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
             try {
               const sellTokenData = tokens.find(t => t.address === sellToken)
               const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
@@ -350,7 +350,7 @@ const TokenSwap = () => {
       setBuyAmount(buyAmountFormatted.toFixed(6))
       
       // Check allowance after getting quote (skip for native ETH)
-      if (sellToken !== '0x4200000000000000000000000000000000000006') {
+      if (sellToken !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
         try {
         const allowanceParams = new URLSearchParams({
           endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/approve/allowance`,
@@ -412,8 +412,7 @@ const TokenSwap = () => {
         amount: amount.toString(),
         from: address.toLowerCase(),
         slippage: '1',
-        disableEstimate: 'false',
-        allowPartialFill: 'false'
+        referrer: '0x0000000000000000000000000000000000000000'
       })
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
@@ -442,7 +441,7 @@ const TokenSwap = () => {
               ? swapData.tx.value 
               : `0x${parseInt(swapData.tx.value).toString(16)}`
             : `0x${swapData.tx.value.toString(16)}`
-        } else if (sellToken === '0x4200000000000000000000000000000000000006') {
+        } else if (sellToken === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
           // For ETH swaps, use the sell amount as value
           const sellTokenData = tokens.find(t => t.address === sellToken)
           const ethValue = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
