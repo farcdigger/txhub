@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from 'wagmi'
 import { getXP } from '../utils/xpUtils'
@@ -79,7 +79,7 @@ const TokenSwap = () => {
     }, 1000) // 1 second delay for debouncing
 
     return () => clearTimeout(debounceTimer)
-  }, [sellAmount, sellToken, buyToken, isConnected, getQuote])
+  }, [sellAmount, sellToken, buyToken, isConnected]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Wallet connection handler
   const handleConnect = async () => {
@@ -235,7 +235,7 @@ const TokenSwap = () => {
   }
 
   // Get quote from 1inch API via proxy
-  const getQuote = useCallback(async () => {
+  const getQuote = async () => {
     if (!sellAmount || !sellToken || !buyToken) {
       setError('Please enter amount and select tokens')
       return
@@ -306,7 +306,7 @@ const TokenSwap = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [sellAmount, sellToken, buyToken, address])
+  }
 
   // Execute swap
   const executeSwap = async () => {
