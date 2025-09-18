@@ -41,7 +41,9 @@ const Header = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY
-      setIsScrolled(scrollTop > 100)
+      const shouldHide = scrollTop > 50
+      console.log('📜 Scroll position:', scrollTop, 'Should hide:', shouldHide)
+      setIsScrolled(shouldHide)
     }
 
     window.addEventListener('scroll', handleScroll)
@@ -281,7 +283,7 @@ const Header = () => {
       padding: '16px 20px !important',
       alignItems: 'center',
       justifyContent: 'space-between',
-      transition: 'all 0.3s ease !important',
+      transition: 'all 0.2s ease !important',
       visibility: 'visible !important',
       opacity: isScrolled ? '0 !important' : '1 !important',
       height: 'auto !important',
