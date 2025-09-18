@@ -326,12 +326,23 @@ const TokenSwap = () => {
       return
     }
 
+    // Validate amount
+    if (parseFloat(sellAmount) <= 0) {
+      setError('Please enter a valid amount')
+      return
+    }
+
     setIsLoading(true)
     setError('')
     
     try {
       const sellTokenData = tokens.find(t => t.address === sellToken)
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
+      
+      // Validate amount is a valid number
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error('Invalid amount format')
+      }
       
       const params = new URLSearchParams({
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
@@ -402,6 +413,12 @@ const TokenSwap = () => {
       return
     }
 
+    // Validate amount
+    if (!sellAmount || parseFloat(sellAmount) <= 0) {
+      setError('Please enter a valid amount')
+      return
+    }
+
     setIsLoading(true)
     setError('')
 
@@ -409,22 +426,44 @@ const TokenSwap = () => {
       const sellTokenData = tokens.find(t => t.address === sellToken)
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
+      // Validate amount is a valid number
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error('Invalid amount format')
+      }
+      
       const params = new URLSearchParams({
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/swap`,
         src: sellToken,
         dst: buyToken,
         amount: amount.toString(),
         from: address.toLowerCase(),
-        slippage: '1',
-        disableEstimate: 'false',
-        allowPartialFill: 'false'
+        slippage: '1'
       })
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(`1inch API error: ${response.status} - ${errorData.error || 'Unknown error'}`)
+        console.error('1inch API Error Details:', errorData)
+        
+        // Handle specific error messages
+        if (errorData.details && errorData.details.includes('Not enough src balance')) {
+          throw new Error('Insufficient token balance for swap')
+        } else if (errorData.details && errorData.details.includes('Not enough Allowance')) {
+          throw new Error('Token allowance required. Please approve token spending first.')
+        } else if (errorData.details && errorData.details.includes('Insufficient liquidity')) {
+          throw new Error('Insufficient liquidity for this swap. Try a smaller amount.')
+        } else if (errorData.details && errorData.details.includes('Amount is not set')) {
+          throw new Error('Invalid amount. Please enter a valid amount.')
+        } else if (errorData.details && errorData.details.includes('Src is not set')) {
+          throw new Error('Source token not specified.')
+        } else if (errorData.details && errorData.details.includes('Dst is not set')) {
+          throw new Error('Destination token not specified.')
+        } else if (errorData.details && errorData.details.includes('Cannot sync token')) {
+          throw new Error('Invalid token address. Please check token contract.')
+        } else {
+          throw new Error(`1inch API error: ${response.status} - ${errorData.error || errorData.details || 'Unknown error'}`)
+        }
       }
 
       const swapData = await response.json()

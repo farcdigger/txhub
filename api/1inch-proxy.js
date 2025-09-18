@@ -56,12 +56,23 @@ export default async function handler(req, res) {
       console.error('Request URL:', apiUrl)
       console.error('Request params:', queryParams)
       console.error('Full endpoint:', endpoint)
+      
+      // Try to parse error as JSON for better error handling
+      let errorDetails = errorText
+      try {
+        const errorJson = JSON.parse(errorText)
+        errorDetails = errorJson
+      } catch (e) {
+        // Keep as text if not JSON
+      }
+      
       res.status(response.status).json({ 
         error: `1inch API error: ${response.status}`,
-        details: errorText,
+        details: errorDetails,
         requestUrl: apiUrl,
         requestParams: queryParams,
-        endpoint: endpoint
+        endpoint: endpoint,
+        statusCode: response.status
       })
       return
     }
