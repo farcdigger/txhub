@@ -73,6 +73,12 @@ const TokenSwap = () => {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [tokenBalances, setTokenBalances] = useState({})
+  const [customTokens, setCustomTokens] = useState([])
+  const [showAddToken, setShowAddToken] = useState(false)
+  const [newTokenAddress, setNewTokenAddress] = useState('')
+  const [newTokenSymbol, setNewTokenSymbol] = useState('')
+  const [newTokenName, setNewTokenName] = useState('')
+  const [newTokenDecimals, setNewTokenDecimals] = useState(18)
 
   // Load token balances
   useEffect(() => {
@@ -100,7 +106,7 @@ const TokenSwap = () => {
         }
 
         // Load ERC20 token balances
-        for (const token of tokens) {
+        for (const token of [...tokens, ...customTokens]) {
           if (token.isNative) {
             // For native ETH, use the balance we already loaded
             balances[token.address] = balances['ETH'] || '0.000000'
@@ -272,7 +278,7 @@ const TokenSwap = () => {
     setError('')
 
     try {
-      const sellTokenData = tokens.find(t => t.address === sellToken)
+      const sellTokenData = [...tokens, ...customTokens].find(t => t.address === sellToken)
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
 
       const params = new URLSearchParams({
@@ -349,7 +355,7 @@ const TokenSwap = () => {
         setTimeout(async () => {
           if (sellAmount && !isNative(sellToken)) {
             try {
-              const sellTokenData = tokens.find(t => t.address === sellToken)
+              const sellTokenData = [...tokens, ...customTokens].find(t => t.address === sellToken)
               const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
               
         const allowanceParams = new URLSearchParams({
@@ -403,6 +409,62 @@ const TokenSwap = () => {
     return null
   }
 
+  // Add custom token
+  const addCustomToken = async () => {
+    if (!newTokenAddress || !newTokenSymbol || !newTokenName) {
+      setError('Please fill in all token details')
+      return
+    }
+
+    // Validate address format
+    if (!newTokenAddress.startsWith('0x') || newTokenAddress.length !== 42) {
+      setError('Invalid token address format')
+      return
+    }
+
+    // Check if token already exists
+    const allTokens = [...tokens, ...customTokens]
+    if (allTokens.some(token => token.address.toLowerCase() === newTokenAddress.toLowerCase())) {
+      setError('Token already exists')
+      return
+    }
+
+    try {
+      // Verify token exists by checking balance
+      const balanceResponse = await window.ethereum.request({
+        method: 'eth_call',
+        params: [{
+          to: newTokenAddress,
+          data: `0x70a08231${address.toLowerCase().replace(/^0x/, '').padStart(64, '0')}`
+        }, 'latest']
+      })
+
+      const newToken = {
+        symbol: newTokenSymbol.toUpperCase(),
+        address: newTokenAddress,
+        name: newTokenName,
+        decimals: newTokenDecimals,
+        isCustom: true
+      }
+
+      setCustomTokens(prev => [...prev, newToken])
+      setShowAddToken(false)
+      setNewTokenAddress('')
+      setNewTokenSymbol('')
+      setNewTokenName('')
+      setNewTokenDecimals(18)
+      setError('')
+      setSuccessMessage('✅ Custom token added successfully!')
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000)
+      
+    } catch (error) {
+      console.error('Error adding custom token:', error)
+      setError('Failed to verify token. Please check the address and try again.')
+    }
+  }
+
   // Get quote from 1inch API via proxy
   const getQuote = async () => {
     if (!sellAmount || !sellToken || !buyToken) {
@@ -417,7 +479,7 @@ const TokenSwap = () => {
     }
 
     // Check balance before quote
-    const sellTokenData = tokens.find(t => t.address === sellToken)
+    const sellTokenData = [...tokens, ...customTokens].find(t => t.address === sellToken)
     const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
     const requestedAmount = parseFloat(sellAmount)
     
@@ -447,7 +509,7 @@ const TokenSwap = () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     try {
-      const sellTokenData = tokens.find(t => t.address === sellToken)
+      const sellTokenData = [...tokens, ...customTokens].find(t => t.address === sellToken)
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
       // Validate amount is a valid number
@@ -554,7 +616,7 @@ const TokenSwap = () => {
       const data = await response.json()
       setQuote(data)
       
-      const buyTokenData = tokens.find(t => t.address === buyToken)
+      const buyTokenData = [...tokens, ...customTokens].find(t => t.address === buyToken)
       const buyAmountFormatted = parseFloat(data.dstAmount) / Math.pow(10, buyTokenData.decimals)
       setBuyAmount(buyAmountFormatted.toFixed(6))
       
@@ -614,7 +676,7 @@ const TokenSwap = () => {
     }
 
     // Check balance before swap
-    const sellTokenData = tokens.find(t => t.address === sellToken)
+    const sellTokenData = [...tokens, ...customTokens].find(t => t.address === sellToken)
     const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
     const requestedAmount = parseFloat(sellAmount)
     
@@ -644,7 +706,7 @@ const TokenSwap = () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     try {
-      const sellTokenData = tokens.find(t => t.address === sellToken)
+      const sellTokenData = [...tokens, ...customTokens].find(t => t.address === sellToken)
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
       // Validate amount is a valid number
@@ -751,7 +813,7 @@ const TokenSwap = () => {
             : `0x${swapData.tx.value.toString(16)}`
         } else if (isNative(sellToken)) {
           // For native ETH swaps, use the sell amount as value
-          const sellTokenData = tokens.find(t => t.address === sellToken)
+          const sellTokenData = [...tokens, ...customTokens].find(t => t.address === sellToken)
           const ethValue = BigInt(Math.floor(parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)))
           txParams.value = '0x' + ethValue.toString(16)
         } else {
@@ -983,9 +1045,9 @@ const TokenSwap = () => {
                   onChange={(e) => setSellToken(e.target.value)}
                   className="token-select"
                 >
-                  {tokens.map(token => (
+                  {[...tokens, ...customTokens].map(token => (
                     <option key={token.address} value={token.address}>
-                      {token.symbol}
+                      {token.symbol} {token.isCustom ? '(Custom)' : ''}
                     </option>
                   ))}
                 </select>
@@ -993,12 +1055,12 @@ const TokenSwap = () => {
                       <div className="token-balance-section">
                         <span className="balance-text">
                           Balance: {(() => {
-                            const token = tokens.find(t => t.address === sellToken)
+                            const token = [...tokens, ...customTokens].find(t => t.address === sellToken)
                             const balanceKey = token?.isNative ? sellToken : sellToken
                             return tokenBalances[balanceKey] || '0.0000'
-                          })()} {tokens.find(t => t.address === sellToken)?.symbol}
+                          })()} {[...tokens, ...customTokens].find(t => t.address === sellToken)?.symbol}
                           {(() => {
-                            const token = tokens.find(t => t.address === sellToken)
+                            const token = [...tokens, ...customTokens].find(t => t.address === sellToken)
                             const balanceKey = token?.isNative ? sellToken : sellToken
                             const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
                             const requestedAmount = parseFloat(sellAmount || '0')
@@ -1065,16 +1127,16 @@ const TokenSwap = () => {
                   onChange={(e) => setBuyToken(e.target.value)}
                   className="token-select"
                 >
-                  {tokens.map(token => (
+                  {[...tokens, ...customTokens].map(token => (
                     <option key={token.address} value={token.address}>
-                      {token.symbol}
+                      {token.symbol} {token.isCustom ? '(Custom)' : ''}
                     </option>
                   ))}
                 </select>
               </div>
               <div className="token-balance-section">
                 <span className="balance-text">
-                  Balance: {tokenBalances[buyToken] || '0.0000'} {tokens.find(t => t.address === buyToken)?.symbol}
+                  Balance: {tokenBalances[buyToken] || '0.0000'} {[...tokens, ...customTokens].find(t => t.address === buyToken)?.symbol}
                 </span>
               </div>
             </div>
@@ -1084,7 +1146,7 @@ const TokenSwap = () => {
               <div className="quote-info">
                 <div className="quote-item">
                   <span>Best Price:</span>
-                  <span>{buyAmount} {tokens.find(t => t.address === buyToken)?.symbol}</span>
+                  <span>{buyAmount} {[...tokens, ...customTokens].find(t => t.address === buyToken)?.symbol}</span>
                 </div>
                 <div className="quote-item">
                   <span>Gas Estimate:</span>
@@ -1102,6 +1164,121 @@ const TokenSwap = () => {
                     <span>Ready to swap</span>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Add Custom Token Button */}
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <button
+                onClick={() => setShowAddToken(!showAddToken)}
+                style={{
+                  background: 'rgba(71, 85, 105, 0.5)',
+                  border: '1px solid rgba(100, 116, 139, 0.3)',
+                  borderRadius: '12px',
+                  padding: '8px 16px',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {showAddToken ? '❌ Cancel' : '➕ Add Custom Token'}
+              </button>
+            </div>
+
+            {/* Add Custom Token Form */}
+            {showAddToken && (
+              <div style={{
+                background: 'rgba(51, 65, 85, 0.3)',
+                borderRadius: '16px',
+                padding: '20px',
+                marginBottom: '20px',
+                border: '1px solid rgba(71, 85, 105, 0.3)'
+              }}>
+                <h3 style={{ color: '#ffffff', marginBottom: '16px', fontSize: '18px' }}>Add Custom Token</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <input
+                    type="text"
+                    placeholder="Token Contract Address (0x...)"
+                    value={newTokenAddress}
+                    onChange={(e) => setNewTokenAddress(e.target.value)}
+                    style={{
+                      background: 'rgba(71, 85, 105, 0.5)',
+                      border: '1px solid rgba(100, 116, 139, 0.3)',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      color: '#ffffff',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <input
+                      type="text"
+                      placeholder="Symbol (e.g., TOKEN)"
+                      value={newTokenSymbol}
+                      onChange={(e) => setNewTokenSymbol(e.target.value)}
+                      style={{
+                        background: 'rgba(71, 85, 105, 0.5)',
+                        border: '1px solid rgba(100, 116, 139, 0.3)',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        color: '#ffffff',
+                        fontSize: '14px',
+                        flex: 1
+                      }}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Decimals"
+                      value={newTokenDecimals}
+                      onChange={(e) => setNewTokenDecimals(parseInt(e.target.value) || 18)}
+                      min="0"
+                      max="18"
+                      style={{
+                        background: 'rgba(71, 85, 105, 0.5)',
+                        border: '1px solid rgba(100, 116, 139, 0.3)',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        color: '#ffffff',
+                        fontSize: '14px',
+                        width: '100px'
+                      }}
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Token Name (e.g., My Custom Token)"
+                    value={newTokenName}
+                    onChange={(e) => setNewTokenName(e.target.value)}
+                    style={{
+                      background: 'rgba(71, 85, 105, 0.5)',
+                      border: '1px solid rgba(100, 116, 139, 0.3)',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      color: '#ffffff',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <button
+                    onClick={addCustomToken}
+                    disabled={!newTokenAddress || !newTokenSymbol || !newTokenName}
+                    style={{
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '12px 24px',
+                      color: 'white',
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      opacity: (!newTokenAddress || !newTokenSymbol || !newTokenName) ? 0.5 : 1
+                    }}
+                  >
+                    Add Token
+                  </button>
+                </div>
               </div>
             )}
 
