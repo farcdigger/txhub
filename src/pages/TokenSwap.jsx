@@ -210,7 +210,7 @@ const TokenSwap = () => {
   const tokens = [
     { 
       symbol: 'ETH', 
-      address: NATIVE_ETH_ADDRESS, // Standard native ETH address
+      address: '0x0000000000000000000000000000000000000000', // Native ETH (no contract)
       name: 'Ethereum',
       decimals: 18,
       isNative: true
@@ -406,8 +406,16 @@ const TokenSwap = () => {
     const gasReserve = sellTokenData?.isNative ? 0.00005 : 0 // Reserve 0.00005 ETH for gas
     const availableBalance = currentBalance - gasReserve
     
+    console.log('Gas Reserve Calculation:', {
+      currentBalance,
+      requestedAmount,
+      gasReserve,
+      availableBalance,
+      canSwap: availableBalance >= requestedAmount
+    })
+    
     if (availableBalance < requestedAmount) {
-      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to get quote for ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. ${gasReserve > 0 ? `Gas reserve of ${gasReserve} ${sellTokenData.symbol} is required. ` : ''}Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
+      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to get quote for ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. ${gasReserve > 0 ? `Gas reserve of ${gasReserve} ${sellTokenData.symbol} is required. Available for swap: ${availableBalance.toFixed(6)} ${sellTokenData.symbol}. ` : ''}Please reduce the amount to ${availableBalance.toFixed(6)} ${sellTokenData.symbol} or add more ${sellTokenData.symbol} to your wallet.`)
       return
     }
 
@@ -426,9 +434,12 @@ const TokenSwap = () => {
         throw new Error('Invalid amount format')
       }
       
+      // Use 1inch API standard address for native ETH
+      const srcTokenForAPI = sellTokenData?.isNative ? NATIVE_ETH_ADDRESS : sellToken
+      
       const params = new URLSearchParams({
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
-        src: sellToken,
+        src: srcTokenForAPI,
         dst: buyToken,
         amount: amount.toString(),
         includeTokensInfo: 'true',
@@ -438,7 +449,7 @@ const TokenSwap = () => {
 
       console.log('1inch Quote Request:', {
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
-        src: sellToken,
+        src: srcTokenForAPI,
         dst: buyToken,
         amount: amount.toString(),
         sellTokenData: sellTokenData,
@@ -447,7 +458,9 @@ const TokenSwap = () => {
         allBalances: tokenBalances,
         nativeETHAddress: NATIVE_ETH_ADDRESS,
         nativeETHAddressAlt: NATIVE_ETH_ADDRESS_ALT,
-        note: 'Using 1inch API standard address for native ETH'
+        note: 'Using 1inch API standard address for native ETH',
+        originalSrc: sellToken,
+        apiSrc: srcTokenForAPI
       })
 
       // Check balance from 1inch API for debugging
@@ -586,8 +599,16 @@ const TokenSwap = () => {
     const gasReserve = sellTokenData?.isNative ? 0.00005 : 0 // Reserve 0.00005 ETH for gas
     const availableBalance = currentBalance - gasReserve
     
+    console.log('Swap Gas Reserve Calculation:', {
+      currentBalance,
+      requestedAmount,
+      gasReserve,
+      availableBalance,
+      canSwap: availableBalance >= requestedAmount
+    })
+    
     if (availableBalance < requestedAmount) {
-      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to swap ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. ${gasReserve > 0 ? `Gas reserve of ${gasReserve} ${sellTokenData.symbol} is required. ` : ''}Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
+      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to swap ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. ${gasReserve > 0 ? `Gas reserve of ${gasReserve} ${sellTokenData.symbol} is required. Available for swap: ${availableBalance.toFixed(6)} ${sellTokenData.symbol}. ` : ''}Please reduce the amount to ${availableBalance.toFixed(6)} ${sellTokenData.symbol} or add more ${sellTokenData.symbol} to your wallet.`)
       return
     }
 
@@ -606,9 +627,12 @@ const TokenSwap = () => {
         throw new Error('Invalid amount format')
       }
       
+      // Use 1inch API standard address for native ETH
+      const srcTokenForAPI = sellTokenData?.isNative ? NATIVE_ETH_ADDRESS : sellToken
+      
       const params = new URLSearchParams({
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/swap`,
-        src: sellToken,
+        src: srcTokenForAPI,
         dst: buyToken,
         amount: amount.toString(),
         from: address.toLowerCase(),
@@ -621,13 +645,15 @@ const TokenSwap = () => {
 
       console.log('1inch Swap Request:', {
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/swap`,
-        src: sellToken,
+        src: srcTokenForAPI,
         dst: buyToken,
         amount: amount.toString(),
         from: address.toLowerCase(),
         slippage: '1',
         referrer: INTEGRATOR_ADDRESS,
-        sellTokenData: sellTokenData
+        sellTokenData: sellTokenData,
+        originalSrc: sellToken,
+        apiSrc: srcTokenForAPI
       })
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
