@@ -48,7 +48,7 @@ const TokenSwap = () => {
   }, [isConnected, address])
 
   // Swap State
-  const [sellToken, setSellToken] = useState('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') // ETH on Base
+  const [sellToken, setSellToken] = useState('0x0000000000000000000000000000000000000000') // ETH on Base
   const [buyToken, setBuyToken] = useState('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913') // USDC on Base
   const [sellAmount, setSellAmount] = useState('')
   const [buyAmount, setBuyAmount] = useState('')
@@ -75,7 +75,7 @@ const TokenSwap = () => {
             method: 'eth_getBalance',
             params: [address, 'latest']
           })
-          balances['0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'] = 
+          balances['0x0000000000000000000000000000000000000000'] = 
             (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(4)
         }
 
@@ -180,7 +180,7 @@ const TokenSwap = () => {
   const tokens = [
     { 
       symbol: 'ETH', 
-      address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+      address: '0x0000000000000000000000000000000000000000',
       name: 'Ethereum',
       decimals: 18,
       isNative: true
@@ -280,7 +280,7 @@ const TokenSwap = () => {
         // Wait a bit then recheck allowance
         setTimeout(async () => {
           if (sellAmount && sellToken !== '0x4200000000000000000000000000000000000006' && 
-              sellToken !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
+              sellToken !== '0x0000000000000000000000000000000000000000') {
             try {
               const sellTokenData = tokens.find(t => t.address === sellToken)
               const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
@@ -354,7 +354,7 @@ const TokenSwap = () => {
       
       // Check allowance after getting quote (skip for native ETH)
       if (sellToken !== '0x4200000000000000000000000000000000000006' && 
-          sellToken !== '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
+          sellToken !== '0x0000000000000000000000000000000000000000') {
         try {
         const allowanceParams = new URLSearchParams({
           endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/approve/allowance`,
@@ -415,7 +415,9 @@ const TokenSwap = () => {
         dst: buyToken,
         amount: amount.toString(),
         from: address.toLowerCase(),
-        slippage: '1'
+        slippage: '1',
+        disableEstimate: 'false',
+        allowPartialFill: 'false'
       })
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
