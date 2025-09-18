@@ -129,7 +129,7 @@ const TokenSwap = () => {
     }
   ]
 
-  // Get quote from 1inch API
+  // Get quote from 1inch API via proxy
   const getQuote = async () => {
     if (!sellAmount || !sellToken || !buyToken) {
       setError('Please enter amount and select tokens')
@@ -144,6 +144,7 @@ const TokenSwap = () => {
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
       const params = new URLSearchParams({
+        endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/quote`,
         src: sellToken,
         dst: buyToken,
         amount: amount.toString(),
@@ -152,15 +153,7 @@ const TokenSwap = () => {
         includeProtocols: 'true'
       })
 
-      const response = await fetch(
-        `${INCH_API_URL}/swap/v6.0/${BASE_CHAIN_ID}/quote?${params}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${INCH_API_KEY}`,
-            'accept': 'application/json'
-          }
-        }
-      )
+      const response = await fetch(`/api/1inch-proxy?${params}`)
 
       if (!response.ok) {
         throw new Error(`1inch API error: ${response.status}`)
@@ -196,6 +189,7 @@ const TokenSwap = () => {
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
       const params = new URLSearchParams({
+        endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/swap`,
         src: sellToken,
         dst: buyToken,
         amount: amount.toString(),
@@ -205,15 +199,7 @@ const TokenSwap = () => {
         referrer: INTEGRATOR_ADDRESS
       })
 
-      const response = await fetch(
-        `${INCH_API_URL}/swap/v6.0/${BASE_CHAIN_ID}/swap?${params}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${INCH_API_KEY}`,
-            'accept': 'application/json'
-          }
-        }
-      )
+      const response = await fetch(`/api/1inch-proxy?${params}`)
 
       if (!response.ok) {
         throw new Error(`1inch API error: ${response.status}`)
