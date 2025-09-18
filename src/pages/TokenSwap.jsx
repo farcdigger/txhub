@@ -75,13 +75,21 @@ const TokenSwap = () => {
             method: 'eth_getBalance',
             params: [address, 'latest']
           })
-          balances['0x4200000000000000000000000000000000000006'] = 
-            (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(4)
+          const ethBalanceFormatted = (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(6)
+          console.log('ETH Balance Raw:', ethBalance, 'Formatted:', ethBalanceFormatted)
+          
+          // Store ETH balance for both ETH and WETH tokens
+          balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted
+          balances['ETH'] = ethBalanceFormatted // Also store as 'ETH' for native ETH
         }
 
         // Load ERC20 token balances
         for (const token of tokens) {
-          if (!token.isNative) {
+          if (token.isNative) {
+            // For native ETH, use the balance we already loaded
+            balances[token.address] = balances['ETH'] || '0.000000'
+            console.log(`Native ${token.symbol} balance:`, balances[token.address])
+          } else {
             try {
               const balanceResponse = await window.ethereum.request({
                 method: 'eth_call',
@@ -92,10 +100,11 @@ const TokenSwap = () => {
               })
               
               const balance = parseInt(balanceResponse, 16) / Math.pow(10, token.decimals)
-              balances[token.address] = balance.toFixed(4)
+              balances[token.address] = balance.toFixed(6)
+              console.log(`${token.symbol} balance:`, balances[token.address])
             } catch (err) {
               console.error(`Error loading ${token.symbol} balance:`, err)
-              balances[token.address] = '0.0000'
+              balances[token.address] = '0.000000'
               // Don't spam console with rate limit errors
               if (err.code !== -32005) {
                 console.error(`Error loading ${token.symbol} balance:`, err)
@@ -110,9 +119,19 @@ const TokenSwap = () => {
       }
     }
 
+    // Load balances immediately
     loadBalances()
-    const interval = setInterval(loadBalances, 10000) // Update every 10 seconds for better balance tracking
-    return () => clearInterval(interval)
+    
+    // Also load after a short delay to ensure wallet is ready
+    const initialTimeout = setTimeout(loadBalances, 2000)
+    
+    // Then load every 10 seconds
+    const interval = setInterval(loadBalances, 10000)
+    
+    return () => {
+      clearTimeout(initialTimeout)
+      clearInterval(interval)
+    }
   }, [isConnected, address])
 
   // Auto-quote when amount or tokens change
@@ -351,6 +370,8 @@ const TokenSwap = () => {
     const sellTokenData = tokens.find(t => t.address === sellToken)
     const currentBalance = parseFloat(tokenBalances[sellToken] || '0')
     const requestedAmount = parseFloat(sellAmount)
+    
+    console.log('Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Current Balance:', currentBalance, 'Requested:', requestedAmount, 'All Balances:', tokenBalances)
     
     if (currentBalance < requestedAmount) {
       setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to get quote for ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
@@ -829,6 +850,10 @@ const TokenSwap = () => {
                               ⚠️ Insufficient
                             </span>
                           )}
+                          {/* Debug info */}
+                          <span style={{ fontSize: '10px', color: '#6b7280', marginLeft: '8px' }}>
+                            (Debug: {sellToken})
+                          </span>
                         </span>
                 <button
                   onClick={() => {
