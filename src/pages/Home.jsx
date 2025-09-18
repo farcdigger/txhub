@@ -99,11 +99,6 @@ const Home = () => {
 
 
 
-  const formatAddress = (address) => {
-    if (!address) return ''
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
-
   // Direct transaction functions for GM and GN
   const handleGMClick = async (e) => {
     e.preventDefault()
