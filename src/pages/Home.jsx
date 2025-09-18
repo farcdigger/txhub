@@ -22,6 +22,39 @@ const Home = () => {
   // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
   const bhubTokens = userXP * 10
 
+  // Wallet connection handler
+  const handleConnect = async () => {
+    try {
+      console.log('🔗 Attempting wallet connection...')
+      
+      // Method 1: Try global wallet connect function
+      if (window.__walletConnect) {
+        console.log('✅ Using global wallet connect')
+        window.__walletConnect('injected')
+        return
+      }
+      
+      // Method 2: Try w3m-button click
+      const w3mButton = document.querySelector('w3m-button')
+      if (w3mButton) {
+        console.log('✅ Found w3m-button, clicking...')
+        w3mButton.click()
+        return
+      }
+      
+      // Method 3: Try direct ethereum connection
+      if (window.ethereum) {
+        console.log('✅ Using direct ethereum connection')
+        await window.ethereum.request({ method: 'eth_requestAccounts' })
+        return
+      }
+      
+      console.log('❌ No connection method available')
+    } catch (error) {
+      console.error('❌ Connection failed:', error)
+    }
+  }
+
   // Load user XP and level
   useEffect(() => {
     const loadUserXP = async () => {
@@ -367,6 +400,7 @@ const Home = () => {
             </div>
           ) : (
             <button
+              onClick={handleConnect}
               style={{
                 background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 border: 'none',
@@ -375,7 +409,16 @@ const Home = () => {
                 borderRadius: '20px',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '600'
+                fontWeight: '600',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-1px)'
+                e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)'
+                e.target.style.boxShadow = 'none'
               }}
             >
               Connect Wallet
