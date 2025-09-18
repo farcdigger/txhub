@@ -463,6 +463,9 @@ const TokenSwap = () => {
         src: srcTokenForAPI,
         dst: buyToken,
         amount: amount.toString(),
+        from: address.toLowerCase(),
+        referrer: INTEGRATOR_ADDRESS,
+        fee: INTEGRATOR_FEE.toString(),
         includeTokensInfo: 'true',
         includeProtocols: 'true',
         includeGas: 'true'
@@ -473,13 +476,16 @@ const TokenSwap = () => {
         src: srcTokenForAPI,
         dst: buyToken,
         amount: amount.toString(),
+        from: address.toLowerCase(),
+        referrer: INTEGRATOR_ADDRESS,
+        fee: INTEGRATOR_FEE.toString(),
         sellTokenData: sellTokenData,
         address: address,
         currentBalance: tokenBalances[sellToken],
         allBalances: tokenBalances,
         nativeETHAddress: NATIVE_ETH_ADDRESS,
         nativeETHAddressAlt: NATIVE_ETH_ADDRESS_ALT,
-        note: 'Using 1inch API standard address for native ETH',
+        note: 'Using 1inch API standard address for native ETH with fee',
         originalSrc: sellToken,
         apiSrc: srcTokenForAPI
       })
@@ -657,6 +663,7 @@ const TokenSwap = () => {
         from: address.toLowerCase(),
         slippage: '1',
         referrer: INTEGRATOR_ADDRESS,
+        fee: INTEGRATOR_FEE.toString(),
         includeTokensInfo: 'true',
         includeProtocols: 'true',
         includeGas: 'true'
@@ -670,6 +677,7 @@ const TokenSwap = () => {
         from: address.toLowerCase(),
         slippage: '1',
         referrer: INTEGRATOR_ADDRESS,
+        fee: INTEGRATOR_FEE.toString(),
         sellTokenData: sellTokenData,
         originalSrc: sellToken,
         apiSrc: srcTokenForAPI
