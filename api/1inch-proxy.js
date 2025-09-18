@@ -50,9 +50,12 @@ export default async function handler(req, res) {
     if (!response.ok) {
       console.error('1inch API error:', response.status, response.statusText)
       const errorText = await response.text()
+      console.error('Error details:', errorText)
+      console.error('Request URL:', apiUrl)
       res.status(response.status).json({ 
         error: `1inch API error: ${response.status}`,
-        details: errorText
+        details: errorText,
+        requestUrl: apiUrl
       })
       return
     }

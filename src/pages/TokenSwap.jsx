@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect } from 'wagmi'
 import { getXP } from '../utils/xpUtils'
@@ -59,6 +59,27 @@ const TokenSwap = () => {
   const [isApproving, setIsApproving] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+
+  // Auto-quote when amount or tokens change
+  useEffect(() => {
+    // Clear previous quote when inputs change
+    if (quote) {
+      setQuote(null)
+      setBuyAmount('')
+      setNeedsApproval(false)
+      setAllowance(null)
+      setError('')
+      setSuccessMessage('')
+    }
+
+    const debounceTimer = setTimeout(() => {
+      if (sellAmount && parseFloat(sellAmount) > 0 && sellToken && buyToken && isConnected && !isLoading) {
+        getQuote()
+      }
+    }, 1000) // 1 second delay for debouncing
+
+    return () => clearTimeout(debounceTimer)
+  }, [sellAmount, sellToken, buyToken, isConnected, getQuote])
 
   // Wallet connection handler
   const handleConnect = async () => {
@@ -133,7 +154,7 @@ const TokenSwap = () => {
   ]
 
   // Check token allowance
-  const checkAllowance = async (tokenAddress, amount) => {
+  const checkAllowance = useCallback(async (tokenAddress, amount) => {
     if (!address || tokenAddress === '0x4200000000000000000000000000000000000006') {
       // WETH doesn't need approval or is native token
       setAllowance(null)
@@ -172,7 +193,7 @@ const TokenSwap = () => {
       setAllowance(null)
       setNeedsApproval(false)
     }
-  }
+  }, [address])
 
   // Approve token spending
   const approveToken = async () => {
@@ -236,7 +257,7 @@ const TokenSwap = () => {
   }
 
   // Get quote from 1inch API via proxy
-  const getQuote = async () => {
+  const getQuote = useCallback(async () => {
     if (!sellAmount || !sellToken || !buyToken) {
       setError('Please enter amount and select tokens')
       return
@@ -281,7 +302,7 @@ const TokenSwap = () => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [sellAmount, sellToken, buyToken, address, checkAllowance])
 
   // Execute swap
   const executeSwap = async () => {
@@ -309,10 +330,7 @@ const TokenSwap = () => {
         amount: amount.toString(),
         from: address.toLowerCase(),
         slippage: '1',
-        fee: INTEGRATOR_FEE.toString(),
-        referrer: INTEGRATOR_ADDRESS,
-        disableEstimate: 'false',
-        allowPartialFill: 'false'
+        fee: INTEGRATOR_FEE.toString()
       })
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
