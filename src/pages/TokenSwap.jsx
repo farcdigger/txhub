@@ -235,7 +235,22 @@ const TokenSwap = () => {
       const response = await fetch(`/api/1inch-proxy?${params}`)
       
       if (!response.ok) {
-        throw new Error(`Approval failed: ${response.status}`)
+        const errorData = await response.json()
+        console.error('1inch Approval API Error Details:', errorData)
+        
+        // Handle specific error messages
+        const errorDetails = errorData.details || errorData.error || ''
+        const errorString = typeof errorDetails === 'string' ? errorDetails : JSON.stringify(errorDetails)
+        
+        if (errorString.includes('Not enough src balance')) {
+          throw new Error('Insufficient token balance for approval')
+        } else if (errorString.includes('Amount is not set')) {
+          throw new Error('Invalid amount for approval. Please enter a valid amount.')
+        } else if (errorString.includes('Src is not set')) {
+          throw new Error('Source token not specified for approval.')
+        } else {
+          throw new Error(`Approval failed: ${response.status} - ${errorString || 'Unknown error'}`)
+        }
       }
 
       const approvalTx = await response.json()
@@ -354,7 +369,28 @@ const TokenSwap = () => {
       const response = await fetch(`/api/1inch-proxy?${params}`)
 
       if (!response.ok) {
-        throw new Error(`1inch API error: ${response.status}`)
+        const errorData = await response.json()
+        console.error('1inch Quote API Error Details:', errorData)
+        
+        // Handle specific error messages
+        const errorDetails = errorData.details || errorData.error || ''
+        const errorString = typeof errorDetails === 'string' ? errorDetails : JSON.stringify(errorDetails)
+        
+        if (errorString.includes('Not enough src balance')) {
+          throw new Error('Insufficient token balance for quote')
+        } else if (errorString.includes('Insufficient liquidity')) {
+          throw new Error('Insufficient liquidity for this quote. Try a smaller amount.')
+        } else if (errorString.includes('Amount is not set')) {
+          throw new Error('Invalid amount. Please enter a valid amount.')
+        } else if (errorString.includes('Src is not set')) {
+          throw new Error('Source token not specified.')
+        } else if (errorString.includes('Dst is not set')) {
+          throw new Error('Destination token not specified.')
+        } else if (errorString.includes('Cannot sync token')) {
+          throw new Error('Invalid token address. Please check token contract.')
+        } else {
+          throw new Error(`1inch API error: ${response.status} - ${errorString || 'Unknown error'}`)
+        }
       }
 
       const data = await response.json()
@@ -447,22 +483,25 @@ const TokenSwap = () => {
         console.error('1inch API Error Details:', errorData)
         
         // Handle specific error messages
-        if (errorData.details && errorData.details.includes('Not enough src balance')) {
+        const errorDetails = errorData.details || errorData.error || ''
+        const errorString = typeof errorDetails === 'string' ? errorDetails : JSON.stringify(errorDetails)
+        
+        if (errorString.includes('Not enough src balance')) {
           throw new Error('Insufficient token balance for swap')
-        } else if (errorData.details && errorData.details.includes('Not enough Allowance')) {
+        } else if (errorString.includes('Not enough Allowance')) {
           throw new Error('Token allowance required. Please approve token spending first.')
-        } else if (errorData.details && errorData.details.includes('Insufficient liquidity')) {
+        } else if (errorString.includes('Insufficient liquidity')) {
           throw new Error('Insufficient liquidity for this swap. Try a smaller amount.')
-        } else if (errorData.details && errorData.details.includes('Amount is not set')) {
+        } else if (errorString.includes('Amount is not set')) {
           throw new Error('Invalid amount. Please enter a valid amount.')
-        } else if (errorData.details && errorData.details.includes('Src is not set')) {
+        } else if (errorString.includes('Src is not set')) {
           throw new Error('Source token not specified.')
-        } else if (errorData.details && errorData.details.includes('Dst is not set')) {
+        } else if (errorString.includes('Dst is not set')) {
           throw new Error('Destination token not specified.')
-        } else if (errorData.details && errorData.details.includes('Cannot sync token')) {
+        } else if (errorString.includes('Cannot sync token')) {
           throw new Error('Invalid token address. Please check token contract.')
         } else {
-          throw new Error(`1inch API error: ${response.status} - ${errorData.error || errorData.details || 'Unknown error'}`)
+          throw new Error(`1inch API error: ${response.status} - ${errorString || 'Unknown error'}`)
         }
       }
 
