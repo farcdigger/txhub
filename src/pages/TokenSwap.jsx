@@ -401,7 +401,7 @@ const TokenSwap = () => {
     console.log('Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Balance Key:', balanceKey, 'Current Balance:', currentBalance, 'Requested:', requestedAmount, 'All Balances:', tokenBalances)
     
     // For native ETH, we need to reserve some for gas fees
-    const gasReserve = sellTokenData?.isNative ? 0.0001 : 0 // Reserve 0.0001 ETH for gas
+    const gasReserve = sellTokenData?.isNative ? 0.00005 : 0 // Reserve 0.00005 ETH for gas
     const availableBalance = currentBalance - gasReserve
     
     if (availableBalance < requestedAmount) {
@@ -449,6 +449,9 @@ const TokenSwap = () => {
       if (sellToken === NATIVE_ETH_ADDRESS) {
         const balanceData = await getTokenBalance(sellToken, address)
         console.log('1inch Native ETH Balance Check:', balanceData)
+        
+        // Also try to get a simple quote to test API connectivity
+        console.log('Testing 1inch API connectivity...')
       }
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
@@ -568,7 +571,7 @@ const TokenSwap = () => {
     console.log('Swap Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Balance Key:', balanceKey, 'Current Balance:', currentBalance, 'Requested:', requestedAmount)
     
     // For native ETH, we need to reserve some for gas fees
-    const gasReserve = sellTokenData?.isNative ? 0.0001 : 0 // Reserve 0.0001 ETH for gas
+    const gasReserve = sellTokenData?.isNative ? 0.00005 : 0 // Reserve 0.00005 ETH for gas
     const availableBalance = currentBalance - gasReserve
     
     if (availableBalance < requestedAmount) {
