@@ -29,6 +29,8 @@ export default async function handler(req, res) {
     const INCH_API_KEY = 'HWcp63JDwcGFuSoQOt0figfwVW8a2tmU'
     const INCH_API_URL = 'https://api.1inch.dev'
     
+    console.log('API request:', { endpoint, queryParams })
+    
     // Build the full URL
     const params = new URLSearchParams(queryParams)
     const apiUrl = `${INCH_API_URL}${endpoint}?${params.toString()}`

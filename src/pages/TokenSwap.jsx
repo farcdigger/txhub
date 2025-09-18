@@ -53,7 +53,10 @@ const TokenSwap = () => {
   const [sellAmount, setSellAmount] = useState('')
   const [buyAmount, setBuyAmount] = useState('')
   const [quote, setQuote] = useState(null)
+  const [allowance, setAllowance] = useState(null)
+  const [needsApproval, setNeedsApproval] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isApproving, setIsApproving] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
 
@@ -129,6 +132,109 @@ const TokenSwap = () => {
     }
   ]
 
+  // Check token allowance
+  const checkAllowance = async (tokenAddress, amount) => {
+    if (!address || tokenAddress === '0x4200000000000000000000000000000000000006') {
+      // WETH doesn't need approval or is native token
+      setAllowance(null)
+      setNeedsApproval(false)
+      return
+    }
+
+    try {
+      const params = new URLSearchParams({
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
+        tokenAddress: tokenAddress,
+        walletAddress: address.toLowerCase()
+      })
+
+      const response = await fetch(`/api/1inch-proxy?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`Allowance check failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const currentAllowance = BigInt(data.allowance || '0')
+      const requiredAmount = BigInt(amount)
+      
+      setAllowance(currentAllowance.toString())
+      setNeedsApproval(currentAllowance < requiredAmount)
+      
+      console.log('Allowance check:', {
+        current: currentAllowance.toString(),
+        required: requiredAmount.toString(),
+        needsApproval: currentAllowance < requiredAmount
+      })
+      
+    } catch (err) {
+      console.error('Allowance check error:', err)
+      setAllowance(null)
+      setNeedsApproval(false)
+    }
+  }
+
+  // Approve token spending
+  const approveToken = async () => {
+    if (!sellAmount || !address) return
+
+    setIsApproving(true)
+    setError('')
+
+    try {
+      const sellTokenData = tokens.find(t => t.address === sellToken)
+      const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
+
+      const params = new URLSearchParams({
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/transaction`,
+        tokenAddress: sellToken,
+        amount: amount.toString()
+      })
+
+      const response = await fetch(`/api/1inch-proxy?${params}`)
+      
+      if (!response.ok) {
+        throw new Error(`Approval failed: ${response.status}`)
+      }
+
+      const approvalTx = await response.json()
+      
+      console.log('Approval transaction:', approvalTx)
+
+      // Send approval transaction via wallet
+      if (window.ethereum) {
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: address,
+            to: approvalTx.to,
+            data: approvalTx.data,
+            value: approvalTx.value || '0x0',
+            gasPrice: approvalTx.gasPrice || undefined
+          }]
+        })
+
+        console.log('Approval transaction sent:', txHash)
+        setSuccessMessage('✅ Token approval successful! You can now swap.')
+        
+        // Wait a bit then recheck allowance
+        setTimeout(() => {
+          if (sellAmount) {
+            const sellTokenData = tokens.find(t => t.address === sellToken)
+            const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
+            checkAllowance(sellToken, amount.toString())
+          }
+        }, 3000)
+      }
+
+    } catch (err) {
+      console.error('Approval error:', err)
+      setError('Token approval failed. Please try again.')
+    } finally {
+      setIsApproving(false)
+    }
+  }
+
   // Get quote from 1inch API via proxy
   const getQuote = async () => {
     if (!sellAmount || !sellToken || !buyToken) {
@@ -144,7 +250,7 @@ const TokenSwap = () => {
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
       const params = new URLSearchParams({
-        endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/quote`,
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
         src: sellToken,
         dst: buyToken,
         amount: amount.toString(),
@@ -166,6 +272,9 @@ const TokenSwap = () => {
       const buyAmountFormatted = parseFloat(data.dstAmount) / Math.pow(10, buyTokenData.decimals)
       setBuyAmount(buyAmountFormatted.toFixed(6))
       
+      // Check allowance after getting quote
+      await checkAllowance(sellToken, amount.toString())
+      
     } catch (err) {
       console.error('Quote error:', err)
       setError('Failed to get quote. Please try again.')
@@ -181,6 +290,11 @@ const TokenSwap = () => {
       return
     }
 
+    if (needsApproval) {
+      setError('Please approve token spending first')
+      return
+    }
+
     setIsLoading(true)
     setError('')
 
@@ -189,42 +303,66 @@ const TokenSwap = () => {
       const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
       
       const params = new URLSearchParams({
-        endpoint: `/swap/v6.0/${BASE_CHAIN_ID}/swap`,
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/swap`,
         src: sellToken,
         dst: buyToken,
         amount: amount.toString(),
-        from: address,
+        from: address.toLowerCase(),
         slippage: '1',
         fee: INTEGRATOR_FEE.toString(),
-        referrer: INTEGRATOR_ADDRESS
+        referrer: INTEGRATOR_ADDRESS,
+        disableEstimate: 'false',
+        allowPartialFill: 'false'
       })
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
 
       if (!response.ok) {
-        throw new Error(`1inch API error: ${response.status}`)
+        const errorData = await response.json()
+        throw new Error(`1inch API error: ${response.status} - ${errorData.error || 'Unknown error'}`)
       }
 
       const swapData = await response.json()
-      
-      // Execute transaction (simplified - you'll need to implement actual transaction sending)
       console.log('Swap transaction data:', swapData)
       
-      // Award XP for successful swap
-      const newXP = userXP + 30
-      setUserXP(newXP)
-      setUserLevel(Math.floor(newXP / 100) + 1)
-      
-      setSuccessMessage(`✅ Swap successful! +30 XP earned. Revenue generated: ${(parseFloat(sellAmount) * 0.003).toFixed(4)} tokens`)
-      
-      // Reset form
-      setSellAmount('')
-      setBuyAmount('')
-      setQuote(null)
+      // Execute transaction via wallet
+      if (window.ethereum && swapData.tx) {
+        const txHash = await window.ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: address,
+            to: swapData.tx.to,
+            data: swapData.tx.data,
+            value: swapData.tx.value || '0x0',
+            gas: swapData.tx.gas || undefined,
+            gasPrice: swapData.tx.gasPrice || undefined
+          }]
+        })
+
+        console.log('Swap transaction sent:', txHash)
+        
+        // Award XP for successful swap
+        const newXP = userXP + 30
+        setUserXP(newXP)
+        setUserLevel(Math.floor(newXP / 100) + 1)
+        
+        const revenueAmount = (parseFloat(sellAmount) * INTEGRATOR_FEE).toFixed(6)
+        setSuccessMessage(`✅ Swap successful! +30 XP earned. Revenue: ${revenueAmount} ${sellTokenData.symbol}`)
+        
+        // Reset form
+        setSellAmount('')
+        setBuyAmount('')
+        setQuote(null)
+        setNeedsApproval(false)
+        setAllowance(null)
+        
+      } else {
+        throw new Error('No transaction data received or wallet not available')
+      }
       
     } catch (err) {
       console.error('Swap error:', err)
-      setError('Swap failed. Please try again.')
+      setError(`Swap failed: ${err.message}`)
     } finally {
       setIsLoading(false)
     }
@@ -451,12 +589,24 @@ const TokenSwap = () => {
                 </div>
                 <div className="quote-item">
                   <span>Revenue (0.3%):</span>
-                  <span>{(parseFloat(sellAmount) * 0.003).toFixed(4)} {tokens.find(t => t.address === sellToken)?.symbol}</span>
+                  <span>{(parseFloat(sellAmount) * 0.003).toFixed(6)} {tokens.find(t => t.address === sellToken)?.symbol}</span>
                 </div>
                 <div className="quote-item">
                   <span>Gas Estimate:</span>
                   <span>{quote.gas ? `${Math.round(quote.gas / 1000)}K` : 'N/A'}</span>
                 </div>
+                {needsApproval && (
+                  <div className="quote-item" style={{ color: '#f59e0b', fontWeight: '600' }}>
+                    <span>⚠️ Approval Required:</span>
+                    <span>Token spending permission needed</span>
+                  </div>
+                )}
+                {allowance && !needsApproval && (
+                  <div className="quote-item" style={{ color: '#10b981', fontWeight: '600' }}>
+                    <span>✅ Approved:</span>
+                    <span>Ready to swap</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -469,6 +619,14 @@ const TokenSwap = () => {
                   className="quote-button"
                 >
                   {isLoading ? 'Getting Quote...' : 'Get Best Price'}
+                </button>
+              ) : needsApproval ? (
+                <button
+                  onClick={approveToken}
+                  disabled={!isConnected || isApproving}
+                  className="approve-button"
+                >
+                  {isApproving ? 'Approving...' : 'Approve Token'}
                 </button>
               ) : (
                 <button
@@ -763,7 +921,7 @@ const styles = `
     margin-top: 8px;
   }
 
-  .quote-button, .swap-button {
+  .quote-button, .swap-button, .approve-button {
     flex: 1;
     padding: 16px 24px;
     border-radius: 16px;
@@ -798,7 +956,18 @@ const styles = `
     box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
   }
 
-  .quote-button:disabled, .swap-button:disabled {
+  .approve-button {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  }
+
+  .approve-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+  }
+
+  .quote-button:disabled, .swap-button:disabled, .approve-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
