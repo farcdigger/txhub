@@ -842,7 +842,7 @@ const TokenSwap = () => {
         
         <div className="header-center">
           <h1 className="header-title">🔄 Token Swap</h1>
-          <p className="header-subtitle">Trade with best prices & earn revenue</p>
+          <p className="header-subtitle">Trade with best prices from 80+ liquidity sources</p>
         </div>
         
         <div className="header-right">
@@ -1008,13 +1008,6 @@ const TokenSwap = () => {
                               </span>
                             )
                           })()}
-                          {/* Debug info */}
-                          <span style={{ fontSize: '10px', color: '#6b7280', marginLeft: '8px' }}>
-                            (Debug: {(() => {
-                              const token = tokens.find(t => t.address === sellToken)
-                              return token?.isNative ? sellToken : sellToken
-                            })()})
-                          </span>
                         </span>
                 <button
                   onClick={() => {
@@ -1094,14 +1087,6 @@ const TokenSwap = () => {
                   <span>{buyAmount} {tokens.find(t => t.address === buyToken)?.symbol}</span>
                 </div>
                 <div className="quote-item">
-                  <span>Revenue (0.3%):</span>
-                  <span>{(parseFloat(sellAmount) * 0.003).toFixed(6)} {tokens.find(t => t.address === sellToken)?.symbol}</span>
-                </div>
-                <div className="quote-item" style={{ fontSize: '12px', color: '#6b7280' }}>
-                  <span>Revenue Wallet:</span>
-                  <span>{INTEGRATOR_ADDRESS.slice(0, 6)}...{INTEGRATOR_ADDRESS.slice(-4)}</span>
-                </div>
-                <div className="quote-item">
                   <span>Gas Estimate:</span>
                   <span>{quote.gas ? `${Math.round(quote.gas / 1000)}K` : 'N/A'}</span>
                 </div>
@@ -1167,16 +1152,13 @@ const TokenSwap = () => {
         {/* Info Section */}
         <div className="info-section">
           <div className="info-card">
-            <h3>💰 Revenue Model</h3>
-            <p>BaseHub earns 0.3% from every swap transaction. This creates sustainable revenue while providing users with the best trading experience.</p>
-            <p style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
-              <strong>Revenue Wallet:</strong> {INTEGRATOR_ADDRESS}
-            </p>
+            <h3>🎯 Powered by 1inch</h3>
+            <p>We use 1inch DEX aggregator to find the best prices across 80+ liquidity sources on Base network, ensuring optimal trade execution.</p>
           </div>
           
           <div className="info-card">
-            <h3>🎯 Powered by 1inch</h3>
-            <p>We use 1inch DEX aggregator to find the best prices across 80+ liquidity sources on Base network, ensuring optimal trade execution.</p>
+            <h3>⚡ Fast & Secure</h3>
+            <p>Built on Base network for low fees and fast transactions. All swaps are executed through secure smart contracts.</p>
           </div>
         </div>
       </div>
