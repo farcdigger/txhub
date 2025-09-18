@@ -41,12 +41,11 @@ const Header = () => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY
-      const shouldHide = scrollTop > 50
-      console.log('📜 Scroll position:', scrollTop, 'Should hide:', shouldHide)
+      const shouldHide = scrollTop > 20 // Çok erken kaybolsun
       setIsScrolled(shouldHide)
     }
 
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -284,15 +283,16 @@ const Header = () => {
       alignItems: 'center',
       justifyContent: 'space-between',
       transition: 'all 0.2s ease !important',
-      visibility: 'visible !important',
+      visibility: isScrolled ? 'hidden !important' : 'visible !important',
       opacity: isScrolled ? '0 !important' : '1 !important',
-      height: 'auto !important',
+      height: isScrolled ? '0 !important' : 'auto !important',
       width: 'auto !important',
-      overflow: 'visible !important',
+      overflow: 'hidden !important',
       transform: isScrolled ? 'translateY(-100%) !important' : 'translateY(0) !important',
       clip: 'none !important',
       clipPath: 'none !important',
-      pointerEvents: isScrolled ? 'none !important' : 'auto !important'
+      pointerEvents: isScrolled ? 'none !important' : 'auto !important',
+      display: isScrolled ? 'none !important' : 'flex !important'
     }}>
       {/* Left - Home Button */}
       <div className="header-left">
