@@ -5,14 +5,14 @@ import { Home as HomeIcon } from 'lucide-react' // Renamed to avoid conflict
 
 // Add modal animation styles
 const modalStyles = `
-  @keyframes dropdownSlideIn {
+  @keyframes modalSlideIn {
     from {
       opacity: 0;
-      transform: translateY(-10px) scale(0.95);
+      transform: scale(0.9) translateY(20px);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: scale(1) translateY(0);
     }
   }
   
@@ -48,16 +48,16 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Handle click outside to close dropdown
+  // Handle escape key to close modal
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showWalletDropdown && !event.target.closest('.header-right')) {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && showWalletDropdown) {
         setShowWalletDropdown(false)
       }
     }
 
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
+    document.addEventListener('keydown', handleEscapeKey)
+    return () => document.removeEventListener('keydown', handleEscapeKey)
   }, [showWalletDropdown])
 
   // Format address for display
@@ -371,7 +371,7 @@ const Header = () => {
       </div>
       
         {/* Right - Modern XP, Token, Wallet */}
-        <div className="header-right" style={{ position: 'relative' }}>
+        <div className="header-right">
             {isConnected ? (
             <div className="user-section" style={{
               display: 'flex',
@@ -491,29 +491,61 @@ const Header = () => {
           )}
         </div>
 
-        {/* Wallet Selection Dropdown */}
-        {showWalletDropdown && (
-          <div className="wallet-dropdown" style={{
-            position: 'absolute',
-            top: '100%',
-            right: '0',
-            marginTop: '8px',
+      {/* Wallet Selection Overlay - Centered */}
+      {showWalletDropdown && (
+        <div className="wallet-selection-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000000,
+          padding: '20px'
+        }}
+        onClick={() => setShowWalletDropdown(false)}
+        >
+          <div className="wallet-modal" style={{
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            borderRadius: '12px',
+            borderRadius: '20px',
             border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
-            zIndex: 1000000,
-            minWidth: '250px',
-            maxWidth: '280px',
-            padding: '8px',
-            animation: 'dropdownSlideIn 0.2s ease-out'
-          }}>
-            {/* Wallet Options List */}
-            <div className="wallet-list" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px'
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+            padding: '24px',
+            maxWidth: '400px',
+            width: '100%',
+            animation: 'modalSlideIn 0.3s ease-out'
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '20px'
+            }}>
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: '700',
+                color: '#1f2937',
+                margin: '0 0 8px 0'
+              }}>Connect Wallet</h3>
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                margin: '0'
+              }}>Choose your preferred wallet to connect</p>
+            </div>
+
+            {/* Wallet Options Grid */}
+            <div className="wallet-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '12px',
+              marginBottom: '16px'
             }}>
               {walletOptions.map((wallet) => (
                 <button
@@ -522,84 +554,102 @@ const Header = () => {
                   className="wallet-card-option"
                   style={{
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '12px',
-                    padding: '10px 12px',
-                    background: 'transparent',
-                    border: 'none',
-                    borderRadius: '8px',
+                    gap: '8px',
+                    padding: '16px 12px',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: '16px',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left',
-                    width: '100%'
+                    transition: 'all 0.3s ease',
+                    textAlign: 'center',
+                    minHeight: '100px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                    backdropFilter: 'blur(10px)'
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.background = 'rgba(59, 130, 246, 0.1)'
-                    e.target.style.transform = 'translateX(4px)'
+                    e.target.style.background = 'rgba(59, 130, 246, 0.9)'
+                    e.target.style.borderColor = 'rgba(59, 130, 246, 0.6)'
+                    e.target.style.transform = 'translateY(-4px) scale(1.02)'
+                    e.target.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.3)'
+                    // Change text color on hover
+                    const nameEl = e.target.querySelector('.wallet-name')
+                    if (nameEl) nameEl.style.color = 'white'
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.background = 'transparent'
-                    e.target.style.transform = 'translateX(0px)'
+                    e.target.style.background = 'rgba(255, 255, 255, 0.8)'
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                    e.target.style.transform = 'translateY(0px) scale(1)'
+                    e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    // Reset text color
+                    const nameEl = e.target.querySelector('.wallet-name')
+                    if (nameEl) nameEl.style.color = '#1f2937'
                   }}
                 >
                   <div style={{
-                    fontSize: '20px',
-                    width: '32px',
-                    height: '32px',
+                    fontSize: '32px',
+                    width: '56px',
+                    height: '56px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                    borderRadius: '8px',
-                    flexShrink: 0
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                    marginBottom: '4px'
                   }}>{wallet.icon}</div>
-                  <div style={{ flex: 1 }}>
-                    <div className="wallet-name" style={{
-                      fontWeight: '600',
-                      color: '#1f2937',
-                      fontSize: '14px'
-                    }}>{wallet.name}</div>
-                  </div>
+                  <div className="wallet-name" style={{
+                    fontWeight: '600',
+                    color: '#1f2937',
+                    fontSize: '14px',
+                    transition: 'color 0.3s ease'
+                  }}>{wallet.name}</div>
                 </button>
               ))}
               </div>
             
-            {/* Divider & Cancel */}
+            {/* Cancel Button */}
             <div style={{
-              height: '1px',
-              background: 'rgba(0, 0, 0, 0.1)',
-              margin: '4px 0'
-            }}></div>
-            <button
-              onClick={() => setShowWalletDropdown(false)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
-                background: 'transparent',
-                border: 'none',
-                borderRadius: '6px',
-                color: '#6b7280',
-                fontSize: '12px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                textAlign: 'left',
-                width: '100%'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(239, 68, 68, 0.1)'
-                e.target.style.color = '#dc2626'
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'transparent'
-                e.target.style.color = '#6b7280'
-              }}
-            >
-              <span>✕</span>
-              <span>Cancel</span>
-            </button>
+              textAlign: 'center',
+              paddingTop: '8px',
+              borderTop: '1px solid rgba(0, 0, 0, 0.1)'
+            }}>
+              <button
+                onClick={() => setShowWalletDropdown(false)}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: '2px solid rgba(239, 68, 68, 0.2)',
+                  borderRadius: '12px',
+                  padding: '10px 20px',
+                  color: '#dc2626',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  margin: '0 auto'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(239, 68, 68, 0.9)'
+                  e.target.style.color = 'white'
+                  e.target.style.borderColor = 'rgba(239, 68, 68, 0.6)'
+                  e.target.style.transform = 'scale(1.05)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(239, 68, 68, 0.1)'
+                  e.target.style.color = '#dc2626'
+                  e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)'
+                  e.target.style.transform = 'scale(1)'
+                }}
+              >
+                <span>✕</span>
+                <span>Cancel</span>
+              </button>
+            </div>
             </div>
           </div>
         )}
