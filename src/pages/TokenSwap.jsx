@@ -15,7 +15,10 @@ const TokenSwap = () => {
   const INCH_API_URL = 'https://api.1inch.dev'
   const BASE_CHAIN_ID = 8453
   const INTEGRATOR_FEE = 0.003 // 0.3%
-  const INTEGRATOR_ADDRESS = '0xf6eeaacccd5971864421a94e8f01efe9e5a663ee' // BaseHub revenue wallet
+  const INTEGRATOR_ADDRESS = '0x7d2Ceb7a0e0C39A3d0f7B5b491659fDE4bb7BCFe' // BaseHub revenue wallet
+  
+  // Native ETH address for 1inch API (official standard)
+  const NATIVE_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
   
   // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
   const bhubTokens = userXP * 10
@@ -48,7 +51,7 @@ const TokenSwap = () => {
   }, [isConnected, address])
 
   // Swap State
-  const [sellToken, setSellToken] = useState('0x4200000000000000000000000000000000000006') // ETH on Base
+  const [sellToken, setSellToken] = useState(NATIVE_ETH_ADDRESS) // Native ETH
   const [buyToken, setBuyToken] = useState('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913') // USDC on Base
   const [sellAmount, setSellAmount] = useState('')
   const [buyAmount, setBuyAmount] = useState('')
@@ -79,8 +82,10 @@ const TokenSwap = () => {
           console.log('ETH Balance Raw:', ethBalance, 'Formatted:', ethBalanceFormatted)
           
           // Store ETH balance for both ETH and WETH tokens
-          balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted
+          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // Standard native ETH address
+          balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH address
           balances['ETH'] = ethBalanceFormatted // Also store as 'ETH' for native ETH
+          balances['NATIVE_ETH'] = ethBalanceFormatted // Native ETH key
         }
 
         // Load ERC20 token balances
@@ -203,7 +208,7 @@ const TokenSwap = () => {
   const tokens = [
     { 
       symbol: 'ETH', 
-      address: '0x4200000000000000000000000000000000000006',
+      address: NATIVE_ETH_ADDRESS, // Standard native ETH address
       name: 'Ethereum',
       decimals: 18,
       isNative: true
@@ -317,7 +322,7 @@ const TokenSwap = () => {
         
         // Wait a bit then recheck allowance
         setTimeout(async () => {
-          if (sellAmount && sellToken !== '0x4200000000000000000000000000000000000006') {
+          if (sellAmount && sellToken !== NATIVE_ETH_ADDRESS) {
             try {
               const sellTokenData = tokens.find(t => t.address === sellToken)
               const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
@@ -353,6 +358,26 @@ const TokenSwap = () => {
     }
   }
 
+  // Get token balance from 1inch API
+  const getTokenBalance = async (tokenAddress, walletAddress) => {
+    try {
+      const params = new URLSearchParams({
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
+        tokenAddress: tokenAddress,
+        walletAddress: walletAddress.toLowerCase()
+      })
+      
+      const response = await fetch(`/api/1inch-proxy?${params}`)
+      if (response.ok) {
+        const data = await response.json()
+        return data
+      }
+    } catch (error) {
+      console.error('Error getting token balance from 1inch:', error)
+    }
+    return null
+  }
+
   // Get quote from 1inch API via proxy
   const getQuote = async () => {
     if (!sellAmount || !sellToken || !buyToken) {
@@ -368,20 +393,27 @@ const TokenSwap = () => {
 
     // Check balance before quote
     const sellTokenData = tokens.find(t => t.address === sellToken)
-    // For native ETH, use 'ETH' key, for other tokens use address
-    const balanceKey = sellTokenData?.isNative ? 'ETH' : sellToken
+    // For native ETH, use the native ETH address, for other tokens use address
+    const balanceKey = sellTokenData?.isNative ? sellToken : sellToken
     const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
     const requestedAmount = parseFloat(sellAmount)
     
     console.log('Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Balance Key:', balanceKey, 'Current Balance:', currentBalance, 'Requested:', requestedAmount, 'All Balances:', tokenBalances)
     
-    if (currentBalance < requestedAmount) {
-      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to get quote for ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
+    // For native ETH, we need to reserve some for gas fees
+    const gasReserve = sellTokenData?.isNative ? 0.0001 : 0 // Reserve 0.0001 ETH for gas
+    const availableBalance = currentBalance - gasReserve
+    
+    if (availableBalance < requestedAmount) {
+      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to get quote for ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. ${gasReserve > 0 ? `Gas reserve of ${gasReserve} ${sellTokenData.symbol} is required. ` : ''}Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
       return
     }
 
     setIsLoading(true)
     setError('')
+    
+    // Add a small delay to ensure wallet is fully synced
+    await new Promise(resolve => setTimeout(resolve, 1000))
     
     try {
       const sellTokenData = tokens.find(t => t.address === sellToken)
@@ -396,8 +428,28 @@ const TokenSwap = () => {
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
         src: sellToken,
         dst: buyToken,
-        amount: amount.toString()
+        amount: amount.toString(),
+        includeTokensInfo: 'true',
+        includeProtocols: 'true',
+        includeGas: 'true'
       })
+
+      console.log('1inch Quote Request:', {
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
+        src: sellToken,
+        dst: buyToken,
+        amount: amount.toString(),
+        sellTokenData: sellTokenData,
+        address: address,
+        currentBalance: tokenBalances[sellToken],
+        allBalances: tokenBalances
+      })
+
+      // Check balance from 1inch API for debugging
+      if (sellToken === NATIVE_ETH_ADDRESS) {
+        const balanceData = await getTokenBalance(sellToken, address)
+        console.log('1inch Native ETH Balance Check:', balanceData)
+      }
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
 
@@ -452,7 +504,7 @@ const TokenSwap = () => {
       setBuyAmount(buyAmountFormatted.toFixed(6))
       
       // Check allowance after getting quote (skip for native ETH)
-      if (sellToken !== '0x4200000000000000000000000000000000000006') {
+      if (sellToken !== NATIVE_ETH_ADDRESS) {
         try {
         const allowanceParams = new URLSearchParams({
           endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
@@ -508,20 +560,27 @@ const TokenSwap = () => {
 
     // Check balance before swap
     const sellTokenData = tokens.find(t => t.address === sellToken)
-    // For native ETH, use 'ETH' key, for other tokens use address
-    const balanceKey = sellTokenData?.isNative ? 'ETH' : sellToken
+    // For native ETH, use the native ETH address, for other tokens use address
+    const balanceKey = sellTokenData?.isNative ? sellToken : sellToken
     const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
     const requestedAmount = parseFloat(sellAmount)
     
     console.log('Swap Balance Check - Token:', sellTokenData?.symbol, 'Address:', sellToken, 'Balance Key:', balanceKey, 'Current Balance:', currentBalance, 'Requested:', requestedAmount)
     
-    if (currentBalance < requestedAmount) {
-      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to swap ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
+    // For native ETH, we need to reserve some for gas fees
+    const gasReserve = sellTokenData?.isNative ? 0.0001 : 0 // Reserve 0.0001 ETH for gas
+    const availableBalance = currentBalance - gasReserve
+    
+    if (availableBalance < requestedAmount) {
+      setError(`Insufficient ${sellTokenData.symbol} balance! You have ${currentBalance.toFixed(6)} ${sellTokenData.symbol}, but trying to swap ${requestedAmount.toFixed(6)} ${sellTokenData.symbol}. ${gasReserve > 0 ? `Gas reserve of ${gasReserve} ${sellTokenData.symbol} is required. ` : ''}Please reduce the amount or add more ${sellTokenData.symbol} to your wallet.`)
       return
     }
 
     setIsLoading(true)
     setError('')
+
+    // Add a small delay to ensure wallet is fully synced
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     try {
       const sellTokenData = tokens.find(t => t.address === sellToken)
@@ -539,7 +598,21 @@ const TokenSwap = () => {
         amount: amount.toString(),
         from: address.toLowerCase(),
         slippage: '1',
-        referrer: INTEGRATOR_ADDRESS
+        referrer: INTEGRATOR_ADDRESS,
+        includeTokensInfo: 'true',
+        includeProtocols: 'true',
+        includeGas: 'true'
+      })
+
+      console.log('1inch Swap Request:', {
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/swap`,
+        src: sellToken,
+        dst: buyToken,
+        amount: amount.toString(),
+        from: address.toLowerCase(),
+        slippage: '1',
+        referrer: INTEGRATOR_ADDRESS,
+        sellTokenData: sellTokenData
       })
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
@@ -608,7 +681,7 @@ const TokenSwap = () => {
               ? swapData.tx.value 
               : `0x${parseInt(swapData.tx.value).toString(16)}`
             : `0x${swapData.tx.value.toString(16)}`
-        } else if (sellToken === '0x4200000000000000000000000000000000000006') {
+        } else if (sellToken === NATIVE_ETH_ADDRESS) {
           // For ETH swaps, use the sell amount as value
           const sellTokenData = tokens.find(t => t.address === sellToken)
           const ethValue = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
@@ -853,12 +926,12 @@ const TokenSwap = () => {
                         <span className="balance-text">
                           Balance: {(() => {
                             const token = tokens.find(t => t.address === sellToken)
-                            const balanceKey = token?.isNative ? 'ETH' : sellToken
+                            const balanceKey = token?.isNative ? sellToken : sellToken
                             return tokenBalances[balanceKey] || '0.0000'
                           })()} {tokens.find(t => t.address === sellToken)?.symbol}
                           {(() => {
                             const token = tokens.find(t => t.address === sellToken)
-                            const balanceKey = token?.isNative ? 'ETH' : sellToken
+                            const balanceKey = token?.isNative ? sellToken : sellToken
                             const currentBalance = parseFloat(tokenBalances[balanceKey] || '0')
                             const requestedAmount = parseFloat(sellAmount || '0')
                             return currentBalance < requestedAmount && (
@@ -871,34 +944,34 @@ const TokenSwap = () => {
                           <span style={{ fontSize: '10px', color: '#6b7280', marginLeft: '8px' }}>
                             (Debug: {(() => {
                               const token = tokens.find(t => t.address === sellToken)
-                              return token?.isNative ? 'ETH' : sellToken
+                              return token?.isNative ? sellToken : sellToken
                             })()})
                           </span>
                         </span>
                 <button
                   onClick={() => {
                     const token = tokens.find(t => t.address === sellToken)
-                    const balanceKey = token?.isNative ? 'ETH' : sellToken
+                    const balanceKey = token?.isNative ? sellToken : sellToken
                     const balance = tokenBalances[balanceKey] || '0'
                     setSellAmount(balance)
                   }}
                   className="max-button"
                   disabled={(() => {
                     const token = tokens.find(t => t.address === sellToken)
-                    const balanceKey = token?.isNative ? 'ETH' : sellToken
+                    const balanceKey = token?.isNative ? sellToken : sellToken
                     return !tokenBalances[balanceKey] || parseFloat(tokenBalances[balanceKey]) <= 0
                   })()}
                   style={{
                     background: (() => {
                       const token = tokens.find(t => t.address === sellToken)
-                      const balanceKey = token?.isNative ? 'ETH' : sellToken
+                      const balanceKey = token?.isNative ? sellToken : sellToken
                       return parseFloat(tokenBalances[balanceKey] || '0') <= 0 
                         ? '#9ca3af' 
                         : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
                     })(),
                     cursor: (() => {
                       const token = tokens.find(t => t.address === sellToken)
-                      const balanceKey = token?.isNative ? 'ETH' : sellToken
+                      const balanceKey = token?.isNative ? sellToken : sellToken
                       return parseFloat(tokenBalances[balanceKey] || '0') <= 0 ? 'not-allowed' : 'pointer'
                     })()
                   }}
