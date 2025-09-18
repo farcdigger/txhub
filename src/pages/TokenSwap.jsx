@@ -17,8 +17,9 @@ const TokenSwap = () => {
   const INTEGRATOR_FEE = 0.003 // 0.3%
   const INTEGRATOR_ADDRESS = '0x7d2Ceb7a0e0C39A3d0f7B5b491659fDE4bb7BCFe' // BaseHub revenue wallet
   
-  // Native ETH address for 1inch API (official standard)
-  const NATIVE_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+  // Native ETH address for 1inch API - trying both possibilities
+  const NATIVE_ETH_ADDRESS = '0x0000000000000000000000000000000000000000' // Base network native ETH
+  const NATIVE_ETH_ADDRESS_ALT = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' // Alternative standard
   
   // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
   const bhubTokens = userXP * 10
@@ -82,7 +83,8 @@ const TokenSwap = () => {
           console.log('ETH Balance Raw:', ethBalance, 'Formatted:', ethBalanceFormatted)
           
           // Store ETH balance for both ETH and WETH tokens
-          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // Standard native ETH address
+          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // Base network native ETH address
+          balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted // Alternative standard address
           balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH address
           balances['ETH'] = ethBalanceFormatted // Also store as 'ETH' for native ETH
           balances['NATIVE_ETH'] = ethBalanceFormatted // Native ETH key
@@ -442,15 +444,24 @@ const TokenSwap = () => {
         sellTokenData: sellTokenData,
         address: address,
         currentBalance: tokenBalances[sellToken],
-        allBalances: tokenBalances
+        allBalances: tokenBalances,
+        nativeETHAddress: NATIVE_ETH_ADDRESS,
+        nativeETHAddressAlt: NATIVE_ETH_ADDRESS_ALT
       })
 
       // Check balance from 1inch API for debugging
-      if (sellToken === NATIVE_ETH_ADDRESS) {
-        const balanceData = await getTokenBalance(sellToken, address)
-        console.log('1inch Native ETH Balance Check:', balanceData)
+      if (sellToken === NATIVE_ETH_ADDRESS || sellToken === NATIVE_ETH_ADDRESS_ALT) {
+        console.log('Testing both native ETH addresses with 1inch API...')
         
-        // Also try to get a simple quote to test API connectivity
+        // Test with current address
+        const balanceData1 = await getTokenBalance(sellToken, address)
+        console.log('1inch Native ETH Balance Check (current):', balanceData1)
+        
+        // Test with alternative address
+        const altAddress = sellToken === NATIVE_ETH_ADDRESS ? NATIVE_ETH_ADDRESS_ALT : NATIVE_ETH_ADDRESS
+        const balanceData2 = await getTokenBalance(altAddress, address)
+        console.log('1inch Native ETH Balance Check (alternative):', balanceData2)
+        
         console.log('Testing 1inch API connectivity...')
       }
 
