@@ -15,7 +15,7 @@ const TokenSwap = () => {
   const INCH_API_URL = 'https://api.1inch.dev'
   const BASE_CHAIN_ID = 8453
   const INTEGRATOR_FEE = 0.003 // 0.3%
-  const INTEGRATOR_ADDRESS = '0x742d35Cc6634C0532925a3b8D581C226C0Fc71fB'
+  const INTEGRATOR_ADDRESS = '0xf6eeaacccd5971864421a94e8f01efe9e5a663ee' // BaseHub revenue wallet
   
   // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
   const bhubTokens = userXP * 10
@@ -428,7 +428,7 @@ const TokenSwap = () => {
           const balance = balanceMatch ? (parseInt(balanceMatch[1]) / Math.pow(10, 18)).toFixed(6) : '0'
           const amount = amountMatch ? (parseInt(amountMatch[1]) / Math.pow(10, 18)).toFixed(6) : 'unknown'
           
-          throw new Error(`Insufficient ${tokenSymbol} balance! You have ${balance} ${tokenSymbol}, but trying to get quote for ${amount} ${tokenSymbol}. Please reduce the amount or add more ${tokenSymbol} to your wallet.`)
+          throw new Error(`Insufficient ${tokenSymbol} balance! 1inch API reports you have ${balance} ${tokenSymbol}, but trying to get quote for ${amount} ${tokenSymbol}. Please check your wallet balance and try again.`)
         } else if (errorString.includes('Insufficient liquidity')) {
           throw new Error('Insufficient liquidity for this quote. Try a smaller amount.')
         } else if (errorString.includes('Amount is not set')) {
@@ -538,7 +538,8 @@ const TokenSwap = () => {
         dst: buyToken,
         amount: amount.toString(),
         from: address.toLowerCase(),
-        slippage: '1'
+        slippage: '1',
+        referrer: INTEGRATOR_ADDRESS
       })
 
       const response = await fetch(`/api/1inch-proxy?${params}`)
@@ -570,7 +571,7 @@ const TokenSwap = () => {
           const balance = balanceMatch ? (parseInt(balanceMatch[1]) / Math.pow(10, 18)).toFixed(6) : '0'
           const amount = amountMatch ? (parseInt(amountMatch[1]) / Math.pow(10, 18)).toFixed(6) : 'unknown'
           
-          throw new Error(`Insufficient ${tokenSymbol} balance! You have ${balance} ${tokenSymbol}, but trying to swap ${amount} ${tokenSymbol}. Please reduce the amount or add more ${tokenSymbol} to your wallet.`)
+          throw new Error(`Insufficient ${tokenSymbol} balance! 1inch API reports you have ${balance} ${tokenSymbol}, but trying to swap ${amount} ${tokenSymbol}. Please check your wallet balance and try again.`)
         } else if (errorString.includes('Not enough Allowance')) {
           throw new Error('Token allowance required. Please approve token spending first.')
         } else if (errorString.includes('Insufficient liquidity')) {
@@ -955,6 +956,10 @@ const TokenSwap = () => {
                   <span>Revenue (0.3%):</span>
                   <span>{(parseFloat(sellAmount) * 0.003).toFixed(6)} {tokens.find(t => t.address === sellToken)?.symbol}</span>
                 </div>
+                <div className="quote-item" style={{ fontSize: '12px', color: '#6b7280' }}>
+                  <span>Revenue Wallet:</span>
+                  <span>{INTEGRATOR_ADDRESS.slice(0, 6)}...{INTEGRATOR_ADDRESS.slice(-4)}</span>
+                </div>
                 <div className="quote-item">
                   <span>Gas Estimate:</span>
                   <span>{quote.gas ? `${Math.round(quote.gas / 1000)}K` : 'N/A'}</span>
@@ -1023,6 +1028,9 @@ const TokenSwap = () => {
           <div className="info-card">
             <h3>💰 Revenue Model</h3>
             <p>BaseHub earns 0.3% from every swap transaction. This creates sustainable revenue while providing users with the best trading experience.</p>
+            <p style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
+              <strong>Revenue Wallet:</strong> {INTEGRATOR_ADDRESS}
+            </p>
           </div>
           
           <div className="info-card">
