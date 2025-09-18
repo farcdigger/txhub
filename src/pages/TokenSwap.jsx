@@ -409,10 +409,116 @@ const TokenSwap = () => {
     return null
   }
 
+  // Auto-fetch token info from contract
+  const fetchTokenInfo = async (tokenAddress) => {
+    try {
+      // Get token symbol
+      const symbolResponse = await window.ethereum.request({
+        method: 'eth_call',
+        params: [{
+          to: tokenAddress,
+          data: '0x95d89b41' // symbol()
+        }, 'latest']
+      })
+      
+      // Get token name
+      const nameResponse = await window.ethereum.request({
+        method: 'eth_call',
+        params: [{
+          to: tokenAddress,
+          data: '0x06fdde03' // name()
+        }, 'latest']
+      })
+      
+      // Get token decimals
+      const decimalsResponse = await window.ethereum.request({
+        method: 'eth_call',
+        params: [{
+          to: tokenAddress,
+          data: '0x313ce567' // decimals()
+        }, 'latest']
+      })
+
+      // Decode responses
+      const symbol = symbolResponse === '0x' ? 'UNKNOWN' : 
+        Buffer.from(symbolResponse.slice(2), 'hex').toString().replace(/\0/g, '').trim()
+      const name = nameResponse === '0x' ? 'Unknown Token' : 
+        Buffer.from(nameResponse.slice(2), 'hex').toString().replace(/\0/g, '').trim()
+      const decimals = decimalsResponse === '0x' ? 18 : parseInt(decimalsResponse, 16)
+
+      return { symbol, name, decimals }
+    } catch (error) {
+      console.error('Error fetching token info:', error)
+      return null
+    }
+  }
+
+  // Check if token has liquidity on 1inch
+  const checkTokenLiquidity = async (tokenAddress) => {
+    try {
+      // Try to get a quote with a small amount to check liquidity
+      const testAmount = '1000000000000000000' // 1 token (assuming 18 decimals)
+      
+      const params = new URLSearchParams({
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/quote`,
+        src: tokenAddress,
+        dst: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // USDC
+        amount: testAmount,
+        from: address.toLowerCase(),
+        referrer: INTEGRATOR_ADDRESS,
+        fee: INTEGRATOR_FEE.toString(),
+        includeTokensInfo: 'true',
+        includeProtocols: 'true',
+        includeGas: 'true'
+      })
+
+      const response = await fetch(`/api/1inch-proxy?${params}`)
+      return response.ok
+    } catch (error) {
+      console.error('Error checking token liquidity:', error)
+      return false
+    }
+  }
+
+  // Auto-fetch token info when address is entered
+  const handleTokenAddressChange = async (address) => {
+    setNewTokenAddress(address)
+    
+    if (address && address.startsWith('0x') && address.length === 42) {
+      setError('')
+      setSuccessMessage('🔍 Fetching token information...')
+      
+      try {
+        const tokenInfo = await fetchTokenInfo(address)
+        
+        if (tokenInfo) {
+          setNewTokenSymbol(tokenInfo.symbol)
+          setNewTokenName(tokenInfo.name)
+          setNewTokenDecimals(tokenInfo.decimals)
+          
+          // Check liquidity
+          setSuccessMessage('🔍 Checking liquidity...')
+          const hasLiquidity = await checkTokenLiquidity(address)
+          
+          if (hasLiquidity) {
+            setSuccessMessage('✅ Token found with liquidity! Ready to add.')
+          } else {
+            setSuccessMessage('⚠️ Token found but no liquidity detected. You can still add it.')
+          }
+        } else {
+          setError('❌ Failed to fetch token information. Please check the address.')
+        }
+      } catch (error) {
+        console.error('Error:', error)
+        setError('❌ Error fetching token information.')
+      }
+    }
+  }
+
   // Add custom token
   const addCustomToken = async () => {
-    if (!newTokenAddress || !newTokenSymbol || !newTokenName) {
-      setError('Please fill in all token details')
+    if (!newTokenAddress) {
+      setError('Please enter token contract address')
       return
     }
 
@@ -1197,12 +1303,15 @@ const TokenSwap = () => {
                 border: '1px solid rgba(71, 85, 105, 0.3)'
               }}>
                 <h3 style={{ color: '#ffffff', marginBottom: '16px', fontSize: '18px' }}>Add Custom Token</h3>
+                <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '16px' }}>
+                  Just paste the token contract address and we'll automatically fetch all the details!
+                </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <input
                     type="text"
                     placeholder="Token Contract Address (0x...)"
                     value={newTokenAddress}
-                    onChange={(e) => setNewTokenAddress(e.target.value)}
+                    onChange={(e) => handleTokenAddressChange(e.target.value)}
                     style={{
                       background: 'rgba(71, 85, 105, 0.5)',
                       border: '1px solid rgba(100, 116, 139, 0.3)',
@@ -1215,49 +1324,50 @@ const TokenSwap = () => {
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <input
                       type="text"
-                      placeholder="Symbol (e.g., TOKEN)"
+                      placeholder="Symbol (Auto-filled)"
                       value={newTokenSymbol}
-                      onChange={(e) => setNewTokenSymbol(e.target.value)}
+                      readOnly
                       style={{
-                        background: 'rgba(71, 85, 105, 0.5)',
-                        border: '1px solid rgba(100, 116, 139, 0.3)',
+                        background: 'rgba(51, 65, 85, 0.3)',
+                        border: '1px solid rgba(71, 85, 105, 0.3)',
                         borderRadius: '8px',
                         padding: '12px',
-                        color: '#ffffff',
+                        color: '#94a3b8',
                         fontSize: '14px',
-                        flex: 1
+                        flex: 1,
+                        cursor: 'not-allowed'
                       }}
                     />
                     <input
                       type="number"
                       placeholder="Decimals"
                       value={newTokenDecimals}
-                      onChange={(e) => setNewTokenDecimals(parseInt(e.target.value) || 18)}
-                      min="0"
-                      max="18"
+                      readOnly
                       style={{
-                        background: 'rgba(71, 85, 105, 0.5)',
-                        border: '1px solid rgba(100, 116, 139, 0.3)',
+                        background: 'rgba(51, 65, 85, 0.3)',
+                        border: '1px solid rgba(71, 85, 105, 0.3)',
                         borderRadius: '8px',
                         padding: '12px',
-                        color: '#ffffff',
+                        color: '#94a3b8',
                         fontSize: '14px',
-                        width: '100px'
+                        width: '100px',
+                        cursor: 'not-allowed'
                       }}
                     />
                   </div>
                   <input
                     type="text"
-                    placeholder="Token Name (e.g., My Custom Token)"
+                    placeholder="Token Name (Auto-filled)"
                     value={newTokenName}
-                    onChange={(e) => setNewTokenName(e.target.value)}
+                    readOnly
                     style={{
-                      background: 'rgba(71, 85, 105, 0.5)',
-                      border: '1px solid rgba(100, 116, 139, 0.3)',
+                      background: 'rgba(51, 65, 85, 0.3)',
+                      border: '1px solid rgba(71, 85, 105, 0.3)',
                       borderRadius: '8px',
                       padding: '12px',
-                      color: '#ffffff',
-                      fontSize: '14px'
+                      color: '#94a3b8',
+                      fontSize: '14px',
+                      cursor: 'not-allowed'
                     }}
                   />
                   <button
