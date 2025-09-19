@@ -67,6 +67,7 @@ function erc20BalanceOfCalldata(address) {
 
 // Native ETH helper
 const NATIVE_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+const NATIVE_ETH_ADDRESS_ALT = '0x0000000000000000000000000000000000000000'
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 const isNative = (address) => {
   if (!address) return false
@@ -290,17 +291,19 @@ const TokenSwap = () => {
           
           console.log('ETH Balance - Raw:', ethBalanceHex, 'Wei:', ethBalanceWei.toString(), 'Formatted:', ethBalanceFormatted)
           
-          // Store ETH balance for all ETH-related keys
-          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
-          balances[ZERO_ADDRESS] = ethBalanceFormatted
-          balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH
-          balances['ETH'] = ethBalanceFormatted
-          balances['NATIVE_ETH'] = ethBalanceFormatted
+            // Store ETH balance for all ETH-related keys
+            balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
+            balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted
+            balances[ZERO_ADDRESS] = ethBalanceFormatted
+            balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH
+            balances['ETH'] = ethBalanceFormatted
+            balances['NATIVE_ETH'] = ethBalanceFormatted
           
         } catch (ethError) {
           console.error('Error loading ETH balance:', ethError)
           const defaultEth = '0.000000'
           balances[NATIVE_ETH_ADDRESS] = defaultEth
+          balances[NATIVE_ETH_ADDRESS_ALT] = defaultEth
           balances[ZERO_ADDRESS] = defaultEth
           balances['0x4200000000000000000000000000000000000006'] = defaultEth
           balances['ETH'] = defaultEth
