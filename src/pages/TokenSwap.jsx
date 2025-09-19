@@ -193,55 +193,25 @@ const TokenSwap = () => {
           }
         }
         
-        // Check and switch to Base network
+        // Check current network (detection only)
         try {
           const chainIdHex = await provider.request({ method: 'eth_chainId' })
           const chainId = parseInt(chainIdHex, 16)
           setCurrentChainId(chainIdHex)
           console.log('Current chain ID:', chainIdHex, 'Decimal:', chainId)
           
-          if (chainId !== 8453) {
-            console.log('Switching to Base network...')
+          if (chainId === 8453) {
+            console.log('✅ Already on Base network')
+          } else {
+            console.log('⚠️ Not on Base network - current:', chainId, 'expected: 8453')
             
-            // In Farcaster, network switching might work differently
+            // In Farcaster, just inform the user - don't try to switch
             if (isFarcasterEnv) {
-              console.log('🔍 Farcaster environment - trying network switch...')
-              try {
-                await provider.request({
-                  method: 'wallet_switchEthereumChain',
-                  params: [{ chainId: '0x2105' }] // Base network
-                })
-                console.log('✅ Successfully switched to Base network via wallet_switchEthereumChain')
-              } catch (switchError) {
-                console.warn('wallet_switchEthereumChain failed:', switchError)
-                
-                // Try adding Base network if it doesn't exist
-                try {
-                  await provider.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [{
-                      chainId: '0x2105',
-                      chainName: 'Base',
-                      nativeCurrency: {
-                        name: 'Ethereum',
-                        symbol: 'ETH',
-                        decimals: 18
-                      },
-                      rpcUrls: ['https://mainnet.base.org'],
-                      blockExplorerUrls: ['https://basescan.org']
-                    }]
-                  })
-                  console.log('✅ Successfully added Base network')
-                } catch (addError) {
-                  console.warn('Failed to add Base network:', addError)
-                  
-                  // In Farcaster, don't block the user - just warn
-                  console.log('🔍 Farcaster environment - continuing without network switch')
-                  setError('Please manually switch to Base network in your wallet. The app will work better on Base network.')
-                }
-              }
+              console.log('🔍 Farcaster environment - network detection only, no switching')
+              // Don't set error, just log the network status
             } else {
-              // For web, be more strict about network switching
+              // For web, try to switch
+              console.log('Switching to Base network...')
               try {
                 await provider.request({
                   method: 'wallet_switchEthereumChain',
@@ -253,8 +223,6 @@ const TokenSwap = () => {
                 setError('Please switch to Base network in your wallet to use this app.')
               }
             }
-          } else {
-            console.log('✅ Already on Base network')
           }
         } catch (error) {
           console.error('Error checking chain ID:', error)
@@ -1569,12 +1537,15 @@ const TokenSwap = () => {
                     borderRadius: '4px',
                     border: '1px solid rgba(245, 158, 11, 0.2)'
                   }}>
-                    <div style={{ fontWeight: '600', color: '#d97706' }}>⚠️ Network Warning:</div>
+                    <div style={{ fontWeight: '600', color: '#d97706' }}>⚠️ Network Info:</div>
                     <div style={{ fontSize: '12px', color: '#92400e' }}>
                       You're on {currentChainId === '0x1' ? 'Ethereum Mainnet' : `Chain ${parseInt(currentChainId, 16)}`}
                     </div>
                     <div style={{ fontSize: '12px', color: '#92400e' }}>
-                      Switch to Base network for the best experience
+                      For best experience, manually switch to Base network in your wallet
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#a16207', marginTop: '4px' }}>
+                      💡 In Farcaster, you need to switch networks manually in your wallet settings
                     </div>
                   </div>
                 )}
