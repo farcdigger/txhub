@@ -161,7 +161,7 @@ const TokenSwap = () => {
       clearTimeout(initialTimeout)
       clearInterval(interval)
     }
-  }, [isConnected, address])
+  }, [isConnected, address, customTokens])
 
   // Auto-quote when amount or tokens change
   useEffect(() => {
@@ -596,6 +596,63 @@ const TokenSwap = () => {
       setNewTokenDecimals(18)
       setError('')
       setSuccessMessage('✅ Custom token added successfully!')
+      
+      // Reload balances to include the new custom token
+      setTimeout(async () => {
+        try {
+          const balances = {}
+          
+          // Load ETH balance
+          if (window.ethereum) {
+            const ethBalance = await window.ethereum.request({
+              method: 'eth_getBalance',
+              params: [address, 'latest']
+            })
+            const ethBalanceFormatted = (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(6)
+            
+            // Store ETH balance for both ETH and WETH tokens
+            balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
+            balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted
+            balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted
+            balances['ETH'] = ethBalanceFormatted
+            balances['NATIVE_ETH'] = ethBalanceFormatted
+          }
+
+          // Load ERC20 token balances (including new custom token)
+          for (const token of [...tokens, ...customTokens, newToken]) {
+            if (token.isNative) {
+              balances[token.address] = balances['ETH'] || '0.000000'
+            } else {
+              try {
+                const fnSig = '0x70a08231'
+                const addrPadded = address.toLowerCase().replace(/^0x/, '').padStart(64, '0')
+                const data = fnSig + addrPadded
+                
+                const balanceResponse = await window.ethereum.request({
+                  method: 'eth_call',
+                  params: [{
+                    to: token.address,
+                    data: data
+                  }, 'latest']
+                })
+                
+                const rawBalance = BigInt(balanceResponse)
+                const balance = Number(rawBalance) / Math.pow(10, token.decimals)
+                balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
+                console.log(`${token.symbol} balance:`, balances[token.address])
+              } catch (err) {
+                console.error(`Error loading ${token.symbol} balance:`, err)
+                balances[token.address] = '0.000000'
+              }
+            }
+          }
+          
+          setTokenBalances(balances)
+          console.log('Balances reloaded with custom token:', balances)
+        } catch (error) {
+          console.error('Error reloading balances:', error)
+        }
+      }, 1000)
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000)
