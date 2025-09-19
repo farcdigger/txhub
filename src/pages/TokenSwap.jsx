@@ -3,15 +3,44 @@ import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect, useSendCalls } from 'wagmi'
 import { getXP } from '../utils/xpUtils'
 
-// Farcaster Mini App SDK
-let farcasterSDK = null
-try {
-  // Try to import Farcaster SDK if available
-  if (typeof window !== 'undefined' && window.farcaster) {
-    farcasterSDK = window.farcaster
+// Farcaster Mini App SDK Provider Helper
+async function getMiniAppProvider() {
+  try {
+    // Check for Farcaster SDK
+    if (typeof window !== 'undefined' && window.farcaster?.wallet?.getEthereumProvider) {
+      const provider = await window.farcaster.wallet.getEthereumProvider()
+      console.log('✅ Farcaster SDK provider found:', !!provider)
+      return provider
+    }
+  } catch (error) {
+    console.log('Farcaster SDK not available:', error)
   }
-} catch (error) {
-  console.log('Farcaster SDK not available:', error)
+  
+  // Fallback to window.ethereum for web
+  if (typeof window !== 'undefined' && window.ethereum) {
+    console.log('✅ Using window.ethereum as fallback')
+    return window.ethereum
+  }
+  
+  console.log('❌ No Ethereum provider found')
+  return null
+}
+
+// Helper function for ERC-20 balanceOf calldata
+function erc20BalanceOfCalldata(address) {
+  const fn = '0x70a08231' // balanceOf(address) function signature
+  const data = fn + address.toLowerCase().replace(/^0x/, '').padStart(64, '0')
+  return data
+}
+
+// Native ETH helper
+const NATIVE_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+const isNative = (address) => {
+  if (!address) return false
+  const lowerAddr = address.toLowerCase()
+  return lowerAddr === NATIVE_ETH_ADDRESS.toLowerCase() || 
+         lowerAddr === ZERO_ADDRESS.toLowerCase()
 }
 
 const TokenSwap = () => {
@@ -34,19 +63,6 @@ const TokenSwap = () => {
   const INTEGRATOR_FEE = 0.003 // 0.3%
   const INTEGRATOR_ADDRESS = '0x7d2Ceb7a0e0C39A3d0f7B5b491659fDE4bb7BCFe' // BaseHub revenue wallet
   
-  // Native ETH address for 1inch API (official 1inch standard)
-  const NATIVE_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' // 1inch API standard
-  const NATIVE_ETH_ADDRESS_ALT = '0x0000000000000000000000000000000000000000' // Base network native ETH
-  
-  // Helper function to check if address is native ETH
-  const isNative = (addr) => {
-    if (!addr) return false
-    const lowerAddr = addr.toLowerCase()
-    return lowerAddr === NATIVE_ETH_ADDRESS.toLowerCase() ||
-           lowerAddr === NATIVE_ETH_ADDRESS_ALT.toLowerCase() ||
-           lowerAddr === '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
-  }
-  
   // Calculate BHUB tokens from XP (1 XP = 10 BHUB)
   const bhubTokens = userXP * 10
 
@@ -56,92 +72,55 @@ const TokenSwap = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  // Detect Farcaster and setup Ethereum provider
+  // Setup Ethereum provider and request accounts
   useEffect(() => {
-    const detectEnvironment = async () => {
-      // Check if we're in Farcaster webview
-      const userAgent = navigator.userAgent || ''
-      const isFarcasterEnv = userAgent.includes('Farcaster') || 
-                            userAgent.includes('farcaster') ||
-                            window.location.href.includes('farcaster') ||
-                            document.referrer.includes('farcaster') ||
-                            !!farcasterSDK
-      
-      setIsFarcaster(isFarcasterEnv)
-      console.log('Environment detection:', { userAgent, isFarcasterEnv, farcasterSDK: !!farcasterSDK })
-      
-      // Setup Ethereum provider with Farcaster SDK priority
-      let provider = null
-      if (isFarcasterEnv && farcasterSDK) {
+    const setupProvider = async () => {
+      try {
+        // Get the correct provider (Farcaster SDK or window.ethereum)
+        const provider = await getMiniAppProvider()
+        
+        if (!provider) {
+          console.error('❌ No Ethereum provider available')
+          setError('This page works best inside Farcaster Mini App or a web3 wallet-enabled browser.')
+          return
+        }
+        
+        setEthereumProvider(provider)
+        console.log('✅ Ethereum provider set:', !!provider)
+        
+        // Check if we're in Farcaster environment
+        const isFarcasterEnv = !!(window.farcaster?.wallet?.getEthereumProvider)
+        setIsFarcaster(isFarcasterEnv)
+        console.log('Environment detection:', { isFarcasterEnv })
+        
+        // Request accounts first (required for Farcaster)
         try {
-          // Use Farcaster SDK's Ethereum provider
-          provider = await farcasterSDK.wallet.getEthereumProvider()
-          console.log('✅ Using Farcaster SDK Ethereum provider')
+          await provider.request({ method: 'eth_requestAccounts' })
+          console.log('✅ Accounts requested successfully')
         } catch (error) {
-          console.error('Failed to get Farcaster Ethereum provider:', error)
+          console.error('Failed to request accounts:', error)
+          setError('Please connect your wallet to continue.')
+          return
         }
-      }
-      
-      // Fallback to standard providers
-      if (!provider) {
-        if (window.ethereum) {
-          provider = window.ethereum
-        } else if (window.web3 && window.web3.currentProvider) {
-          provider = window.web3.currentProvider
-        } else if (window.parent && window.parent.ethereum) {
-          provider = window.parent.ethereum
-        }
-      }
-      
-      setEthereumProvider(provider)
-      console.log('Ethereum provider found:', !!provider, 'Type:', provider ? 'Farcaster SDK' : 'Standard')
-      
-      // Check and switch to Base network if needed
-      if (provider && isFarcasterEnv) {
+        
+        // Check and switch to Base network
         try {
-          const chainId = await provider.request({ method: 'eth_chainId' })
-          console.log('Current chain ID:', chainId)
-          setCurrentChainId(chainId)
+          const chainIdHex = await provider.request({ method: 'eth_chainId' })
+          const chainId = parseInt(chainIdHex, 16)
+          setCurrentChainId(chainIdHex)
+          console.log('Current chain ID:', chainIdHex, 'Decimal:', chainId)
           
-          // Base network chain ID is 0x2105 (8453 in decimal)
-          if (chainId !== '0x2105') {
+          if (chainId !== 8453) {
             console.log('Switching to Base network...')
-            console.warn('⚠️ Farcaster wallet is not on Base network! Current:', chainId, 'Expected: 0x2105')
-            
-            // Show user-friendly message
-            if (typeof window !== 'undefined') {
-              console.warn('🔧 Please switch to Base network in your Farcaster wallet to use this app')
-            }
-            
             try {
               await provider.request({
                 method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0x2105' }]
+                params: [{ chainId: '0x2105' }] // Base network
               })
-              console.log('Successfully switched to Base network')
+              console.log('✅ Successfully switched to Base network')
             } catch (switchError) {
-              console.log('Failed to switch to Base network:', switchError)
-              // Try to add Base network if it doesn't exist
-              try {
-                await provider.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: '0x2105',
-                    chainName: 'Base',
-                    nativeCurrency: {
-                      name: 'Ethereum',
-                      symbol: 'ETH',
-                      decimals: 18
-                    },
-                    rpcUrls: ['https://mainnet.base.org'],
-                    blockExplorerUrls: ['https://basescan.org']
-                  }]
-                })
-                console.log('Successfully added Base network')
-              } catch (addError) {
-                console.error('Failed to add Base network:', addError)
-                console.warn('🚨 Farcaster wallet may not support Base network switching')
-              }
+              console.warn('Failed to switch to Base network:', switchError)
+              setError('Please switch to Base network in your wallet to use this app.')
             }
           } else {
             console.log('✅ Already on Base network')
@@ -149,10 +128,14 @@ const TokenSwap = () => {
         } catch (error) {
           console.error('Error checking chain ID:', error)
         }
+        
+      } catch (error) {
+        console.error('Provider setup failed:', error)
+        setError('Failed to setup wallet connection. Please refresh and try again.')
       }
     }
 
-    detectEnvironment()
+    setupProvider()
   }, [])
 
   // Load user XP and level
@@ -206,76 +189,44 @@ const TokenSwap = () => {
   const [newTokenName, setNewTokenName] = useState('')
   const [newTokenDecimals, setNewTokenDecimals] = useState(18)
 
-  // Load token balances
+  // Load token balances with proper provider
   useEffect(() => {
     const loadBalances = async () => {
-      if (!isConnected || !address) return
+      if (!isConnected || !address || !ethereumProvider) {
+        console.log('Skipping balance load - not ready:', { isConnected, address: !!address, provider: !!ethereumProvider })
+        return
+      }
 
       const balances = {}
       
       try {
-        // Load ETH balance with Farcaster-compatible provider
-        const provider = ethereumProvider || window.ethereum
-        if (provider) {
-          console.log('Loading ETH balance with provider:', !!provider, 'Address:', address)
+        console.log('Loading balances with provider:', !!ethereumProvider, 'Address:', address)
+        
+        // Load ETH balance using proper provider
+        try {
+          const ethBalanceHex = await ethereumProvider.request({
+            method: 'eth_getBalance',
+            params: [address, 'latest']
+          })
           
-          // Check current chain first
-          try {
-            const chainId = await provider.request({ method: 'eth_chainId' })
-            console.log('Current chain ID for balance check:', chainId)
-            setCurrentChainId(chainId)
-            
-            if (chainId !== '0x2105') {
-              console.warn('Not on Base network! Current chain:', chainId, 'Expected: 0x2105')
-            }
-          } catch (chainError) {
-            console.error('Error checking chain ID:', chainError)
-          }
+          // Use BigInt for proper calculation
+          const ethBalanceWei = BigInt(ethBalanceHex)
+          const ethBalanceFormatted = (Number(ethBalanceWei) / Math.pow(10, 18)).toFixed(6)
           
-          // Retry mechanism for ETH balance
-          let ethBalance = null
-          let retryCount = 0
-          const maxRetries = isFarcaster ? 3 : 1
+          console.log('ETH Balance - Raw:', ethBalanceHex, 'Wei:', ethBalanceWei.toString(), 'Formatted:', ethBalanceFormatted)
           
-          while (retryCount <= maxRetries && !ethBalance) {
-            try {
-              console.log(`ETH balance attempt ${retryCount + 1}/${maxRetries + 1}`)
-              ethBalance = await provider.request({
-                method: 'eth_getBalance',
-                params: [address, 'latest']
-              })
-              console.log('ETH Balance Raw:', ethBalance, 'Attempt:', retryCount + 1)
-              break
-            } catch (ethError) {
-              console.error(`ETH balance error attempt ${retryCount + 1}:`, ethError)
-              if (retryCount < maxRetries) {
-                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
-                retryCount++
-              } else {
-                throw ethError
-              }
-            }
-          }
+          // Store ETH balance for all ETH-related keys
+          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
+          balances[ZERO_ADDRESS] = ethBalanceFormatted
+          balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH
+          balances['ETH'] = ethBalanceFormatted
+          balances['NATIVE_ETH'] = ethBalanceFormatted
           
-          if (ethBalance) {
-            const ethBalanceFormatted = (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(6)
-            console.log('ETH Balance Formatted:', ethBalanceFormatted)
-            
-            // Store ETH balance for both ETH and WETH tokens
-            balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // 1inch API standard address
-            balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted // Base network native ETH address
-            balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH address
-            balances['ETH'] = ethBalanceFormatted // Also store as 'ETH' for native ETH
-            balances['NATIVE_ETH'] = ethBalanceFormatted // Native ETH key
-          } else {
-            throw new Error('Failed to get ETH balance after retries')
-          }
-        } else {
-          console.warn('No Ethereum provider found')
-          // Set default values for ETH
+        } catch (ethError) {
+          console.error('Error loading ETH balance:', ethError)
           const defaultEth = '0.000000'
           balances[NATIVE_ETH_ADDRESS] = defaultEth
-          balances[NATIVE_ETH_ADDRESS_ALT] = defaultEth
+          balances[ZERO_ADDRESS] = defaultEth
           balances['0x4200000000000000000000000000000000000006'] = defaultEth
           balances['ETH'] = defaultEth
           balances['NATIVE_ETH'] = defaultEth
@@ -283,41 +234,33 @@ const TokenSwap = () => {
 
         // Load ERC20 token balances
         for (const token of [...tokens, ...customTokens]) {
-          if (token.isNative) {
+          if (isNative(token.address)) {
             // For native ETH, use the balance we already loaded
             balances[token.address] = balances['ETH'] || '0.000000'
             console.log(`Native ${token.symbol} balance:`, balances[token.address])
           } else {
             try {
-              // Properly pad the address to 32 bytes (64 hex chars)
-              const fnSig = '0x70a08231'
-              const addrPadded = address.toLowerCase().replace(/^0x/, '').padStart(64, '0')
-              const data = fnSig + addrPadded
+              // Use proper ERC-20 balanceOf calldata
+              const data = erc20BalanceOfCalldata(address)
               
-              const provider = ethereumProvider || window.ethereum
-              if (provider) {
-                const balanceResponse = await provider.request({
-                  method: 'eth_call',
-                  params: [{
-                    to: token.address,
-                    data: data
-                  }, 'latest']
-                })
-              
-                // Handle empty or invalid response
-                if (!balanceResponse || balanceResponse === '0x' || balanceResponse === '0x0') {
-                  balances[token.address] = '0.000000'
-                  console.log(`${token.symbol} balance: 0.000000 (empty response)`)
-                } else {
-                  // Use BigInt to handle large numbers properly
-                  const rawBalance = BigInt(balanceResponse)
-                  const balance = Number(rawBalance) / Math.pow(10, token.decimals)
-                  balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
-                  console.log(`${token.symbol} balance:`, balances[token.address])
-                }
-              } else {
-                console.warn(`No provider for ${token.symbol} balance`)
+              const balanceResponse = await ethereumProvider.request({
+                method: 'eth_call',
+                params: [{
+                  to: token.address,
+                  data: data
+                }, 'latest']
+              })
+            
+              // Handle empty or invalid response
+              if (!balanceResponse || balanceResponse === '0x' || balanceResponse === '0x0') {
                 balances[token.address] = '0.000000'
+                console.log(`${token.symbol} balance: 0.000000 (empty response)`)
+              } else {
+                // Use BigInt for proper calculation
+                const rawBalance = BigInt(balanceResponse)
+                const balance = Number(rawBalance) / Math.pow(10, token.decimals)
+                balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
+                console.log(`${token.symbol} balance:`, balances[token.address], 'Raw:', balanceResponse)
               }
             } catch (err) {
               console.error(`Error loading ${token.symbol} balance:`, err)
@@ -345,8 +288,8 @@ const TokenSwap = () => {
     // Additional delay for Farcaster
     const farcasterTimeout = isFarcaster ? setTimeout(loadBalances, 5000) : null
     
-    // Then load every 10 seconds (or 5 seconds in Farcaster)
-    const interval = setInterval(loadBalances, isFarcaster ? 5000 : 10000)
+    // Then load every 15 seconds (or 10 seconds in Farcaster)
+    const interval = setInterval(loadBalances, isFarcaster ? 10000 : 15000)
     
     return () => {
       clearTimeout(initialTimeout)
@@ -1531,7 +1474,7 @@ const TokenSwap = () => {
                     <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
                     <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
                     <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
-                    <div>SDK: {farcasterSDK ? '✅ Available' : '❌ Not Found'}</div>
+                    <div>SDK: {window.farcaster?.wallet?.getEthereumProvider ? '✅ Available' : '❌ Not Found'}</div>
                     <div>Batch: {sendCalls ? '✅ Supported' : '❌ Not Available'}</div>
                   </div>
                 )}
@@ -1587,7 +1530,7 @@ const TokenSwap = () => {
                     <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
                     <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
                     <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
-                    <div>SDK: {farcasterSDK ? '✅ Available' : '❌ Not Found'}</div>
+                    <div>SDK: {window.farcaster?.wallet?.getEthereumProvider ? '✅ Available' : '❌ Not Found'}</div>
                     <div>Batch: {sendCalls ? '✅ Supported' : '❌ Not Available'}</div>
                   </div>
                 )}
