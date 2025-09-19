@@ -6,14 +6,46 @@ import { getXP } from '../utils/xpUtils'
 // Farcaster Mini App SDK Provider Helper
 async function getMiniAppProvider() {
   try {
-    // Check for Farcaster SDK
-    if (typeof window !== 'undefined' && window.farcaster?.wallet?.getEthereumProvider) {
-      const provider = await window.farcaster.wallet.getEthereumProvider()
-      console.log('✅ Farcaster SDK provider found:', !!provider)
-      return provider
+    // Check multiple possible Farcaster SDK locations
+    const possibleSDKs = [
+      window.farcaster?.wallet?.getEthereumProvider,
+      window.__farcaster?.wallet?.getEthereumProvider,
+      window.parent?.farcaster?.wallet?.getEthereumProvider,
+      window.parent?.__farcaster?.wallet?.getEthereumProvider
+    ]
+    
+    for (const sdk of possibleSDKs) {
+      if (typeof sdk === 'function') {
+        try {
+          const provider = await sdk()
+          console.log('✅ Farcaster SDK provider found:', !!provider)
+          return provider
+        } catch (error) {
+          console.log('SDK provider call failed:', error)
+        }
+      }
     }
+    
+    // Check if we're in Farcaster environment by user agent
+    const userAgent = navigator.userAgent || ''
+    const isFarcasterEnv = userAgent.includes('Farcaster') || 
+                          userAgent.includes('farcaster') ||
+                          window.location.href.includes('farcaster') ||
+                          document.referrer.includes('farcaster')
+    
+    if (isFarcasterEnv) {
+      console.log('🔍 Farcaster environment detected but SDK not found')
+      console.log('Available objects:', {
+        window_farcaster: !!window.farcaster,
+        window___farcaster: !!window.__farcaster,
+        parent_farcaster: !!window.parent?.farcaster,
+        parent___farcaster: !!window.parent?.__farcaster,
+        userAgent: userAgent
+      })
+    }
+    
   } catch (error) {
-    console.log('Farcaster SDK not available:', error)
+    console.log('Farcaster SDK detection error:', error)
   }
   
   // Fallback to window.ethereum for web
@@ -89,18 +121,55 @@ const TokenSwap = () => {
         console.log('✅ Ethereum provider set:', !!provider)
         
         // Check if we're in Farcaster environment
-        const isFarcasterEnv = !!(window.farcaster?.wallet?.getEthereumProvider)
+        const userAgent = navigator.userAgent || ''
+        const isFarcasterEnv = userAgent.includes('Farcaster') || 
+                              userAgent.includes('farcaster') ||
+                              window.location.href.includes('farcaster') ||
+                              document.referrer.includes('farcaster') ||
+                              !!(window.farcaster?.wallet?.getEthereumProvider) ||
+                              !!(window.__farcaster?.wallet?.getEthereumProvider)
+        
         setIsFarcaster(isFarcasterEnv)
-        console.log('Environment detection:', { isFarcasterEnv })
+        console.log('Environment detection:', { 
+          isFarcasterEnv,
+          userAgent,
+          url: window.location.href,
+          referrer: document.referrer,
+          hasFarcasterSDK: !!(window.farcaster?.wallet?.getEthereumProvider),
+          hasFarcasterSDKAlt: !!(window.__farcaster?.wallet?.getEthereumProvider)
+        })
         
         // Request accounts first (required for Farcaster)
         try {
-          await provider.request({ method: 'eth_requestAccounts' })
-          console.log('✅ Accounts requested successfully')
+          const accounts = await provider.request({ method: 'eth_requestAccounts' })
+          console.log('✅ Accounts requested successfully:', accounts)
+          
+          // Check if we got accounts
+          if (!accounts || accounts.length === 0) {
+            console.warn('No accounts returned from eth_requestAccounts')
+            setError('Please connect your wallet to continue.')
+            return
+          }
         } catch (error) {
           console.error('Failed to request accounts:', error)
-          setError('Please connect your wallet to continue.')
-          return
+          
+          // Don't fail completely, just warn
+          console.warn('eth_requestAccounts failed, continuing anyway...')
+          
+          // Try to get accounts without requesting
+          try {
+            const accounts = await provider.request({ method: 'eth_accounts' })
+            if (accounts && accounts.length > 0) {
+              console.log('✅ Found existing accounts:', accounts)
+            } else {
+              setError('Please connect your wallet to continue.')
+              return
+            }
+          } catch (accountsError) {
+            console.error('Failed to get accounts:', accountsError)
+            setError('Please connect your wallet to continue.')
+            return
+          }
         }
         
         // Check and switch to Base network
@@ -201,6 +270,12 @@ const TokenSwap = () => {
       
       try {
         console.log('Loading balances with provider:', !!ethereumProvider, 'Address:', address)
+        console.log('Provider source check:', {
+          isWindowEthereum: ethereumProvider === window.ethereum,
+          isFarcasterSDK: !!(window.farcaster?.wallet?.getEthereumProvider),
+          isFarcasterSDKAlt: !!(window.__farcaster?.wallet?.getEthereumProvider),
+          providerType: ethereumProvider?.constructor?.name || 'Unknown'
+        })
         
         // Load ETH balance using proper provider
         try {
@@ -250,7 +325,7 @@ const TokenSwap = () => {
                   data: data
                 }, 'latest']
               })
-            
+              
               // Handle empty or invalid response
               if (!balanceResponse || balanceResponse === '0x' || balanceResponse === '0x0') {
                 balances[token.address] = '0.000000'
@@ -996,8 +1071,8 @@ const TokenSwap = () => {
             } else {
               throw new Error(`Trading error: ${errorString || 'Please try again'}`)
             }
-          } else {
-            throw new Error(`1inch API error: ${response.status} - ${errorString || 'Unknown error'}`)
+        } else {
+          throw new Error(`1inch API error: ${response.status} - ${errorString || 'Unknown error'}`)
           }
         }
       }
@@ -1366,12 +1441,12 @@ const TokenSwap = () => {
             </p>
             {isFarcaster && (
               <div style={{ 
-                background: 'rgba(59, 130, 246, 0.1)', 
-                border: '1px solid rgba(59, 130, 246, 0.2)', 
-                borderRadius: '8px', 
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              borderRadius: '8px',
                 padding: '12px', 
                 marginTop: '12px',
-                fontSize: '14px',
+              fontSize: '14px',
                 color: '#1f2937'
               }}>
                 <div style={{ fontWeight: '600', marginBottom: '4px' }}>🔧 Farcaster Wallet Setup:</div>
@@ -1381,7 +1456,7 @@ const TokenSwap = () => {
                 <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px' }}>
                   <div style={{ fontWeight: '600', color: '#10b981' }}>✨ Batch Transactions:</div>
                   <div style={{ fontSize: '12px' }}>Approve + Swap in one transaction for better UX</div>
-                </div>
+              </div>
               </div>
             )}
           </div>
@@ -1419,8 +1494,8 @@ const TokenSwap = () => {
                   </option>
                 </select>
               </div>
-                      <div className="token-balance-section">
-                        <span className="balance-text">
+              <div className="token-balance-section">
+                <span className="balance-text">
                           Balance: {(() => {
                             const token = [...tokens, ...customTokens].find(t => t.address === sellToken)
                             const balanceKey = token?.isNative ? sellToken : sellToken
@@ -1437,7 +1512,7 @@ const TokenSwap = () => {
                               </span>
                             )
                           })()}
-                        </span>
+                </span>
                 <button
                   onClick={() => {
                     const token = tokens.find(t => t.address === sellToken)
@@ -1474,7 +1549,7 @@ const TokenSwap = () => {
                     <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
                     <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
                     <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
-                    <div>SDK: {window.farcaster?.wallet?.getEthereumProvider ? '✅ Available' : '❌ Not Found'}</div>
+                    <div>SDK: {(window.farcaster?.wallet?.getEthereumProvider || window.__farcaster?.wallet?.getEthereumProvider) ? '✅ Available' : '❌ Not Found'}</div>
                     <div>Batch: {sendCalls ? '✅ Supported' : '❌ Not Available'}</div>
                   </div>
                 )}
@@ -1530,7 +1605,7 @@ const TokenSwap = () => {
                     <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
                     <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
                     <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
-                    <div>SDK: {window.farcaster?.wallet?.getEthereumProvider ? '✅ Available' : '❌ Not Found'}</div>
+                    <div>SDK: {(window.farcaster?.wallet?.getEthereumProvider || window.__farcaster?.wallet?.getEthereumProvider) ? '✅ Available' : '❌ Not Found'}</div>
                     <div>Batch: {sendCalls ? '✅ Supported' : '❌ Not Available'}</div>
                   </div>
                 )}
