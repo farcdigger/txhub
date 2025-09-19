@@ -10,6 +10,10 @@ const TokenSwap = () => {
   const [userXP, setUserXP] = useState(0)
   const [userLevel, setUserLevel] = useState(1)
   
+  // Farcaster detection
+  const [isFarcaster, setIsFarcaster] = useState(false)
+  const [ethereumProvider, setEthereumProvider] = useState(null)
+  
   // 1inch API Configuration
   const INCH_API_KEY = 'HWcp63JDwcGFuSoQOt0figfwVW8a2tmU'
   const INCH_API_URL = 'https://api.1inch.dev'
@@ -38,6 +42,36 @@ const TokenSwap = () => {
     if (!address) return ''
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
+
+  // Detect Farcaster and setup Ethereum provider
+  useEffect(() => {
+    const detectEnvironment = () => {
+      // Check if we're in Farcaster webview
+      const userAgent = navigator.userAgent || ''
+      const isFarcasterEnv = userAgent.includes('Farcaster') || 
+                            userAgent.includes('farcaster') ||
+                            window.location.href.includes('farcaster') ||
+                            document.referrer.includes('farcaster')
+      
+      setIsFarcaster(isFarcasterEnv)
+      console.log('Environment detection:', { userAgent, isFarcasterEnv })
+      
+      // Setup Ethereum provider with fallbacks
+      let provider = null
+      if (window.ethereum) {
+        provider = window.ethereum
+      } else if (window.web3 && window.web3.currentProvider) {
+        provider = window.web3.currentProvider
+      } else if (window.parent && window.parent.ethereum) {
+        provider = window.parent.ethereum
+      }
+      
+      setEthereumProvider(provider)
+      console.log('Ethereum provider found:', !!provider)
+    }
+
+    detectEnvironment()
+  }, [])
 
   // Load user XP and level
   useEffect(() => {
@@ -98,21 +132,44 @@ const TokenSwap = () => {
       const balances = {}
       
       try {
-        // Load ETH balance
-        if (window.ethereum) {
-          const ethBalance = await window.ethereum.request({
-            method: 'eth_getBalance',
-            params: [address, 'latest']
-          })
-          const ethBalanceFormatted = (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(6)
-          console.log('ETH Balance Raw:', ethBalance, 'Formatted:', ethBalanceFormatted)
+        // Load ETH balance with Farcaster-compatible provider
+        const provider = ethereumProvider || window.ethereum
+        if (provider) {
+          console.log('Loading ETH balance with provider:', !!provider)
           
-          // Store ETH balance for both ETH and WETH tokens
-          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // 1inch API standard address
-          balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted // Base network native ETH address
-          balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH address
-          balances['ETH'] = ethBalanceFormatted // Also store as 'ETH' for native ETH
-          balances['NATIVE_ETH'] = ethBalanceFormatted // Native ETH key
+          try {
+            const ethBalance = await provider.request({
+              method: 'eth_getBalance',
+              params: [address, 'latest']
+            })
+            const ethBalanceFormatted = (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(6)
+            console.log('ETH Balance Raw:', ethBalance, 'Formatted:', ethBalanceFormatted)
+            
+            // Store ETH balance for both ETH and WETH tokens
+            balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // 1inch API standard address
+            balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted // Base network native ETH address
+            balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH address
+            balances['ETH'] = ethBalanceFormatted // Also store as 'ETH' for native ETH
+            balances['NATIVE_ETH'] = ethBalanceFormatted // Native ETH key
+          } catch (ethError) {
+            console.error('Error loading ETH balance:', ethError)
+            // Set default values for ETH
+            const defaultEth = '0.000000'
+            balances[NATIVE_ETH_ADDRESS] = defaultEth
+            balances[NATIVE_ETH_ADDRESS_ALT] = defaultEth
+            balances['0x4200000000000000000000000000000000000006'] = defaultEth
+            balances['ETH'] = defaultEth
+            balances['NATIVE_ETH'] = defaultEth
+          }
+        } else {
+          console.warn('No Ethereum provider found')
+          // Set default values for ETH
+          const defaultEth = '0.000000'
+          balances[NATIVE_ETH_ADDRESS] = defaultEth
+          balances[NATIVE_ETH_ADDRESS_ALT] = defaultEth
+          balances['0x4200000000000000000000000000000000000006'] = defaultEth
+          balances['ETH'] = defaultEth
+          balances['NATIVE_ETH'] = defaultEth
         }
 
         // Load ERC20 token balances
@@ -128,19 +185,25 @@ const TokenSwap = () => {
               const addrPadded = address.toLowerCase().replace(/^0x/, '').padStart(64, '0')
               const data = fnSig + addrPadded
               
-              const balanceResponse = await window.ethereum.request({
-                method: 'eth_call',
-                params: [{
-                  to: token.address,
-                  data: data
-                }, 'latest']
-              })
+              const provider = ethereumProvider || window.ethereum
+              if (provider) {
+                const balanceResponse = await provider.request({
+                  method: 'eth_call',
+                  params: [{
+                    to: token.address,
+                    data: data
+                  }, 'latest']
+                })
               
-              // Use BigInt to handle large numbers properly
-              const rawBalance = BigInt(balanceResponse)
-              const balance = Number(rawBalance) / Math.pow(10, token.decimals)
-              balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
-              console.log(`${token.symbol} balance:`, balances[token.address])
+                // Use BigInt to handle large numbers properly
+                const rawBalance = BigInt(balanceResponse)
+                const balance = Number(rawBalance) / Math.pow(10, token.decimals)
+                balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
+                console.log(`${token.symbol} balance:`, balances[token.address])
+              } else {
+                console.warn(`No provider for ${token.symbol} balance`)
+                balances[token.address] = '0.000000'
+              }
             } catch (err) {
               console.error(`Error loading ${token.symbol} balance:`, err)
               balances[token.address] = '0.000000'
@@ -171,7 +234,7 @@ const TokenSwap = () => {
       clearTimeout(initialTimeout)
       clearInterval(interval)
     }
-  }, [isConnected, address, customTokens])
+  }, [isConnected, address, customTokens, ethereumProvider])
 
   // Auto-quote when amount or tokens change
   useEffect(() => {
@@ -796,7 +859,32 @@ const TokenSwap = () => {
         console.log('Testing 1inch API connectivity...')
       }
 
-      const response = await fetch(`/api/1inch-proxy?${params}`)
+      // Add retry mechanism for Farcaster
+      let response
+      let retryCount = 0
+      const maxRetries = isFarcaster ? 3 : 1
+      
+      while (retryCount <= maxRetries) {
+        try {
+          response = await fetch(`/api/1inch-proxy?${params}`)
+          if (response.ok) break
+          
+          if (retryCount < maxRetries) {
+            console.log(`Retry ${retryCount + 1}/${maxRetries} for 1inch API...`)
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
+            retryCount++
+            continue
+          }
+        } catch (fetchError) {
+          console.error(`Fetch error on retry ${retryCount}:`, fetchError)
+          if (retryCount < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
+            retryCount++
+            continue
+          }
+          throw fetchError
+        }
+      }
 
       if (!response.ok) {
         const errorData = await response.json()
@@ -837,7 +925,18 @@ const TokenSwap = () => {
         } else if (errorString.includes('Cannot sync token')) {
           throw new Error('Invalid token address. Please check token contract.')
         } else {
-          throw new Error(`1inch API error: ${response.status} - ${errorString || 'Unknown error'}`)
+          // Farcaster-specific error handling
+          if (isFarcaster) {
+            if (response.status === 0 || !response.status) {
+              throw new Error('Network error in Farcaster. Please try again or refresh the page.')
+            } else if (response.status >= 500) {
+              throw new Error('Server error. Please try again in a few moments.')
+            } else {
+              throw new Error(`Trading error: ${errorString || 'Please try again'}`)
+            }
+          } else {
+            throw new Error(`1inch API error: ${response.status} - ${errorString || 'Unknown error'}`)
+          }
         }
       }
 
@@ -1112,7 +1211,10 @@ const TokenSwap = () => {
           <div className="card-header">
             <div className="card-icon">🔄</div>
             <h2 className="card-title">Token Swap</h2>
-            <p className="card-subtitle">Best prices from 80+ liquidity sources on Base network</p>
+            <p className="card-subtitle">
+              Best prices from 80+ liquidity sources on Base network
+              {isFarcaster && <span style={{ color: '#10b981', marginLeft: '8px' }}>• Farcaster Mode</span>}
+            </p>
           </div>
 
           <div className="swap-form">
@@ -1243,6 +1345,11 @@ const TokenSwap = () => {
                 <span className="balance-text">
                   Balance: {tokenBalances[buyToken] || '0.0000'} {[...tokens, ...customTokens].find(t => t.address === buyToken)?.symbol}
                 </span>
+                {isFarcaster && (
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                    Provider: {ethereumProvider ? '✅ Connected' : '❌ Not Found'}
+                  </div>
+                )}
               </div>
             </div>
 
