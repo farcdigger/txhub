@@ -312,7 +312,6 @@ const Home = () => {
         
         <div className="header-center">
           <h1 className="header-title">⚡ BaseHub</h1>
-          <p className="header-subtitle">Play games & earn XP</p>
         </div>
         
         <div className="header-right">
@@ -1041,11 +1040,6 @@ const styles = `
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   }
 
-  .header-subtitle {
-    font-size: 11px !important;
-    color: #6b7280 !important;
-    margin: 0 !important;
-  }
 
   .header-right {
     display: flex;
@@ -1220,10 +1214,6 @@ const styles = `
     
     .header-title {
       font-size: 14px !important;
-    }
-    
-    .header-subtitle {
-      font-size: 9px !important;
     }
     
     .home-button {
