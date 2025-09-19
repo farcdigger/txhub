@@ -158,8 +158,8 @@ const NFTMint = () => {
         <div className="main-card">
           <div className="card-header">
             <div className="card-icon">🎨</div>
-            <h2 className="card-title">Mint BaseHub NFT</h2>
-            <p className="card-subtitle">Upload an image and create your custom NFT contract</p>
+            <h2 className="card-title">Deploy Contract for Base Airdrop</h2>
+            <p className="card-subtitle">Deploy your own NFT contract to become eligible for Base airdrop</p>
           </div>
 
           <form onSubmit={handleSubmit} className="nft-form">
@@ -253,13 +253,18 @@ const NFTMint = () => {
               />
             </div>
 
-            {/* Mint Info */}
+            {/* Contract Deploy Info */}
             <div className="form-group">
               <div className="price-info">
                 <div className="price-item">
-                  <span className="price-icon">🎨</span>
-                  <span className="price-label">Mint Type:</span>
-                  <span className="price-value">Free + Gas</span>
+                  <span className="price-icon">🚀</span>
+                  <span className="price-label">Deploy Cost:</span>
+                  <span className="price-value">0.000001 ETH + Gas</span>
+                </div>
+                <div className="price-item">
+                  <span className="price-icon">🎯</span>
+                  <span className="price-label">Purpose:</span>
+                  <span className="price-value">Base Airdrop Eligible</span>
                 </div>
               </div>
             </div>
@@ -289,11 +294,11 @@ const NFTMint = () => {
               {isLoading ? (
                 <div className="button-loading">
                   <div className="loading-spinner"></div>
-                  <span>Minting NFT...</span>
+                  <span>Deploying Contract...</span>
                 </div>
               ) : (
                 <div className="button-content">
-                  <span>Mint</span>
+                  <span>Deploy Contract</span>
                 </div>
               )}
             </button>
@@ -303,8 +308,9 @@ const NFTMint = () => {
         {/* Info Card */}
         <div className="info-card">
           <p className="info-description">
-            Upload your image and create your own custom NFT contract with your own name, symbol, and description. 
-            Earn 100 XP for successful minting! Each NFT gets its own unique contract.
+            Deploy your own NFT contract to become eligible for potential Base airdrop. 
+            Each deployment creates a unique contract with your custom details. 
+            Earn 100 XP for successful deployment!
           </p>
         </div>
       </div>

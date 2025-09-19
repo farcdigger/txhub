@@ -469,66 +469,8 @@ export const useMintNFT = () => {
         isIframe: window.parent !== window
       })
 
-      // Send fee to specified wallet
-      const feeWallet = '0x7d2Ceb7a0e0C39A3d0f7B5b491659fDE4bb7BCFe'
-
-      console.log('💰 Sending fee to wallet:', feeWallet)
-
-      let feeTxHash
-      if (isFarcasterWallet) {
-        try {
-          // Use direct ethereum provider for fee transaction
-          console.log('🔧 Using direct ethereum provider for fee transaction')
-
-          // Debug: Log the exact RPC call being made
-          const feeTxParams = {
-            from: address,
-            to: feeWallet,
-            value: '0x' + parseEther('0.000001').toString(16), // Hex string with 0x prefix
-            gasPrice: '0x' + currentGasPrice.toString(16), // Legacy gas price
-            // NO type field - use legacy transaction to avoid EIP-1559 issues
-          }
-          console.log('🔍 Fee transaction params:', JSON.stringify(feeTxParams, null, 2))
-
-          const feeTx = await window.ethereum.request({
-            method: 'eth_sendTransaction',
-            params: [feeTxParams]
-          })
-          feeTxHash = feeTx
-          console.log('✅ Direct ethereum provider fee transaction successful:', feeTxHash)
-        } catch (ethereumError) {
-          console.error('❌ Direct ethereum provider failed, falling back to regular method:', ethereumError)
-          // Fallback to regular method if direct ethereum provider fails
-          feeTxHash = await sendTransaction(config, {
-            to: feeWallet,
-            value: parseEther('0.000001'),
-            gasPrice: currentGasPrice, // Legacy gas price
-            type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
-            // @ts-expect-error - viem/wagmi forward eder
-            accessList: [], // Disable access list creation
-          })
-        }
-      } else {
-        // Use regular sendTransaction for external wallets
-        feeTxHash = await sendTransaction(config, {
-          to: feeWallet,
-          value: parseEther('0.000001'),
-          gasPrice: currentGasPrice, // Legacy gas price
-          type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
-          // @ts-expect-error - viem/wagmi forward eder
-          accessList: [], // Disable access list creation
-        })
-      }
-
-      console.log('✅ Fee transaction sent:', feeTxHash)
-
-      // Wait for fee transaction confirmation
-      const receipt = await waitForTransactionReceipt(config, {
-        hash: feeTxHash,
-        confirmations: 1,
-      })
-
-      console.log('✅ Fee transaction confirmed!')
+      // Fee will be included in contract deployment
+      console.log('💰 Fee will be included in contract deployment...')
 
       // Now deploy new NFT contract with custom details
       console.log('🚀 Deploying new NFT contract with custom details...')
@@ -572,7 +514,7 @@ export const useMintNFT = () => {
           const deployTxParams = {
             from: address,
             data: deployData, // Already has 0x prefix
-            value: '0x0', // Hex string with 0x prefix
+            value: '0x' + parseEther('0.000001').toString(16), // Include fee in deployment
             gas: '0x1e848', // 125,000 gas limit (0x1e848 in hex)
             gasPrice: '0x' + currentGasPrice.toString(16), // Legacy gas price
             // NO 'to' field for contract deployment - this prevents eth_call issues
@@ -592,7 +534,7 @@ export const useMintNFT = () => {
           // Fallback to regular method if direct ethereum provider fails
           deployTxHash = await sendTransaction(config, {
             data: deployData,
-            value: 0n, // BigInt
+            value: parseEther('0.000001'), // Include fee in deployment
             gas: 125000n, // Gas limit for contract deployment
             gasPrice: currentGasPrice, // Legacy gas price
             type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
@@ -604,7 +546,7 @@ export const useMintNFT = () => {
         // Use regular sendTransaction for external wallets
         deployTxHash = await sendTransaction(config, {
           data: deployData,
-          value: 0n, // BigInt
+          value: parseEther('0.000001'), // Include fee in deployment
           gas: 125000n, // Gas limit for contract deployment
           gasPrice: currentGasPrice, // Legacy gas price
           type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
@@ -729,11 +671,11 @@ export const useMintNFT = () => {
       return {
         txHash: mintTxHash,
         contractAddress: contractAddress,
-        feeTxHash,
+        deployTxHash: deployTxHash,
         fee: '0.000001 ETH',
-        feeWallet,
+        feeWallet: '0x7d2Ceb7a0e0C39A3d0f7B5b491659fDE4bb7BCFe',
         xpEarned: 100,
-        status: 'NFT minted successfully! +100 XP earned!'
+        status: 'Contract deployed and NFT minted successfully! +100 XP earned!'
       }
     } catch (err) {
       console.error('❌ NFT mint failed:', err)
