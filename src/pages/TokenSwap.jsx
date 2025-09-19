@@ -16,6 +16,12 @@ async function getMiniAppProvider() {
     if (isFarcasterEnv) {
       console.log('🔍 Farcaster environment detected')
       
+      // In Farcaster, try to use the existing window.ethereum but with Farcaster-specific handling
+      if (window.ethereum) {
+        console.log('✅ Using window.ethereum in Farcaster environment')
+        return window.ethereum
+      }
+      
       // Try to access Farcaster SDK safely
       try {
         // Check window.farcaster first (most common)
@@ -32,23 +38,11 @@ async function getMiniAppProvider() {
           return provider
         }
         
-        // Check if we can access parent frame safely
-        try {
-          if (window.parent && window.parent !== window) {
-            if (window.parent.farcaster?.wallet?.getEthereumProvider) {
-              const provider = await window.parent.farcaster.wallet.getEthereumProvider()
-              console.log('✅ Farcaster SDK provider found (parent.farcaster):', !!provider)
-              return provider
-            }
-          }
-        } catch (parentError) {
-          console.log('Parent frame access blocked (expected in Farcaster):', parentError.message)
-        }
-        
         console.log('🔍 Farcaster environment detected but SDK not found')
         console.log('Available objects:', {
           window_farcaster: !!window.farcaster,
           window___farcaster: !!window.__farcaster,
+          window_ethereum: !!window.ethereum,
           userAgent: userAgent,
           referrer: document.referrer
         })
@@ -171,7 +165,20 @@ const TokenSwap = () => {
           // In Farcaster, user might have already connected via Wagmi
           if (isFarcasterEnv) {
             console.log('🔍 Farcaster environment - checking Wagmi connection...')
-            // Don't fail, let Wagmi handle the connection
+            
+            // Try to get accounts without requesting
+            try {
+              const accounts = await provider.request({ method: 'eth_accounts' })
+              if (accounts && accounts.length > 0) {
+                console.log('✅ Found existing accounts in Farcaster:', accounts)
+              } else {
+                console.log('🔍 Farcaster: No accounts found, but continuing...')
+                // Don't fail in Farcaster, let Wagmi handle it
+              }
+            } catch (accountsError) {
+              console.log('🔍 Farcaster: eth_accounts failed:', accountsError.message)
+              // Don't fail in Farcaster, let Wagmi handle it
+            }
           } else {
             // Don't fail completely, just warn
             console.warn('eth_requestAccounts failed, continuing anyway...')
@@ -328,10 +335,28 @@ const TokenSwap = () => {
             chainId: currentChainId
           })
           
-          const ethBalanceHex = await ethereumProvider.request({
-            method: 'eth_getBalance',
-            params: [address, 'latest']
-          })
+          // In Farcaster, be more careful with provider requests
+          let ethBalanceHex
+          try {
+            ethBalanceHex = await ethereumProvider.request({
+              method: 'eth_getBalance',
+              params: [address, 'latest']
+            })
+          } catch (requestError) {
+            console.log('🔍 Farcaster: eth_getBalance request failed:', requestError.message)
+            
+            // Try with different block parameter
+            try {
+              ethBalanceHex = await ethereumProvider.request({
+                method: 'eth_getBalance',
+                params: [address, 'pending']
+              })
+              console.log('✅ Farcaster: Got balance with pending block')
+            } catch (pendingError) {
+              console.log('🔍 Farcaster: pending block also failed:', pendingError.message)
+              throw requestError // Use original error
+            }
+          }
           
           // Use BigInt for proper calculation
           const ethBalanceWei = BigInt(ethBalanceHex)
