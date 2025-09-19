@@ -293,15 +293,15 @@ const Home = () => {
             style={{
               background: 'rgba(59, 130, 246, 0.1)',
               border: '1px solid rgba(59, 130, 246, 0.2)',
-              borderRadius: '8px',
-              padding: '8px 12px',
+              borderRadius: '6px',
+              padding: '4px 8px',
               color: '#1f2937',
-              fontSize: '14px',
+              fontSize: '11px',
               fontWeight: '600',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
               transition: 'all 0.2s ease'
             }}
           >
@@ -322,16 +322,16 @@ const Home = () => {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '4px',
                 background: 'rgba(251, 191, 36, 0.15)',
-                padding: '6px 12px',
-                borderRadius: '20px',
+                padding: '4px 8px',
+                borderRadius: '12px',
                 border: '1px solid rgba(251, 191, 36, 0.3)'
               }}>
-                <span style={{ fontSize: '16px' }}>⚡</span>
+                <span style={{ fontSize: '12px' }}>⚡</span>
                 <span style={{
                   color: '#1f2937',
-                  fontSize: '14px',
+                  fontSize: '11px',
                   fontWeight: '600'
                 }}>{userXP}</span>
               </div>
@@ -340,16 +340,16 @@ const Home = () => {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '4px',
                 background: 'rgba(59, 130, 246, 0.15)',
-                padding: '6px 12px',
-                borderRadius: '20px',
+                padding: '4px 8px',
+                borderRadius: '12px',
                 border: '1px solid rgba(59, 130, 246, 0.3)'
               }}>
-                <span style={{ fontSize: '16px' }}>🪙</span>
+                <span style={{ fontSize: '12px' }}>🪙</span>
                 <span style={{
                   color: '#1f2937',
-                  fontSize: '14px',
+                  fontSize: '11px',
                   fontWeight: '600'
                 }}>{bhubTokens}</span>
               </div>
@@ -358,10 +358,10 @@ const Home = () => {
               <button style={{
                 background: 'rgba(156, 163, 175, 0.3)',
                 border: '1px solid rgba(156, 163, 175, 0.3)',
-                borderRadius: '20px',
-                padding: '6px 16px',
+                borderRadius: '12px',
+                padding: '4px 8px',
                 color: '#6b7280',
-                fontSize: '12px',
+                fontSize: '10px',
                 fontWeight: '600',
                 cursor: 'not-allowed',
                 opacity: 0.8
@@ -373,15 +373,15 @@ const Home = () => {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '4px',
                 background: 'rgba(59, 130, 246, 0.1)',
-                padding: '6px 12px',
-                borderRadius: '20px',
+                padding: '4px 8px',
+                borderRadius: '12px',
                 border: '1px solid rgba(59, 130, 246, 0.2)'
               }}>
                 <span style={{
                   color: '#1f2937',
-                  fontSize: '12px',
+                  fontSize: '10px',
                   fontWeight: '600'
                 }}>{formatAddress(address)}</span>
                 <button
@@ -391,7 +391,7 @@ const Home = () => {
                     border: 'none',
                     color: '#6b7280',
                     cursor: 'pointer',
-                    fontSize: '14px'
+                    fontSize: '12px'
                   }}
                 >
                   ×
@@ -1009,7 +1009,7 @@ const styles = `
     left: 0 !important;
     right: 0 !important;
     z-index: 9999 !important;
-    padding: 16px 20px !important;
+    padding: 8px 12px !important;
     background: #ffffff !important;
     backdrop-filter: blur(20px) !important;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
@@ -1025,7 +1025,7 @@ const styles = `
   .header-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
   }
 
   .header-center {
@@ -1034,7 +1034,7 @@ const styles = `
   }
 
   .header-title {
-    font-size: 24px !important;
+    font-size: 18px !important;
     font-weight: 700 !important;
     color: #1f2937 !important;
     margin: 0 0 2px 0 !important;
@@ -1042,7 +1042,7 @@ const styles = `
   }
 
   .header-subtitle {
-    font-size: 14px !important;
+    font-size: 11px !important;
     color: #6b7280 !important;
     margin: 0 !important;
   }
@@ -1050,14 +1050,14 @@ const styles = `
   .header-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
   }
 
   .user-section {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 4px;
+    flex-wrap: nowrap;
   }
 
 
@@ -1186,9 +1186,9 @@ const styles = `
     
     .header-section {
       flex-direction: row !important;
-      gap: 8px !important;
-      padding: 8px 12px !important;
-      flex-wrap: wrap;
+      gap: 4px !important;
+      padding: 6px 8px !important;
+      flex-wrap: nowrap;
     }
     
     .header-left {
@@ -1219,16 +1219,16 @@ const styles = `
     }
     
     .header-title {
-      font-size: 16px !important;
+      font-size: 14px !important;
     }
     
     .header-subtitle {
-      font-size: 10px !important;
+      font-size: 9px !important;
     }
     
     .home-button {
-      padding: 6px 8px !important;
-      font-size: 12px !important;
+      padding: 3px 6px !important;
+      font-size: 10px !important;
     }
     
     .xp-token-info {
@@ -1236,7 +1236,7 @@ const styles = `
     }
     
     .user-section {
-      gap: 8px !important;
+      gap: 2px !important;
     }
     
     .games-grid {
