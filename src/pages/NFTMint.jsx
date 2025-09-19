@@ -133,9 +133,9 @@ const NFTMint = () => {
         {/* Main Card */}
         <div className="main-card">
           <div className="card-header">
-            <div className="card-icon">✨</div>
-            <h2 className="card-title">Create Your NFT</h2>
-            <p className="card-subtitle">Upload an image and mint your unique NFT on Base network</p>
+            <div className="card-icon">🎨</div>
+            <h2 className="card-title">Mint BaseHub NFT</h2>
+            <p className="card-subtitle">Upload an image and mint your BaseHub NFT for 0.0001 ETH</p>
           </div>
 
           <form onSubmit={handleSubmit} className="nft-form">
@@ -180,23 +180,28 @@ const NFTMint = () => {
               </div>
             </div>
 
-            {/* Auto-generated info */}
+            {/* NFT Contract Info */}
             <div className="form-group">
               <div className="auto-info">
                 <div className="info-item">
                   <span className="info-icon">🏷️</span>
                   <span className="info-label">Name:</span>
-                  <span className="info-value">Auto-generated</span>
+                  <span className="info-value">BaseHub</span>
                 </div>
                 <div className="info-item">
                   <span className="info-icon">🔤</span>
                   <span className="info-label">Symbol:</span>
-                  <span className="info-value">Auto-generated</span>
+                  <span className="info-value">BHUB</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-icon">💰</span>
+                  <span className="info-label">Mint Price:</span>
+                  <span className="info-value">0.0001 ETH</span>
                 </div>
                 <div className="info-item">
                   <span className="info-icon">📝</span>
                   <span className="info-label">Description:</span>
-                  <span className="info-value">TXHub NFT</span>
+                  <span className="info-value">BaseHub NFT Collection</span>
                 </div>
               </div>
             </div>
@@ -220,7 +225,7 @@ const NFTMint = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || !formData.name || !formData.symbol || !formData.image}
+              disabled={isLoading || !formData.image}
               className="mint-button"
             >
               {isLoading ? (
@@ -240,8 +245,8 @@ const NFTMint = () => {
         {/* Info Card */}
         <div className="info-card">
           <p className="info-description">
-            Upload your image, fill in the details, and mint your unique NFT on Base network. 
-            Earn 100 XP for successful minting!
+            Upload your image and mint your BaseHub NFT for just 0.0001 ETH. 
+            Earn 100 XP for successful minting! Your NFT will be part of the BaseHub collection.
           </p>
         </div>
       </div>
@@ -804,10 +809,10 @@ const styles = `
   }
 
   .auto-info {
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     border-radius: 12px;
     padding: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #cbd5e1;
   }
 
   .info-item {
@@ -830,13 +835,13 @@ const styles = `
 
   .info-label {
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: #374151;
     min-width: 80px;
   }
 
   .info-value {
-    color: rgba(255, 255, 255, 0.7);
-    font-style: italic;
+    color: #6b7280;
+    font-weight: 500;
   }
 `
 
