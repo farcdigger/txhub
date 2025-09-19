@@ -1515,46 +1515,6 @@ const TokenSwap = () => {
               Best prices from 80+ liquidity sources on Base network
               {isFarcaster && <span style={{ color: '#10b981', marginLeft: '8px' }}>• Farcaster Mode</span>}
             </p>
-            {isFarcaster && (
-              <div style={{ 
-              background: 'rgba(59, 130, 246, 0.1)',
-              border: '1px solid rgba(59, 130, 246, 0.2)',
-              borderRadius: '8px',
-                padding: '12px', 
-                marginTop: '12px',
-              fontSize: '14px',
-                color: '#1f2937'
-              }}>
-                <div style={{ fontWeight: '600', marginBottom: '4px' }}>🔧 Farcaster Wallet Setup:</div>
-                <div>1. Make sure your Farcaster wallet is connected to Base network</div>
-                <div>2. If balance shows 0, try switching networks in your wallet</div>
-                <div>3. Some Farcaster wallets may have limited Base support</div>
-                {currentChainId && currentChainId !== '0x2105' && (
-                  <div style={{ 
-                    marginTop: '8px', 
-                    padding: '8px', 
-                    background: 'rgba(245, 158, 11, 0.1)', 
-                    borderRadius: '4px',
-                    border: '1px solid rgba(245, 158, 11, 0.2)'
-                  }}>
-                    <div style={{ fontWeight: '600', color: '#d97706' }}>⚠️ Network Info:</div>
-                    <div style={{ fontSize: '12px', color: '#92400e' }}>
-                      You're on {currentChainId === '0x1' ? 'Ethereum Mainnet' : `Chain ${parseInt(currentChainId, 16)}`}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#92400e' }}>
-                      For best experience, manually switch to Base network in your wallet
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#a16207', marginTop: '4px' }}>
-                      💡 In Farcaster, you need to switch networks manually in your wallet settings
-                    </div>
-                  </div>
-                )}
-                <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px' }}>
-                  <div style={{ fontWeight: '600', color: '#10b981' }}>✨ Batch Transactions:</div>
-                  <div style={{ fontSize: '12px' }}>Approve + Swap in one transaction for better UX</div>
-              </div>
-              </div>
-            )}
           </div>
 
           <div className="swap-form">
@@ -1639,16 +1599,6 @@ const TokenSwap = () => {
                 >
                   Max
                 </button>
-                {isFarcaster && (
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                    <div>Provider: {ethereumProvider ? '✅ Connected' : '❌ Not Found'}</div>
-                    <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
-                    <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
-                    <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
-                    <div>SDK: {(window.farcaster?.wallet?.getEthereumProvider || window.__farcaster?.wallet?.getEthereumProvider) ? '✅ Available' : '❌ Not Found'}</div>
-                    <div>Batch: {sendCalls ? '✅ Supported' : '❌ Not Available'}</div>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -1695,16 +1645,6 @@ const TokenSwap = () => {
                 <span className="balance-text">
                   Balance: {tokenBalances[buyToken] || '0.0000'} {[...tokens, ...customTokens].find(t => t.address === buyToken)?.symbol}
                 </span>
-                {isFarcaster && (
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                    <div>Provider: {ethereumProvider ? '✅ Connected' : '❌ Not Found'}</div>
-                    <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
-                    <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
-                    <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
-                    <div>SDK: {(window.farcaster?.wallet?.getEthereumProvider || window.__farcaster?.wallet?.getEthereumProvider) ? '✅ Available' : '❌ Not Found'}</div>
-                    <div>Batch: {sendCalls ? '✅ Supported' : '❌ Not Available'}</div>
-                  </div>
-                )}
               </div>
             </div>
 
