@@ -432,6 +432,43 @@ export const useMintNFT = () => {
   const [error, setError] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
 
+  // Calculate dynamic fee based on network
+  const calculateNetworkFee = async () => {
+    try {
+      // Get current gas price
+      const gasPriceResponse = await fetch('https://mainnet.base.org', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_gasPrice',
+          params: [],
+          id: 1
+        })
+      })
+      
+      const gasPriceData = await gasPriceResponse.json()
+      const gasPrice = BigInt(gasPriceData.result)
+      
+      // Calculate fee based on gas price (0.1% of gas price per gwei)
+      const feeInWei = (gasPrice * BigInt(100000)) / BigInt(1000000000) // 0.1 gwei worth
+      const feeInEth = Number(feeInWei) / 1e18
+      
+      // Minimum fee of 0.000001 ETH, maximum of 0.001 ETH
+      const minFee = 0.000001
+      const maxFee = 0.001
+      const dynamicFee = Math.max(minFee, Math.min(maxFee, feeInEth))
+      
+      console.log('🔍 Gas price:', gasPrice.toString(), 'wei')
+      console.log('🔍 Calculated fee:', dynamicFee, 'ETH')
+      
+      return dynamicFee
+    } catch (error) {
+      console.warn('⚠️ Failed to calculate dynamic fee, using default:', error.message)
+      return 0.000001 // Default fee
+    }
+  }
+
   const mintNFT = async (imageFile, name, symbol, description) => {
     if (!address) {
       throw new Error('Wallet not connected')
@@ -469,8 +506,9 @@ export const useMintNFT = () => {
         isIframe: window.parent !== window
       })
 
-      // Fee will be included in contract deployment
-      console.log('💰 Fee will be included in contract deployment...')
+      // Calculate dynamic fee based on network
+      const networkFee = await calculateNetworkFee()
+      console.log('💰 Dynamic fee calculated:', networkFee, 'ETH')
 
       // Now deploy new NFT contract with custom details
       console.log('🚀 Deploying new NFT contract with custom details...')
@@ -510,12 +548,25 @@ export const useMintNFT = () => {
           // Use direct ethereum provider for contract deployment with proper EIP-1193 format
           console.log('🔧 Using direct ethereum provider for contract deployment')
 
+          // Estimate gas for contract deployment
+          const gasEstimate = await window.ethereum.request({
+            method: 'eth_estimateGas',
+            params: [{
+              from: address,
+              data: deployData,
+              value: '0x' + parseEther(networkFee.toString()).toString(16)
+            }]
+          })
+          
+          // Add 20% buffer to gas estimate
+          const gasWithBuffer = BigInt(gasEstimate) * BigInt(120) / BigInt(100)
+          
           // Debug: Log the exact RPC call being made
           const deployTxParams = {
             from: address,
             data: deployData, // Already has 0x prefix
-            value: '0x' + parseEther('0.000001').toString(16), // Include fee in deployment
-            gas: '0x1e848', // 125,000 gas limit (0x1e848 in hex)
+            value: '0x' + parseEther(networkFee.toString()).toString(16), // Dynamic fee
+            gas: '0x' + gasWithBuffer.toString(16), // Dynamic gas with buffer
             gasPrice: '0x' + currentGasPrice.toString(16), // Legacy gas price
             // NO 'to' field for contract deployment - this prevents eth_call issues
             // NO type field - use legacy transaction to avoid EIP-1559 issues
@@ -532,10 +583,21 @@ export const useMintNFT = () => {
         } catch (ethereumError) {
           console.error('❌ Direct ethereum provider failed, falling back to regular method:', ethereumError)
           // Fallback to regular method if direct ethereum provider fails
+          // Estimate gas for fallback
+          const fallbackGasEstimate = await window.ethereum.request({
+            method: 'eth_estimateGas',
+            params: [{
+              from: address,
+              data: deployData,
+              value: '0x' + parseEther(networkFee.toString()).toString(16)
+            }]
+          })
+          const fallbackGasWithBuffer = BigInt(fallbackGasEstimate) * BigInt(120) / BigInt(100)
+          
           deployTxHash = await sendTransaction(config, {
             data: deployData,
-            value: parseEther('0.000001'), // Include fee in deployment
-            gas: 125000n, // Gas limit for contract deployment
+            value: parseEther(networkFee.toString()), // Dynamic fee
+            gas: fallbackGasWithBuffer, // Dynamic gas with buffer
             gasPrice: currentGasPrice, // Legacy gas price
             type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
             // @ts-expect-error - viem/wagmi forward eder
@@ -544,10 +606,21 @@ export const useMintNFT = () => {
         }
       } else {
         // Use regular sendTransaction for external wallets
+        // Estimate gas for external wallets
+        const externalGasEstimate = await window.ethereum.request({
+          method: 'eth_estimateGas',
+          params: [{
+            from: address,
+            data: deployData,
+            value: '0x' + parseEther(networkFee.toString()).toString(16)
+          }]
+        })
+        const externalGasWithBuffer = BigInt(externalGasEstimate) * BigInt(120) / BigInt(100)
+        
         deployTxHash = await sendTransaction(config, {
           data: deployData,
-          value: parseEther('0.000001'), // Include fee in deployment
-          gas: 125000n, // Gas limit for contract deployment
+          value: parseEther(networkFee.toString()), // Dynamic fee
+          gas: externalGasWithBuffer, // Dynamic gas with buffer
           gasPrice: currentGasPrice, // Legacy gas price
           type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
           // @ts-expect-error - viem/wagmi forward eder
@@ -672,7 +745,7 @@ export const useMintNFT = () => {
         txHash: mintTxHash,
         contractAddress: contractAddress,
         deployTxHash: deployTxHash,
-        fee: '0.000001 ETH',
+        fee: `${networkFee} ETH`,
         feeWallet: '0x7d2Ceb7a0e0C39A3d0f7B5b491659fDE4bb7BCFe',
         xpEarned: 100,
         status: 'Contract deployed and NFT minted successfully! +100 XP earned!'

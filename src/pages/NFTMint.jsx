@@ -259,7 +259,7 @@ const NFTMint = () => {
                 <div className="price-item">
                   <span className="price-icon">🚀</span>
                   <span className="price-label">Deploy Cost:</span>
-                  <span className="price-value">0.000001 ETH + Gas</span>
+                  <span className="price-value">Dynamic Fee + Gas</span>
                 </div>
                 <div className="price-item">
                   <span className="price-icon">🎯</span>
