@@ -76,21 +76,12 @@ const NFTMint = () => {
   }, [isConnected, address])
   
   const [formData, setFormData] = useState({
-    name: '',
-    symbol: '',
-    description: '',
     image: null,
     imagePreview: null
   })
 
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
+  // Remove handleInputChange since we don't need text inputs anymore
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0]
@@ -122,13 +113,13 @@ const NFTMint = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.name || !formData.symbol || !formData.image) {
-      alert('Please fill in all required fields')
+    if (!formData.image) {
+      alert('Please upload an image')
       return
     }
 
     try {
-      await mintNFT(formData.name, formData.symbol, formData.description, formData.image)
+      await mintNFT(formData.image)
     } catch (err) {
       console.error('NFT mint failed:', err)
     }
@@ -189,57 +180,25 @@ const NFTMint = () => {
               </div>
             </div>
 
-            {/* NFT Name */}
+            {/* Auto-generated info */}
             <div className="form-group">
-              <label className="form-label">
-                <span className="label-icon">🏷️</span>
-                NFT Name *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Enter NFT name"
-                maxLength={50}
-                className="form-input"
-                required
-              />
-            </div>
-
-            {/* NFT Symbol */}
-            <div className="form-group">
-              <label className="form-label">
-                <span className="label-icon">🔤</span>
-                NFT Symbol *
-              </label>
-              <input
-                type="text"
-                name="symbol"
-                value={formData.symbol}
-                onChange={handleInputChange}
-                placeholder="Enter NFT symbol (e.g., MYNFT)"
-                maxLength={10}
-                className="form-input"
-                required
-              />
-            </div>
-
-            {/* Description */}
-            <div className="form-group">
-              <label className="form-label">
-                <span className="label-icon">📝</span>
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Describe your NFT (optional)"
-                maxLength={200}
-                rows={3}
-                className="form-textarea"
-              />
+              <div className="auto-info">
+                <div className="info-item">
+                  <span className="info-icon">🏷️</span>
+                  <span className="info-label">Name:</span>
+                  <span className="info-value">Auto-generated</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-icon">🔤</span>
+                  <span className="info-label">Symbol:</span>
+                  <span className="info-value">Auto-generated</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-icon">📝</span>
+                  <span className="info-label">Description:</span>
+                  <span className="info-value">TXHub NFT</span>
+                </div>
+              </div>
             </div>
 
             {/* Error Message */}
@@ -842,6 +801,42 @@ const styles = `
     .wallet-section {
       gap: 8px;
     }
+  }
+
+  .auto-info {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 8px 0;
+  }
+
+  .info-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .info-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+  }
+
+  .info-label {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    min-width: 80px;
+  }
+
+  .info-value {
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
   }
 `
 

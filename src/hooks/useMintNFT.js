@@ -389,7 +389,7 @@ export const useMintNFT = () => {
   const [error, setError] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
 
-  const mintNFT = async (name, symbol, description, imageFile) => {
+  const mintNFT = async (imageFile) => {
     if (!address) {
       throw new Error('Wallet not connected')
     }
@@ -490,21 +490,23 @@ export const useMintNFT = () => {
       // Now deploy our own NFT contract
       console.log('🚀 Deploying our own NFT contract...')
 
-      // Limit string lengths for Farcaster compatibility
-      const shortName = name.substring(0, 20) // Limit to 20 chars
-      const shortSymbol = symbol.substring(0, 10) // Limit to 10 chars
+      // Auto-generate name and symbol
+      const timestamp = Date.now()
+      const shortName = `TXHub NFT #${timestamp.toString().slice(-6)}`
+      const shortSymbol = `TXH${timestamp.toString().slice(-3)}`
 
-      console.log('📝 Using shortened parameters:', { shortName, shortSymbol })
+      console.log('📝 Auto-generated parameters:', { shortName, shortSymbol })
 
       // Create base URI for metadata - we'll use a simple JSON metadata
       const baseURI = `data:application/json;base64,${btoa(JSON.stringify({
         name: shortName,
         symbol: shortSymbol,
-        description: description,
-        image: imageFile ? `data:image/png;base64,${imageFile}` : "https://via.placeholder.com/300x300/667eea/ffffff?text=NFT",
+        description: "NFT created on TXHub - Base Network",
+        image: imageFile ? `data:image/png;base64,${imageFile}` : "https://via.placeholder.com/300x300/667eea/ffffff?text=TXHub+NFT",
         attributes: [
           { trait_type: "Creator", value: "TXHub" },
-          { trait_type: "Network", value: "Base" }
+          { trait_type: "Network", value: "Base" },
+          { trait_type: "Created", value: new Date().toISOString() }
         ]
       }))}`
 
