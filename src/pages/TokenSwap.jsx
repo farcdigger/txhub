@@ -73,7 +73,16 @@ const TokenSwap = () => {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [tokenBalances, setTokenBalances] = useState({})
-  const [customTokens, setCustomTokens] = useState([])
+  // Custom token state with localStorage persistence
+  const [customTokens, setCustomTokens] = useState(() => {
+    try {
+      const saved = localStorage.getItem('basehub-custom-tokens')
+      return saved ? JSON.parse(saved) : []
+    } catch (error) {
+      console.error('Error loading custom tokens from localStorage:', error)
+      return []
+    }
+  })
   const [showAddToken, setShowAddToken] = useState(false)
   const [newTokenAddress, setNewTokenAddress] = useState('')
   const [newTokenSymbol, setNewTokenSymbol] = useState('')
@@ -551,6 +560,22 @@ const TokenSwap = () => {
   }
 
   // Add custom token
+  // Remove custom token
+  const removeCustomToken = (tokenAddress) => {
+    const updatedTokens = customTokens.filter(token => token.address !== tokenAddress)
+    setCustomTokens(updatedTokens)
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem('basehub-custom-tokens', JSON.stringify(updatedTokens))
+      console.log('Custom token removed from localStorage:', tokenAddress)
+      setSuccessMessage('✅ Custom token removed successfully!')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      console.error('Error saving custom tokens to localStorage:', error)
+    }
+  }
+
   const addCustomToken = async () => {
     if (!newTokenAddress) {
       setError('Please enter token contract address')
@@ -588,7 +613,17 @@ const TokenSwap = () => {
         isCustom: true
       }
 
-      setCustomTokens(prev => [...prev, newToken])
+      const updatedTokens = [...customTokens, newToken]
+      setCustomTokens(updatedTokens)
+      
+      // Save to localStorage
+      try {
+        localStorage.setItem('basehub-custom-tokens', JSON.stringify(updatedTokens))
+        console.log('Custom tokens saved to localStorage:', updatedTokens)
+      } catch (error) {
+        console.error('Error saving custom tokens to localStorage:', error)
+      }
+      
       setShowAddToken(false)
       setNewTokenAddress('')
       setNewTokenSymbol('')
@@ -1362,6 +1397,62 @@ const TokenSwap = () => {
                     <span>Ready to swap</span>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Custom Tokens List */}
+            {customTokens.length > 0 && (
+              <div style={{
+                background: 'rgba(51, 65, 85, 0.3)',
+                borderRadius: '16px',
+                padding: '16px',
+                marginBottom: '16px',
+                border: '1px solid rgba(71, 85, 105, 0.3)'
+              }}>
+                <h4 style={{ color: '#ffffff', marginBottom: '12px', fontSize: '16px' }}>
+                  🪙 Your Custom Tokens ({customTokens.length})
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {customTokens.map((token) => (
+                    <div key={token.address} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: 'rgba(71, 85, 105, 0.2)',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      border: '1px solid rgba(100, 116, 139, 0.2)'
+                    }}>
+                      <div>
+                        <span style={{ color: '#ffffff', fontWeight: '600' }}>{token.symbol}</span>
+                        <span style={{ color: '#94a3b8', fontSize: '12px', marginLeft: '8px' }}>
+                          {token.name}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => removeCustomToken(token.address)}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.2)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          borderRadius: '6px',
+                          padding: '4px 8px',
+                          color: '#fca5a5',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.background = 'rgba(239, 68, 68, 0.3)'
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.background = 'rgba(239, 68, 68, 0.2)'
+                        }}
+                      >
+                        🗑️ Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
