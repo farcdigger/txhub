@@ -13,6 +13,7 @@ const TokenSwap = () => {
   // Farcaster detection
   const [isFarcaster, setIsFarcaster] = useState(false)
   const [ethereumProvider, setEthereumProvider] = useState(null)
+  const [currentChainId, setCurrentChainId] = useState(null)
   
   // 1inch API Configuration
   const INCH_API_KEY = 'HWcp63JDwcGFuSoQOt0figfwVW8a2tmU'
@@ -74,10 +75,18 @@ const TokenSwap = () => {
         try {
           const chainId = await provider.request({ method: 'eth_chainId' })
           console.log('Current chain ID:', chainId)
+          setCurrentChainId(chainId)
           
           // Base network chain ID is 0x2105 (8453 in decimal)
           if (chainId !== '0x2105') {
             console.log('Switching to Base network...')
+            console.warn('⚠️ Farcaster wallet is not on Base network! Current:', chainId, 'Expected: 0x2105')
+            
+            // Show user-friendly message
+            if (typeof window !== 'undefined') {
+              console.warn('🔧 Please switch to Base network in your Farcaster wallet to use this app')
+            }
+            
             try {
               await provider.request({
                 method: 'wallet_switchEthereumChain',
@@ -105,8 +114,11 @@ const TokenSwap = () => {
                 console.log('Successfully added Base network')
               } catch (addError) {
                 console.error('Failed to add Base network:', addError)
+                console.warn('🚨 Farcaster wallet may not support Base network switching')
               }
             }
+          } else {
+            console.log('✅ Already on Base network')
           }
         } catch (error) {
           console.error('Error checking chain ID:', error)
@@ -185,6 +197,7 @@ const TokenSwap = () => {
           try {
             const chainId = await provider.request({ method: 'eth_chainId' })
             console.log('Current chain ID for balance check:', chainId)
+            setCurrentChainId(chainId)
             
             if (chainId !== '0x2105') {
               console.warn('Not on Base network! Current chain:', chainId, 'Expected: 0x2105')
@@ -265,11 +278,17 @@ const TokenSwap = () => {
                   }, 'latest']
                 })
               
-                // Use BigInt to handle large numbers properly
-                const rawBalance = BigInt(balanceResponse)
-                const balance = Number(rawBalance) / Math.pow(10, token.decimals)
-                balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
-                console.log(`${token.symbol} balance:`, balances[token.address])
+                // Handle empty or invalid response
+                if (!balanceResponse || balanceResponse === '0x' || balanceResponse === '0x0') {
+                  balances[token.address] = '0.000000'
+                  console.log(`${token.symbol} balance: 0.000000 (empty response)`)
+                } else {
+                  // Use BigInt to handle large numbers properly
+                  const rawBalance = BigInt(balanceResponse)
+                  const balance = Number(rawBalance) / Math.pow(10, token.decimals)
+                  balances[token.address] = isNaN(balance) ? '0.000000' : balance.toFixed(6)
+                  console.log(`${token.symbol} balance:`, balances[token.address])
+                }
               } else {
                 console.warn(`No provider for ${token.symbol} balance`)
                 balances[token.address] = '0.000000'
@@ -1289,6 +1308,22 @@ const TokenSwap = () => {
               Best prices from 80+ liquidity sources on Base network
               {isFarcaster && <span style={{ color: '#10b981', marginLeft: '8px' }}>• Farcaster Mode</span>}
             </p>
+            {isFarcaster && (
+              <div style={{ 
+                background: 'rgba(59, 130, 246, 0.1)', 
+                border: '1px solid rgba(59, 130, 246, 0.2)', 
+                borderRadius: '8px', 
+                padding: '12px', 
+                marginTop: '12px',
+                fontSize: '14px',
+                color: '#1f2937'
+              }}>
+                <div style={{ fontWeight: '600', marginBottom: '4px' }}>🔧 Farcaster Wallet Setup:</div>
+                <div>1. Make sure your Farcaster wallet is connected to Base network</div>
+                <div>2. If balance shows 0, try switching networks in your wallet</div>
+                <div>3. Some Farcaster wallets may have limited Base support</div>
+              </div>
+            )}
           </div>
 
           <div className="swap-form">
@@ -1378,6 +1413,7 @@ const TokenSwap = () => {
                     <div>Provider: {ethereumProvider ? '✅ Connected' : '❌ Not Found'}</div>
                     <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
                     <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
+                    <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
                   </div>
                 )}
               </div>
@@ -1431,6 +1467,7 @@ const TokenSwap = () => {
                     <div>Provider: {ethereumProvider ? '✅ Connected' : '❌ Not Found'}</div>
                     <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
                     <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
+                    <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
                   </div>
                 )}
               </div>
