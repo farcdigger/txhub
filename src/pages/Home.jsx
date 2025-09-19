@@ -311,7 +311,6 @@ const Home = () => {
         </div>
         
         <div className="header-center">
-          <h1 className="header-title">⚡ BaseHub</h1>
         </div>
         
         <div className="header-right">
