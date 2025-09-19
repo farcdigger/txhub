@@ -159,7 +159,7 @@ const NFTMint = () => {
           <div className="card-header">
             <div className="card-icon">🎨</div>
             <h2 className="card-title">Mint BaseHub NFT</h2>
-            <p className="card-subtitle">Upload an image and mint your BaseHub NFT for 0.0001 ETH</p>
+            <p className="card-subtitle">Upload an image and create your custom NFT contract</p>
           </div>
 
           <form onSubmit={handleSubmit} className="nft-form">
@@ -253,13 +253,13 @@ const NFTMint = () => {
               />
             </div>
 
-            {/* Mint Price Info */}
+            {/* Mint Info */}
             <div className="form-group">
               <div className="price-info">
                 <div className="price-item">
-                  <span className="price-icon">💰</span>
-                  <span className="price-label">Mint Price:</span>
-                  <span className="price-value">0.0001 ETH</span>
+                  <span className="price-icon">🎨</span>
+                  <span className="price-label">Mint Type:</span>
+                  <span className="price-value">Free + Gas</span>
                 </div>
               </div>
             </div>
@@ -303,8 +303,8 @@ const NFTMint = () => {
         {/* Info Card */}
         <div className="info-card">
           <p className="info-description">
-            Upload your image and mint your BaseHub NFT for just 0.0001 ETH. 
-            Earn 100 XP for successful minting! Your NFT will be part of the BaseHub collection.
+            Upload your image and create your own custom NFT contract with your own name, symbol, and description. 
+            Earn 100 XP for successful minting! Each NFT gets its own unique contract.
           </p>
         </div>
       </div>
