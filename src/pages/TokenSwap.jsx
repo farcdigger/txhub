@@ -45,7 +45,7 @@ const TokenSwap = () => {
 
   // Detect Farcaster and setup Ethereum provider
   useEffect(() => {
-    const detectEnvironment = () => {
+    const detectEnvironment = async () => {
       // Check if we're in Farcaster webview
       const userAgent = navigator.userAgent || ''
       const isFarcasterEnv = userAgent.includes('Farcaster') || 
@@ -68,6 +68,50 @@ const TokenSwap = () => {
       
       setEthereumProvider(provider)
       console.log('Ethereum provider found:', !!provider)
+      
+      // Check and switch to Base network if needed
+      if (provider && isFarcasterEnv) {
+        try {
+          const chainId = await provider.request({ method: 'eth_chainId' })
+          console.log('Current chain ID:', chainId)
+          
+          // Base network chain ID is 0x2105 (8453 in decimal)
+          if (chainId !== '0x2105') {
+            console.log('Switching to Base network...')
+            try {
+              await provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x2105' }]
+              })
+              console.log('Successfully switched to Base network')
+            } catch (switchError) {
+              console.log('Failed to switch to Base network:', switchError)
+              // Try to add Base network if it doesn't exist
+              try {
+                await provider.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x2105',
+                    chainName: 'Base',
+                    nativeCurrency: {
+                      name: 'Ethereum',
+                      symbol: 'ETH',
+                      decimals: 18
+                    },
+                    rpcUrls: ['https://mainnet.base.org'],
+                    blockExplorerUrls: ['https://basescan.org']
+                  }]
+                })
+                console.log('Successfully added Base network')
+              } catch (addError) {
+                console.error('Failed to add Base network:', addError)
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error checking chain ID:', error)
+        }
+      }
     }
 
     detectEnvironment()
@@ -135,15 +179,48 @@ const TokenSwap = () => {
         // Load ETH balance with Farcaster-compatible provider
         const provider = ethereumProvider || window.ethereum
         if (provider) {
-          console.log('Loading ETH balance with provider:', !!provider)
+          console.log('Loading ETH balance with provider:', !!provider, 'Address:', address)
           
+          // Check current chain first
           try {
-            const ethBalance = await provider.request({
-              method: 'eth_getBalance',
-              params: [address, 'latest']
-            })
+            const chainId = await provider.request({ method: 'eth_chainId' })
+            console.log('Current chain ID for balance check:', chainId)
+            
+            if (chainId !== '0x2105') {
+              console.warn('Not on Base network! Current chain:', chainId, 'Expected: 0x2105')
+            }
+          } catch (chainError) {
+            console.error('Error checking chain ID:', chainError)
+          }
+          
+          // Retry mechanism for ETH balance
+          let ethBalance = null
+          let retryCount = 0
+          const maxRetries = isFarcaster ? 3 : 1
+          
+          while (retryCount <= maxRetries && !ethBalance) {
+            try {
+              console.log(`ETH balance attempt ${retryCount + 1}/${maxRetries + 1}`)
+              ethBalance = await provider.request({
+                method: 'eth_getBalance',
+                params: [address, 'latest']
+              })
+              console.log('ETH Balance Raw:', ethBalance, 'Attempt:', retryCount + 1)
+              break
+            } catch (ethError) {
+              console.error(`ETH balance error attempt ${retryCount + 1}:`, ethError)
+              if (retryCount < maxRetries) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)))
+                retryCount++
+              } else {
+                throw ethError
+              }
+            }
+          }
+          
+          if (ethBalance) {
             const ethBalanceFormatted = (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(6)
-            console.log('ETH Balance Raw:', ethBalance, 'Formatted:', ethBalanceFormatted)
+            console.log('ETH Balance Formatted:', ethBalanceFormatted)
             
             // Store ETH balance for both ETH and WETH tokens
             balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted // 1inch API standard address
@@ -151,15 +228,8 @@ const TokenSwap = () => {
             balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH address
             balances['ETH'] = ethBalanceFormatted // Also store as 'ETH' for native ETH
             balances['NATIVE_ETH'] = ethBalanceFormatted // Native ETH key
-          } catch (ethError) {
-            console.error('Error loading ETH balance:', ethError)
-            // Set default values for ETH
-            const defaultEth = '0.000000'
-            balances[NATIVE_ETH_ADDRESS] = defaultEth
-            balances[NATIVE_ETH_ADDRESS_ALT] = defaultEth
-            balances['0x4200000000000000000000000000000000000006'] = defaultEth
-            balances['ETH'] = defaultEth
-            balances['NATIVE_ETH'] = defaultEth
+          } else {
+            throw new Error('Failed to get ETH balance after retries')
           }
         } else {
           console.warn('No Ethereum provider found')
@@ -227,14 +297,18 @@ const TokenSwap = () => {
     // Also load after a short delay to ensure wallet is ready
     const initialTimeout = setTimeout(loadBalances, 2000)
     
-    // Then load every 10 seconds
-    const interval = setInterval(loadBalances, 10000)
+    // Additional delay for Farcaster
+    const farcasterTimeout = isFarcaster ? setTimeout(loadBalances, 5000) : null
+    
+    // Then load every 10 seconds (or 5 seconds in Farcaster)
+    const interval = setInterval(loadBalances, isFarcaster ? 5000 : 10000)
     
     return () => {
       clearTimeout(initialTimeout)
+      if (farcasterTimeout) clearTimeout(farcasterTimeout)
       clearInterval(interval)
     }
-  }, [isConnected, address, customTokens, ethereumProvider])
+  }, [isConnected, address, customTokens, ethereumProvider, isFarcaster])
 
   // Auto-quote when amount or tokens change
   useEffect(() => {
@@ -1299,6 +1373,13 @@ const TokenSwap = () => {
                 >
                   Max
                 </button>
+                {isFarcaster && (
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                    <div>Provider: {ethereumProvider ? '✅ Connected' : '❌ Not Found'}</div>
+                    <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
+                    <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1347,7 +1428,9 @@ const TokenSwap = () => {
                 </span>
                 {isFarcaster && (
                   <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
-                    Provider: {ethereumProvider ? '✅ Connected' : '❌ Not Found'}
+                    <div>Provider: {ethereumProvider ? '✅ Connected' : '❌ Not Found'}</div>
+                    <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
+                    <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
                   </div>
                 )}
               </div>
