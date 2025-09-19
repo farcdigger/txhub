@@ -323,10 +323,10 @@ const Home = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'rgba(59, 130, 246, 0.1)',
+                background: 'rgba(251, 191, 36, 0.15)',
                 padding: '6px 12px',
                 borderRadius: '20px',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
+                border: '1px solid rgba(251, 191, 36, 0.3)'
               }}>
                 <span style={{ fontSize: '16px' }}>⚡</span>
                 <span style={{
@@ -341,12 +341,12 @@ const Home = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'rgba(255, 193, 7, 0.2)',
+                background: 'rgba(59, 130, 246, 0.15)',
                 padding: '6px 12px',
                 borderRadius: '20px',
-                border: '1px solid rgba(255, 193, 7, 0.3)'
+                border: '1px solid rgba(59, 130, 246, 0.3)'
               }}>
-                <span style={{ fontSize: '16px' }}>💎</span>
+                <span style={{ fontSize: '16px' }}>🪙</span>
                 <span style={{
                   color: '#1f2937',
                   fontSize: '14px',
@@ -1010,15 +1010,16 @@ const styles = `
     right: 0 !important;
     z-index: 9999 !important;
     padding: 16px 20px;
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
     backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
     visibility: visible !important;
     opacity: 1 !important;
     height: auto !important;
     width: auto !important;
     overflow: visible !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   }
 
   .header-left {
