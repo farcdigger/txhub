@@ -260,16 +260,10 @@ const TokenSwap = () => {
       decimals: 6
     },
     { 
-      symbol: 'DAI', 
+      symbol: 'USDT', 
       address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',
-      name: 'Dai Stablecoin',
-      decimals: 18
-    },
-    { 
-      symbol: 'WBTC', 
-      address: '0x1C74Aa1E8471Af78c6eFa5C3FA57e54A99df4Ddd',
-      name: 'Wrapped Bitcoin',
-      decimals: 8
+      name: 'Tether USD',
+      decimals: 6
     }
   ]
 
