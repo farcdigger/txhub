@@ -1002,24 +1002,24 @@ const styles = `
 
   .header-section {
     display: flex !important;
-    align-items: center;
-    justify-content: space-between;
+    align-items: center !important;
+    justify-content: space-between !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     z-index: 9999 !important;
-    padding: 16px 20px;
-    background: rgba(255, 255, 255, 0.98) !important;
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
+    padding: 16px 20px !important;
+    background: #ffffff !important;
+    backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease !important;
     visibility: visible !important;
     opacity: 1 !important;
     height: auto !important;
     width: auto !important;
     overflow: visible !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
   }
 
   .header-left {
@@ -1034,17 +1034,17 @@ const styles = `
   }
 
   .header-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 2px 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    margin: 0 0 2px 0 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
   }
 
   .header-subtitle {
-    font-size: 14px;
-    color: #6b7280;
-    margin: 0;
+    font-size: 14px !important;
+    color: #6b7280 !important;
+    margin: 0 !important;
   }
 
   .header-right {
@@ -1262,9 +1262,16 @@ const styles = `
   }
 `
 
-// Inject styles
+// Inject styles with cache busting
 if (typeof document !== 'undefined') {
+  // Remove existing styles first
+  const existingStyle = document.getElementById('home-styles')
+  if (existingStyle) {
+    existingStyle.remove()
+  }
+  
   const styleSheet = document.createElement('style')
+  styleSheet.id = 'home-styles'
   styleSheet.textContent = styles
   document.head.appendChild(styleSheet)
 }
