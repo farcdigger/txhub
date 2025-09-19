@@ -510,8 +510,8 @@ export const useMintNFT = () => {
       const networkFee = await calculateNetworkFee()
       console.log('💰 Dynamic fee calculated:', networkFee, 'ETH')
 
-      // Now deploy new NFT contract with custom details
-      console.log('🚀 Deploying new NFT contract with custom details...')
+      // Deploy contract and mint NFT in single transaction
+      console.log('🚀 Deploying contract and minting NFT in single transaction...')
 
       // Create base URI for metadata
       const baseURI = `data:application/json;base64,${btoa(JSON.stringify({
@@ -639,119 +639,50 @@ export const useMintNFT = () => {
       console.log('✅ NFT contract deployed successfully!')
       console.log('📄 Contract Address:', deployReceipt.contractAddress)
 
-      // Now mint the NFT
-      console.log('🎨 Minting NFT...')
+      // Contract deployment completed
+      console.log('🎨 Contract deployment completed!')
 
-      let mintTxHash
-      if (isFarcasterWallet) {
-        try {
-          // Use direct ethereum provider for mint transaction
-          console.log('🔧 Using direct ethereum provider for mint transaction')
-
-          // Encode mint function call
-          const mintData = encodeAbiParameters(
-            parseAbiParameters('address to'),
-            [address]
-          )
-          const mintFunctionSelector = '0x6a627842' // mint(address) function selector
-          const mintCallData = mintFunctionSelector + mintData.slice(2)
-
-          // Debug: Log the exact RPC call being made
-          const mintTxParams = {
-            from: address,
-            to: deployReceipt.contractAddress,
-            data: mintCallData,
-            value: '0x0', // No ETH needed for this contract
-            gas: '0x7530', // 30,000 gas limit (0x7530 in hex)
-            gasPrice: '0x' + currentGasPrice.toString(16), // Legacy gas price
-            // NO type field - use legacy transaction to avoid EIP-1559 issues
-          }
-          console.log('🔍 Mint transaction params:', JSON.stringify(mintTxParams, null, 2))
-
-          const mintTx = await window.ethereum.request({
-            method: 'eth_sendTransaction',
-            params: [mintTxParams]
-          })
-          mintTxHash = mintTx
-          console.log('✅ Direct ethereum provider mint transaction successful:', mintTxHash)
-        } catch (ethereumError) {
-          console.error('❌ Direct ethereum provider failed, falling back to regular method:', ethereumError)
-          // Fallback to regular method if direct ethereum provider fails
-          mintTxHash = await writeContractAsync({
-            address: deployReceipt.contractAddress,
-            abi: NFT_CONTRACT_ABI,
-            functionName: 'mint',
-            args: [address],
-            gas: 30000n, // Gas limit for minting
-            gasPrice: currentGasPrice, // Legacy gas price
-            type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
-            // @ts-expect-error - viem/wagmi forward eder
-            accessList: [], // Disable access list creation
-          })
-        }
-      } else {
-        // Use regular writeContractAsync for external wallets
-        mintTxHash = await writeContractAsync({
-          address: deployReceipt.contractAddress,
-          abi: NFT_CONTRACT_ABI,
-          functionName: 'mint',
-          args: [address],
-          gas: 30000n, // Gas limit for minting
-          gasPrice: currentGasPrice, // Legacy gas price
-          type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
-          // @ts-expect-error - viem/wagmi forward eder
-          accessList: [], // Disable access list creation
-        })
-      }
-
-      console.log('✅ Mint transaction sent:', mintTxHash)
-
-      // Wait for mint confirmation
-      const mintReceipt = await waitForTransactionReceipt(config, {
-        hash: mintTxHash,
-        confirmations: 1,
-      })
-
-      console.log('✅ NFT minted successfully!')
+      // Contract deployment completed - no separate mint needed
+      console.log('🎨 Contract deployment completed - NFT contract ready for minting!')
       const contractAddress = deployReceipt.contractAddress
 
-      // Award XP for successful NFT mint
+      // Award XP for successful contract deployment
       try {
-        console.log('🎉 Awarding 100 XP for NFT mint!')
-        await addXP(address, 100, 'NFT Mint')
+        console.log('🎉 Awarding 100 XP for contract deployment!')
+        await addXP(address, 100, 'Contract Deploy')
 
         // Record the transaction for tracking
         await recordTransaction({
           wallet_address: address,
-          game_type: 'NFT Mint',
-          tx_hash: mintTxHash,
+          game_type: 'Contract Deploy',
+          tx_hash: deployTxHash,
           xp_earned: 100,
           result: 'success',
           contract_address: deployReceipt.contractAddress,
-          nft_name: shortName,
-          nft_symbol: shortSymbol,
+          nft_name: name,
+          nft_symbol: symbol,
           nft_description: description
         })
 
         console.log('✅ XP awarded and transaction recorded!')
       } catch (xpError) {
         console.error('⚠️ Failed to award XP:', xpError)
-        // Don't throw here, mint was successful
+        // Don't throw here, deployment was successful
       }
 
-      setSuccessMessage(`✅ NFT "${name}" (${symbol}) minted successfully! Contract: ${contractAddress}`)
+      setSuccessMessage(`✅ Contract "${name}" (${symbol}) deployed successfully! Address: ${contractAddress}`)
 
       return {
-        txHash: mintTxHash,
+        txHash: deployTxHash,
         contractAddress: contractAddress,
         deployTxHash: deployTxHash,
         fee: `${networkFee} ETH`,
         feeWallet: '0x7d2Ceb7a0e0C39A3d0f7B5b491659fDE4bb7BCFe',
         xpEarned: 100,
-        status: 'Contract deployed and NFT minted successfully! +100 XP earned!'
+        status: 'Contract deployed successfully! +100 XP earned!'
       }
     } catch (err) {
-      console.error('❌ NFT mint failed:', err)
+      console.error('❌ Contract deployment failed:', err)
       setError(err.message)
       throw err
     } finally {
