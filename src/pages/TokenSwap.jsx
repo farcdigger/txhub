@@ -409,6 +409,24 @@ const TokenSwap = () => {
     return null
   }
 
+  // Helper function to decode hex string to text
+  const decodeHexString = (hexString) => {
+    try {
+      // Remove 0x prefix
+      const hex = hexString.slice(2)
+      // Convert hex to bytes
+      const bytes = new Uint8Array(hex.length / 2)
+      for (let i = 0; i < hex.length; i += 2) {
+        bytes[i / 2] = parseInt(hex.substr(i, 2), 16)
+      }
+      // Convert bytes to string
+      return new TextDecoder('utf-8').decode(bytes)
+    } catch (error) {
+      console.error('Error decoding hex string:', error)
+      return 'UNKNOWN'
+    }
+  }
+
   // Auto-fetch token info from contract
   const fetchTokenInfo = async (tokenAddress) => {
     try {
@@ -439,11 +457,11 @@ const TokenSwap = () => {
         }, 'latest']
       })
 
-      // Decode responses
+      // Decode responses using Web API instead of Buffer
       const symbol = symbolResponse === '0x' ? 'UNKNOWN' : 
-        Buffer.from(symbolResponse.slice(2), 'hex').toString().replace(/\0/g, '').trim()
+        decodeHexString(symbolResponse).replace(/\0/g, '').trim()
       const name = nameResponse === '0x' ? 'Unknown Token' : 
-        Buffer.from(nameResponse.slice(2), 'hex').toString().replace(/\0/g, '').trim()
+        decodeHexString(nameResponse).replace(/\0/g, '').trim()
       const decimals = decimalsResponse === '0x' ? 18 : parseInt(decimalsResponse, 16)
 
       return { symbol, name, decimals }
@@ -491,7 +509,7 @@ const TokenSwap = () => {
       try {
         const tokenInfo = await fetchTokenInfo(address)
         
-        if (tokenInfo) {
+        if (tokenInfo && tokenInfo.symbol !== 'UNKNOWN' && tokenInfo.name !== 'Unknown Token') {
           setNewTokenSymbol(tokenInfo.symbol)
           setNewTokenName(tokenInfo.name)
           setNewTokenDecimals(tokenInfo.decimals)
@@ -506,12 +524,29 @@ const TokenSwap = () => {
             setSuccessMessage('⚠️ Token found but no liquidity detected. You can still add it.')
           }
         } else {
-          setError('❌ Failed to fetch token information. Please check the address.')
+          setError('❌ Invalid token contract or not an ERC-20 token. Please check the address.')
+          setNewTokenSymbol('')
+          setNewTokenName('')
+          setNewTokenDecimals(18)
         }
       } catch (error) {
         console.error('Error:', error)
-        setError('❌ Error fetching token information.')
+        setError('❌ Error fetching token information. Please check the address.')
+        setNewTokenSymbol('')
+        setNewTokenName('')
+        setNewTokenDecimals(18)
       }
+    } else if (address && address.length > 0) {
+      setError('❌ Invalid address format. Please enter a valid contract address (0x...)')
+      setNewTokenSymbol('')
+      setNewTokenName('')
+      setNewTokenDecimals(18)
+    } else {
+      setError('')
+      setSuccessMessage('')
+      setNewTokenSymbol('')
+      setNewTokenName('')
+      setNewTokenDecimals(18)
     }
   }
 
