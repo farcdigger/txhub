@@ -1109,6 +1109,7 @@ const TokenSwap = () => {
   }
 
   return (
+    <>
     <div className="token-swap-page">
       {/* Header */}
       <div className="header-section">
@@ -1480,10 +1481,217 @@ const TokenSwap = () => {
         </div>
       </div>
     </div>
+
+    {/* Add Custom Token Modal */}
+    {showTokenModal && (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        backdropFilter: 'blur(8px)'
+      }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+          borderRadius: '20px',
+          padding: '24px',
+          maxWidth: '500px',
+          width: '90%',
+          border: '1px solid rgba(71, 85, 105, 0.3)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{ color: '#ffffff', fontSize: '20px', fontWeight: '700', margin: 0 }}>
+              ➕ Add Custom Token
+            </h3>
+            <button
+              onClick={() => {
+                setShowTokenModal(false)
+                setNewTokenAddress('')
+                setNewTokenSymbol('')
+                setNewTokenName('')
+                setNewTokenDecimals(18)
+                setError('')
+                setSuccessMessage('')
+              }}
+              style={{
+                background: 'rgba(71, 85, 105, 0.3)',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px',
+                color: '#94a3b8',
+                cursor: 'pointer',
+                fontSize: '18px'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          
+          <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>
+            Just paste the token contract address and we'll automatically fetch all the details!
+          </p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <input
+              type="text"
+              placeholder="Token Contract Address (0x...)"
+              value={newTokenAddress}
+              onChange={(e) => handleTokenAddressChange(e.target.value)}
+              style={{
+                background: 'rgba(71, 85, 105, 0.5)',
+                border: '1px solid rgba(100, 116, 139, 0.3)',
+                borderRadius: '12px',
+                padding: '16px',
+                color: '#ffffff',
+                fontSize: '16px',
+                outline: 'none',
+                transition: 'all 0.2s ease'
+              }}
+            />
+            
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <input
+                type="text"
+                placeholder="Symbol (Auto-filled)"
+                value={newTokenSymbol}
+                readOnly
+                style={{
+                  background: 'rgba(51, 65, 85, 0.3)',
+                  border: '1px solid rgba(71, 85, 105, 0.3)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  color: '#94a3b8',
+                  fontSize: '16px',
+                  flex: 1,
+                  cursor: 'not-allowed'
+                }}
+              />
+              <input
+                type="number"
+                placeholder="Decimals"
+                value={newTokenDecimals}
+                readOnly
+                style={{
+                  background: 'rgba(51, 65, 85, 0.3)',
+                  border: '1px solid rgba(71, 85, 105, 0.3)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  color: '#94a3b8',
+                  fontSize: '16px',
+                  width: '120px',
+                  cursor: 'not-allowed'
+                }}
+              />
+            </div>
+            
+            <input
+              type="text"
+              placeholder="Token Name (Auto-filled)"
+              value={newTokenName}
+              readOnly
+              style={{
+                background: 'rgba(51, 65, 85, 0.3)',
+                border: '1px solid rgba(71, 85, 105, 0.3)',
+                borderRadius: '12px',
+                padding: '16px',
+                color: '#94a3b8',
+                fontSize: '16px',
+                cursor: 'not-allowed'
+              }}
+            />
+            
+            {error && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px',
+                padding: '12px',
+                color: '#fca5a5',
+                fontSize: '14px'
+              }}>
+                {error}
+              </div>
+            )}
+            
+            {successMessage && (
+              <div style={{
+                background: 'rgba(34, 197, 94, 0.1)',
+                border: '1px solid rgba(34, 197, 94, 0.3)',
+                borderRadius: '8px',
+                padding: '12px',
+                color: '#86efac',
+                fontSize: '14px'
+              }}>
+                {successMessage}
+              </div>
+            )}
+            
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => {
+                  setShowTokenModal(false)
+                  setNewTokenAddress('')
+                  setNewTokenSymbol('')
+                  setNewTokenName('')
+                  setNewTokenDecimals(18)
+                  setError('')
+                  setSuccessMessage('')
+                }}
+                style={{
+                  background: 'rgba(71, 85, 105, 0.3)',
+                  border: '1px solid rgba(100, 116, 139, 0.3)',
+                  borderRadius: '12px',
+                  padding: '16px 24px',
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  flex: 1
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addCustomToken}
+                disabled={!newTokenAddress || !newTokenSymbol || !newTokenName}
+                style={{
+                  background: (!newTokenAddress || !newTokenSymbol || !newTokenName) 
+                    ? 'rgba(71, 85, 105, 0.3)' 
+                    : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '16px 24px',
+                  color: '#ffffff',
+                  fontSize: '16px',
+                  fontWeight: '700',
+                  cursor: (!newTokenAddress || !newTokenSymbol || !newTokenName) ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  flex: 1
+                }}
+              >
+                Add Token
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
-
-export default TokenSwap
 
 // Inject styles
 const styles = `
@@ -1918,210 +2126,5 @@ if (typeof document !== 'undefined' && !document.getElementById('token-swap-styl
   document.head.appendChild(style)
 }
 
-// Add Custom Token Modal
-{showTokenModal && (
-  <div style={{
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0, 0, 0, 0.8)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    backdropFilter: 'blur(8px)'
-  }}>
-    <div style={{
-      background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
-      borderRadius: '20px',
-      padding: '24px',
-      maxWidth: '500px',
-      width: '90%',
-      border: '1px solid rgba(71, 85, 105, 0.3)',
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px'
-      }}>
-        <h3 style={{ color: '#ffffff', fontSize: '20px', fontWeight: '700', margin: 0 }}>
-          ➕ Add Custom Token
-        </h3>
-        <button
-          onClick={() => {
-            setShowTokenModal(false)
-            setNewTokenAddress('')
-            setNewTokenSymbol('')
-            setNewTokenName('')
-            setNewTokenDecimals(18)
-            setError('')
-            setSuccessMessage('')
-          }}
-          style={{
-            background: 'rgba(71, 85, 105, 0.3)',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '8px',
-            color: '#94a3b8',
-            cursor: 'pointer',
-            fontSize: '18px'
-          }}
-        >
-          ✕
-        </button>
-      </div>
-      
-      <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '20px' }}>
-        Just paste the token contract address and we'll automatically fetch all the details!
-      </p>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <input
-          type="text"
-          placeholder="Token Contract Address (0x...)"
-          value={newTokenAddress}
-          onChange={(e) => handleTokenAddressChange(e.target.value)}
-          style={{
-            background: 'rgba(71, 85, 105, 0.5)',
-            border: '1px solid rgba(100, 116, 139, 0.3)',
-            borderRadius: '12px',
-            padding: '16px',
-            color: '#ffffff',
-            fontSize: '16px',
-            outline: 'none',
-            transition: 'all 0.2s ease'
-          }}
-        />
-        
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <input
-            type="text"
-            placeholder="Symbol (Auto-filled)"
-            value={newTokenSymbol}
-            readOnly
-            style={{
-              background: 'rgba(51, 65, 85, 0.3)',
-              border: '1px solid rgba(71, 85, 105, 0.3)',
-              borderRadius: '12px',
-              padding: '16px',
-              color: '#94a3b8',
-              fontSize: '16px',
-              flex: 1,
-              cursor: 'not-allowed'
-            }}
-          />
-          <input
-            type="number"
-            placeholder="Decimals"
-            value={newTokenDecimals}
-            readOnly
-            style={{
-              background: 'rgba(51, 65, 85, 0.3)',
-              border: '1px solid rgba(71, 85, 105, 0.3)',
-              borderRadius: '12px',
-              padding: '16px',
-              color: '#94a3b8',
-              fontSize: '16px',
-              width: '120px',
-              cursor: 'not-allowed'
-            }}
-          />
-        </div>
-        
-        <input
-          type="text"
-          placeholder="Token Name (Auto-filled)"
-          value={newTokenName}
-          readOnly
-          style={{
-            background: 'rgba(51, 65, 85, 0.3)',
-            border: '1px solid rgba(71, 85, 105, 0.3)',
-            borderRadius: '12px',
-            padding: '16px',
-            color: '#94a3b8',
-            fontSize: '16px',
-            cursor: 'not-allowed'
-          }}
-        />
-        
-        {error && (
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            borderRadius: '8px',
-            padding: '12px',
-            color: '#fca5a5',
-            fontSize: '14px'
-          }}>
-            {error}
-          </div>
-        )}
-        
-        {successMessage && (
-          <div style={{
-            background: 'rgba(34, 197, 94, 0.1)',
-            border: '1px solid rgba(34, 197, 94, 0.3)',
-            borderRadius: '8px',
-            padding: '12px',
-            color: '#86efac',
-            fontSize: '14px'
-          }}>
-            {successMessage}
-          </div>
-        )}
-        
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            onClick={() => {
-              setShowTokenModal(false)
-              setNewTokenAddress('')
-              setNewTokenSymbol('')
-              setNewTokenName('')
-              setNewTokenDecimals(18)
-              setError('')
-              setSuccessMessage('')
-            }}
-            style={{
-              background: 'rgba(71, 85, 105, 0.3)',
-              border: '1px solid rgba(100, 116, 139, 0.3)',
-              borderRadius: '12px',
-              padding: '16px 24px',
-              color: '#ffffff',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              flex: 1
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={addCustomToken}
-            disabled={!newTokenAddress || !newTokenSymbol || !newTokenName}
-            style={{
-              background: (!newTokenAddress || !newTokenSymbol || !newTokenName) 
-                ? 'rgba(71, 85, 105, 0.3)' 
-                : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '16px 24px',
-              color: '#ffffff',
-              fontSize: '16px',
-              fontWeight: '700',
-              cursor: (!newTokenAddress || !newTokenSymbol || !newTokenName) ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s ease',
-              flex: 1
-            }}
-          >
-            Add Token
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+export default TokenSwap
+
