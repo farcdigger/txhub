@@ -62,11 +62,11 @@ const FarcasterXPDisplay = () => {
         <div className="header-left">
           {!isHomePage && (
             <button className="home-button" onClick={handleHomeClick} title="Ana Sayfa">
-              <Home size={16} />
+              <Home size={12} />
             </button>
           )}
           <div className="not-connected-text">
-            <Wallet size={16} />
+            <Wallet size={12} />
             <span>Not Connected</span>
           </div>
         </div>
@@ -83,7 +83,7 @@ const FarcasterXPDisplay = () => {
                   className="wallet-option"
                   onClick={() => handleConnect(connector)}
                 >
-                  <Wallet size={16} />
+                  <Wallet size={12} />
                   <span>{connector.name}</span>
                 </button>
               ))}
@@ -99,23 +99,23 @@ const FarcasterXPDisplay = () => {
       <div className="header-left">
         {!isHomePage && (
           <button className="home-button" onClick={handleHomeClick} title="Ana Sayfa">
-            <Home size={16} />
+            <Home size={12} />
           </button>
         )}
         <div className="player-info">
-          <Trophy size={16} />
+          <Trophy size={12} />
           <span className="wallet-address">{address.slice(0, 4)}..{address.slice(-2)}</span>
         </div>
       </div>
       
       <div className="header-right">
         <div className="stat-mini xp">
-          <Zap size={14} />
+          <Zap size={10} />
           <span>{totalXP}</span>
         </div>
         
         <div className="stat-mini token exciting">
-          <Coins size={14} />
+          <Coins size={10} />
           <div className="token-info">
             <span className="token-name">BHUP</span>
             <span className="token-balance">{tokenBalance}</span>
@@ -123,12 +123,12 @@ const FarcasterXPDisplay = () => {
         </div>
         
         <button className="claim-button coming-soon" disabled title="Claim feature coming soon!">
-          <Clock size={14} />
+          <Clock size={10} />
           <span>Claim</span>
         </button>
         
         <button className="disconnect-button" onClick={handleDisconnect} title="Disconnect Wallet">
-          <LogOut size={14} />
+          <LogOut size={10} />
         </button>
       </div>
     </div>
