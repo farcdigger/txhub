@@ -3,10 +3,39 @@ import { useNavigate } from 'react-router-dom'
 import { useAccount, useDisconnect, useSendCalls } from 'wagmi'
 import { getXP } from '../utils/xpUtils'
 
-// Simple provider helper
+// Enhanced provider helper with Farcaster SDK support
 async function getProvider() {
-  // In Farcaster, use window.ethereum directly
-  if (typeof window !== 'undefined' && window.ethereum) {
+  if (typeof window === 'undefined') return null
+  
+  // Try Farcaster SDK provider first
+  if (window?.farcaster?.wallet?.getEthereumProvider) {
+    try {
+      const provider = await window.farcaster.wallet.getEthereumProvider()
+      if (provider) {
+        console.log('✅ Using Farcaster SDK provider')
+        return provider
+      }
+    } catch (error) {
+      console.log('⚠️ Farcaster SDK provider failed:', error.message)
+    }
+  }
+  
+  // Try alternative Farcaster SDK location
+  if (window?.__farcaster?.wallet?.getEthereumProvider) {
+    try {
+      const provider = await window.__farcaster.wallet.getEthereumProvider()
+      if (provider) {
+        console.log('✅ Using alternative Farcaster SDK provider')
+        return provider
+      }
+    } catch (error) {
+      console.log('⚠️ Alternative Farcaster SDK provider failed:', error.message)
+    }
+  }
+  
+  // Fallback to window.ethereum
+  if (window.ethereum) {
+    console.log('✅ Using window.ethereum fallback')
     return window.ethereum
   }
   
@@ -215,9 +244,9 @@ const TokenSwap = () => {
             }
           }
           
-          // Use BigInt for proper calculation
+          // Use BigInt for proper calculation - avoid Number precision loss
           const ethBalanceWei = BigInt(ethBalanceHex)
-          const ethBalanceFormatted = (Number(ethBalanceWei) / Math.pow(10, 18)).toFixed(6)
+          const ethBalanceFormatted = (Number(ethBalanceWei) / 1e18).toFixed(6)
           
           // In Farcaster, if balance is 0, try alternative methods
           if (isFarcaster && ethBalanceFormatted === '0.000000') {
@@ -228,7 +257,7 @@ const TokenSwap = () => {
                 params: [address, 'pending']
               })
               const ethBalanceWei2 = BigInt(ethBalanceHex2)
-              const ethBalanceFormatted2 = (Number(ethBalanceWei2) / Math.pow(10, 18)).toFixed(6)
+              const ethBalanceFormatted2 = (Number(ethBalanceWei2) / 1e18).toFixed(6)
               
               if (ethBalanceFormatted2 !== '0.000000') {
                 // Use the non-zero balance
@@ -544,8 +573,8 @@ const TokenSwap = () => {
     }
   }
 
-  // Get token balance from 1inch API
-  const getTokenBalance = async (tokenAddress, walletAddress) => {
+  // Get token allowance from 1inch API (not balance!)
+  const getTokenAllowanceFrom1inch = async (tokenAddress, walletAddress) => {
     try {
       const params = new URLSearchParams({
         endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/allowance`,
@@ -789,7 +818,7 @@ const TokenSwap = () => {
               method: 'eth_getBalance',
               params: [address, 'latest']
             })
-            const ethBalanceFormatted = (parseInt(ethBalance, 16) / Math.pow(10, 18)).toFixed(6)
+            const ethBalanceFormatted = (parseInt(ethBalance, 16) / 1e18).toFixed(6)
             
             // Store ETH balance for both ETH and WETH tokens
             balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
@@ -936,12 +965,12 @@ const TokenSwap = () => {
         console.log('Testing both native ETH addresses with 1inch API...')
         
         // Test with current address
-        const balanceData1 = await getTokenBalance(sellToken, address)
+        const balanceData1 = await getTokenAllowanceFrom1inch(sellToken, address)
         console.log('1inch Native ETH Balance Check (current):', balanceData1)
         
         // Test with alternative address
         const altAddress = sellToken === NATIVE_ETH_ADDRESS ? NATIVE_ETH_ADDRESS_ALT : NATIVE_ETH_ADDRESS
-        const balanceData2 = await getTokenBalance(altAddress, address)
+        const balanceData2 = await getTokenAllowanceFrom1inch(altAddress, address)
         console.log('1inch Native ETH Balance Check (alternative):', balanceData2)
         
         console.log('Testing 1inch API connectivity...')
@@ -1115,9 +1144,24 @@ const TokenSwap = () => {
       
       // Add approve call if needed
       if (needsApproval && !isNative(sellToken)) {
+        // Get approve transaction data from 1inch
+        const approveParams = new URLSearchParams({
+          endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/approve/transaction`,
+          tokenAddress: sellToken,
+          amount: amount.toString()
+        })
+        
+        const approveResponse = await fetch(`/api/1inch-proxy?${approveParams}`)
+        if (!approveResponse.ok) {
+          throw new Error('Failed to get approve data from 1inch')
+        }
+        
+        const approveData = await approveResponse.json()
+        
         calls.push({
-          to: sellToken,
-          data: swapData.tx.data // This should be the approve call
+          to: approveData.to,
+          data: approveData.data,
+          value: '0x0'
         })
       }
       
