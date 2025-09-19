@@ -202,21 +202,69 @@ const TokenSwap = () => {
           
           if (chainId !== 8453) {
             console.log('Switching to Base network...')
-            try {
-              await provider.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0x2105' }] // Base network
-              })
-              console.log('✅ Successfully switched to Base network')
-            } catch (switchError) {
-              console.warn('Failed to switch to Base network:', switchError)
-              setError('Please switch to Base network in your wallet to use this app.')
+            
+            // In Farcaster, network switching might work differently
+            if (isFarcasterEnv) {
+              console.log('🔍 Farcaster environment - trying network switch...')
+              try {
+                await provider.request({
+                  method: 'wallet_switchEthereumChain',
+                  params: [{ chainId: '0x2105' }] // Base network
+                })
+                console.log('✅ Successfully switched to Base network via wallet_switchEthereumChain')
+              } catch (switchError) {
+                console.warn('wallet_switchEthereumChain failed:', switchError)
+                
+                // Try adding Base network if it doesn't exist
+                try {
+                  await provider.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                      chainId: '0x2105',
+                      chainName: 'Base',
+                      nativeCurrency: {
+                        name: 'Ethereum',
+                        symbol: 'ETH',
+                        decimals: 18
+                      },
+                      rpcUrls: ['https://mainnet.base.org'],
+                      blockExplorerUrls: ['https://basescan.org']
+                    }]
+                  })
+                  console.log('✅ Successfully added Base network')
+                } catch (addError) {
+                  console.warn('Failed to add Base network:', addError)
+                  
+                  // In Farcaster, don't block the user - just warn
+                  console.log('🔍 Farcaster environment - continuing without network switch')
+                  setError('Please manually switch to Base network in your wallet. The app will work better on Base network.')
+                }
+              }
+            } else {
+              // For web, be more strict about network switching
+              try {
+                await provider.request({
+                  method: 'wallet_switchEthereumChain',
+                  params: [{ chainId: '0x2105' }] // Base network
+                })
+                console.log('✅ Successfully switched to Base network')
+              } catch (switchError) {
+                console.warn('Failed to switch to Base network:', switchError)
+                setError('Please switch to Base network in your wallet to use this app.')
+              }
             }
           } else {
             console.log('✅ Already on Base network')
           }
         } catch (error) {
           console.error('Error checking chain ID:', error)
+          
+          // In Farcaster, don't fail completely
+          if (isFarcasterEnv) {
+            console.log('🔍 Farcaster environment - chain ID check failed, continuing...')
+          } else {
+            setError('Unable to check network. Please ensure you are on Base network.')
+          }
         }
         
       } catch (error) {
@@ -1513,6 +1561,23 @@ const TokenSwap = () => {
                 <div>1. Make sure your Farcaster wallet is connected to Base network</div>
                 <div>2. If balance shows 0, try switching networks in your wallet</div>
                 <div>3. Some Farcaster wallets may have limited Base support</div>
+                {currentChainId && currentChainId !== '0x2105' && (
+                  <div style={{ 
+                    marginTop: '8px', 
+                    padding: '8px', 
+                    background: 'rgba(245, 158, 11, 0.1)', 
+                    borderRadius: '4px',
+                    border: '1px solid rgba(245, 158, 11, 0.2)'
+                  }}>
+                    <div style={{ fontWeight: '600', color: '#d97706' }}>⚠️ Network Warning:</div>
+                    <div style={{ fontSize: '12px', color: '#92400e' }}>
+                      You're on {currentChainId === '0x1' ? 'Ethereum Mainnet' : `Chain ${parseInt(currentChainId, 16)}`}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#92400e' }}>
+                      Switch to Base network for the best experience
+                    </div>
+                  </div>
+                )}
                 <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px' }}>
                   <div style={{ fontWeight: '600', color: '#10b981' }}>✨ Batch Transactions:</div>
                   <div style={{ fontSize: '12px' }}>Approve + Swap in one transaction for better UX</div>
