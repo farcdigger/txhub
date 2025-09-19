@@ -284,146 +284,6 @@ const Home = () => {
         buttonText="Play BaseHub"
       />
       
-      {/* Header */}
-      <div className="header-section">
-        <div className="header-left">
-          <button
-            onClick={() => window.location.href = '/'}
-            className="home-button"
-            style={{
-              background: 'rgba(59, 130, 246, 0.1)',
-              border: '1px solid rgba(59, 130, 246, 0.2)',
-              borderRadius: '6px',
-              padding: '4px 8px',
-              color: '#1f2937',
-              fontSize: '11px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <span>🏠</span>
-            <span>Home</span>
-          </button>
-        </div>
-        
-        <div className="header-center">
-        </div>
-        
-        <div className="header-right">
-          {isConnected ? (
-            <div className="user-section">
-              {/* XP Section */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: 'rgba(251, 191, 36, 0.15)',
-                padding: '4px 8px',
-                borderRadius: '12px',
-                border: '1px solid rgba(251, 191, 36, 0.3)'
-              }}>
-                <span style={{ fontSize: '12px' }}>⚡</span>
-                <span style={{
-                  color: '#1f2937',
-                  fontSize: '11px',
-                  fontWeight: '600'
-                }}>{userXP}</span>
-              </div>
-
-              {/* BHUB Token Section */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: 'rgba(59, 130, 246, 0.15)',
-                padding: '4px 8px',
-                borderRadius: '12px',
-                border: '1px solid rgba(59, 130, 246, 0.3)'
-              }}>
-                <span style={{ fontSize: '12px' }}>🪙</span>
-                <span style={{
-                  color: '#1f2937',
-                  fontSize: '11px',
-                  fontWeight: '600'
-                }}>{bhubTokens}</span>
-              </div>
-
-              {/* Claim Button */}
-              <button style={{
-                background: 'rgba(156, 163, 175, 0.3)',
-                border: '1px solid rgba(156, 163, 175, 0.3)',
-                borderRadius: '12px',
-                padding: '4px 8px',
-                color: '#6b7280',
-                fontSize: '10px',
-                fontWeight: '600',
-                cursor: 'not-allowed',
-                opacity: 0.8
-              }} disabled>
-                Soon
-              </button>
-
-              {/* Wallet Section */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: 'rgba(59, 130, 246, 0.1)',
-                padding: '4px 8px',
-                borderRadius: '12px',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
-              }}>
-                <span style={{
-                  color: '#1f2937',
-                  fontSize: '10px',
-                  fontWeight: '600'
-                }}>{formatAddress(address)}</span>
-                <button
-                  onClick={() => disconnect()}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#6b7280',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={handleConnect}
-              style={{
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                border: 'none',
-                color: 'white',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '600',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-1px)'
-                e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)'
-                e.target.style.boxShadow = 'none'
-              }}
-            >
-              Connect Wallet
-            </button>
-          )}
-        </div>
-      </div>
 
       <div className="welcome-section">
         <div className="card">
@@ -992,66 +852,13 @@ const styles = `
     background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     padding: 20px;
     margin-top: 0 !important;
-    padding-top: 100px !important;
+    padding-top: 60px !important;
     max-width: 800px;
     margin-left: auto;
     margin-right: auto;
   }
 
-  .header-section {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 9999 !important;
-    padding: 8px 12px !important;
-    background: #ffffff !important;
-    backdrop-filter: blur(20px) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-    transition: all 0.3s ease !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    width: auto !important;
-    overflow: visible !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
-  }
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .header-center {
-    text-align: center;
-    flex: 1;
-  }
-
-  .header-title {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: #1f2937 !important;
-    margin: 0 0 2px 0 !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  }
-
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .user-section {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-wrap: nowrap;
-  }
 
 
   .welcome-section {
@@ -1174,32 +981,9 @@ const styles = `
 
   @media (max-width: 768px) {
     .home {
-      padding-top: 120px;
+      padding-top: 60px;
     }
     
-    .header-section {
-      flex-direction: row !important;
-      gap: 4px !important;
-      padding: 6px 8px !important;
-      flex-wrap: nowrap;
-    }
-    
-    .header-left {
-      order: 1;
-      flex: 0 0 auto;
-    }
-    
-    .header-center {
-      order: 2;
-      flex: 1;
-      display: flex;
-      justify-content: center;
-    }
-    
-    .header-right {
-      order: 3;
-      flex: 0 0 auto;
-    }
     
     .logo-section {
       gap: 8px !important;
@@ -1211,22 +995,6 @@ const styles = `
       font-size: 16px !important;
     }
     
-    .header-title {
-      font-size: 14px !important;
-    }
-    
-    .home-button {
-      padding: 3px 6px !important;
-      font-size: 10px !important;
-    }
-    
-    .xp-token-info {
-      gap: 1px !important;
-    }
-    
-    .user-section {
-      gap: 2px !important;
-    }
     
     .games-grid {
       grid-template-columns: repeat(2, 1fr);
