@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAccount, useDisconnect } from 'wagmi'
+import { useAccount, useDisconnect, useSendCalls } from 'wagmi'
 import { getXP } from '../utils/xpUtils'
+
+// Farcaster Mini App SDK
+let farcasterSDK = null
+try {
+  // Try to import Farcaster SDK if available
+  if (typeof window !== 'undefined' && window.farcaster) {
+    farcasterSDK = window.farcaster
+  }
+} catch (error) {
+  console.log('Farcaster SDK not available:', error)
+}
 
 const TokenSwap = () => {
   const navigate = useNavigate()
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
+  const { sendCalls } = useSendCalls()
   const [userXP, setUserXP] = useState(0)
   const [userLevel, setUserLevel] = useState(1)
   
@@ -52,23 +64,37 @@ const TokenSwap = () => {
       const isFarcasterEnv = userAgent.includes('Farcaster') || 
                             userAgent.includes('farcaster') ||
                             window.location.href.includes('farcaster') ||
-                            document.referrer.includes('farcaster')
+                            document.referrer.includes('farcaster') ||
+                            !!farcasterSDK
       
       setIsFarcaster(isFarcasterEnv)
-      console.log('Environment detection:', { userAgent, isFarcasterEnv })
+      console.log('Environment detection:', { userAgent, isFarcasterEnv, farcasterSDK: !!farcasterSDK })
       
-      // Setup Ethereum provider with fallbacks
+      // Setup Ethereum provider with Farcaster SDK priority
       let provider = null
-      if (window.ethereum) {
-        provider = window.ethereum
-      } else if (window.web3 && window.web3.currentProvider) {
-        provider = window.web3.currentProvider
-      } else if (window.parent && window.parent.ethereum) {
-        provider = window.parent.ethereum
+      if (isFarcasterEnv && farcasterSDK) {
+        try {
+          // Use Farcaster SDK's Ethereum provider
+          provider = await farcasterSDK.wallet.getEthereumProvider()
+          console.log('✅ Using Farcaster SDK Ethereum provider')
+        } catch (error) {
+          console.error('Failed to get Farcaster Ethereum provider:', error)
+        }
+      }
+      
+      // Fallback to standard providers
+      if (!provider) {
+        if (window.ethereum) {
+          provider = window.ethereum
+        } else if (window.web3 && window.web3.currentProvider) {
+          provider = window.web3.currentProvider
+        } else if (window.parent && window.parent.ethereum) {
+          provider = window.parent.ethereum
+        }
       }
       
       setEthereumProvider(provider)
-      console.log('Ethereum provider found:', !!provider)
+      console.log('Ethereum provider found:', !!provider, 'Type:', provider ? 'Farcaster SDK' : 'Standard')
       
       // Check and switch to Base network if needed
       if (provider && isFarcasterEnv) {
@@ -1077,11 +1103,98 @@ const TokenSwap = () => {
     }
   }
 
-  // Execute swap
+  // Execute batch approve and swap for Farcaster
+  const executeBatchApproveAndSwap = async () => {
+    if (!quote || !isConnected || !sendCalls) {
+      setError('Please connect wallet and get a quote first')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const sellTokenData = [...tokens, ...customTokens].find(t => t.address === sellToken)
+      const amount = parseFloat(sellAmount) * Math.pow(10, sellTokenData.decimals)
+      
+      // Get swap data from 1inch
+      const srcTokenForAPI = isNative(sellToken) ? NATIVE_ETH_ADDRESS : sellToken
+      
+      const params = new URLSearchParams({
+        endpoint: `/swap/v6.1/${BASE_CHAIN_ID}/swap`,
+        src: srcTokenForAPI,
+        dst: buyToken,
+        amount: amount.toString(),
+        from: address.toLowerCase(),
+        slippage: '1',
+        referrer: INTEGRATOR_ADDRESS,
+        fee: INTEGRATOR_FEE.toString(),
+        includeTokensInfo: 'true',
+        includeProtocols: 'true',
+        includeGas: 'true'
+      })
+
+      const response = await fetch(`/api/1inch-proxy?${params}`)
+      if (!response.ok) {
+        throw new Error('Failed to get swap data from 1inch')
+      }
+
+      const swapData = await response.json()
+      
+      // Prepare batch calls
+      const calls = []
+      
+      // Add approve call if needed
+      if (needsApproval && !isNative(sellToken)) {
+        calls.push({
+          to: sellToken,
+          data: swapData.tx.data // This should be the approve call
+        })
+      }
+      
+      // Add swap call
+      calls.push({
+        to: swapData.tx.to,
+        data: swapData.tx.data,
+        value: isNative(sellToken) ? swapData.tx.value : '0x0'
+      })
+
+      console.log('🚀 Executing batch approve and swap:', calls)
+
+      // Execute batch transaction
+      const result = await sendCalls({ calls })
+      
+      console.log('✅ Batch transaction successful:', result)
+      setSuccessMessage(`Successfully swapped ${sellAmount} ${sellTokenData.symbol} for ${buyAmount} ${[...tokens, ...customTokens].find(t => t.address === buyToken)?.symbol}`)
+      
+      // Clear quote and amounts
+      setQuote(null)
+      setSellAmount('')
+      setBuyAmount('')
+      
+      // Reload balances
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
+
+    } catch (error) {
+      console.error('❌ Batch transaction failed:', error)
+      setError(`Batch transaction failed: ${error.message}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Execute swap with Farcaster batch transaction support
   const executeSwap = async () => {
     if (!quote || !isConnected) {
       setError('Please connect wallet and get a quote first')
       return
+    }
+
+    // For Farcaster, we can batch approve + swap in one transaction
+    if (needsApproval && isFarcaster) {
+      return executeBatchApproveAndSwap()
     }
 
     if (needsApproval) {
@@ -1322,6 +1435,10 @@ const TokenSwap = () => {
                 <div>1. Make sure your Farcaster wallet is connected to Base network</div>
                 <div>2. If balance shows 0, try switching networks in your wallet</div>
                 <div>3. Some Farcaster wallets may have limited Base support</div>
+                <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px' }}>
+                  <div style={{ fontWeight: '600', color: '#10b981' }}>✨ Batch Transactions:</div>
+                  <div style={{ fontSize: '12px' }}>Approve + Swap in one transaction for better UX</div>
+                </div>
               </div>
             )}
           </div>
@@ -1414,6 +1531,8 @@ const TokenSwap = () => {
                     <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
                     <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
                     <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
+                    <div>SDK: {farcasterSDK ? '✅ Available' : '❌ Not Found'}</div>
+                    <div>Batch: {sendCalls ? '✅ Supported' : '❌ Not Available'}</div>
                   </div>
                 )}
               </div>
@@ -1468,6 +1587,8 @@ const TokenSwap = () => {
                     <div>ETH Balance: {tokenBalances[NATIVE_ETH_ADDRESS] || '0.000000'}</div>
                     <div>Address: {address ? formatAddress(address) : 'Not connected'}</div>
                     <div>Network: {currentChainId === '0x2105' ? '✅ Base' : currentChainId === '0x1' ? '❌ Ethereum' : `❓ ${currentChainId || 'Unknown'}`}</div>
+                    <div>SDK: {farcasterSDK ? '✅ Available' : '❌ Not Found'}</div>
+                    <div>Batch: {sendCalls ? '✅ Supported' : '❌ Not Available'}</div>
                   </div>
                 )}
               </div>
