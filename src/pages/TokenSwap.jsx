@@ -320,6 +320,14 @@ const TokenSwap = () => {
         
         // Load ETH balance using proper provider
         try {
+          console.log('🔍 Farcaster balance loading debug:', {
+            isFarcaster,
+            providerType: ethereumProvider?.constructor?.name,
+            providerMethods: ethereumProvider ? Object.getOwnPropertyNames(ethereumProvider) : [],
+            address,
+            chainId: currentChainId
+          })
+          
           const ethBalanceHex = await ethereumProvider.request({
             method: 'eth_getBalance',
             params: [address, 'latest']
@@ -330,6 +338,38 @@ const TokenSwap = () => {
           const ethBalanceFormatted = (Number(ethBalanceWei) / Math.pow(10, 18)).toFixed(6)
           
           console.log('ETH Balance - Raw:', ethBalanceHex, 'Wei:', ethBalanceWei.toString(), 'Formatted:', ethBalanceFormatted)
+          
+          // In Farcaster, if balance is 0, try alternative methods
+          if (isFarcaster && ethBalanceFormatted === '0.000000') {
+            console.log('🔍 Farcaster: Balance is 0, trying alternative methods...')
+            
+            // Try with different block parameter
+            try {
+              const ethBalanceHex2 = await ethereumProvider.request({
+                method: 'eth_getBalance',
+                params: [address, 'pending']
+              })
+              const ethBalanceWei2 = BigInt(ethBalanceHex2)
+              const ethBalanceFormatted2 = (Number(ethBalanceWei2) / Math.pow(10, 18)).toFixed(6)
+              console.log('ETH Balance (pending) - Raw:', ethBalanceHex2, 'Formatted:', ethBalanceFormatted2)
+              
+              if (ethBalanceFormatted2 !== '0.000000') {
+                console.log('✅ Found balance with pending block')
+                // Use the non-zero balance
+                const finalBalance = ethBalanceFormatted2
+                balances[NATIVE_ETH_ADDRESS] = finalBalance
+                balances[NATIVE_ETH_ADDRESS_ALT] = finalBalance
+                balances[ZERO_ADDRESS] = finalBalance
+                balances['0x4200000000000000000000000000000000000006'] = finalBalance
+                balances['ETH'] = finalBalance
+                balances['NATIVE_ETH'] = finalBalance
+                console.log('✅ ETH balance set to:', finalBalance)
+                return // Skip the rest of the balance loading
+              }
+            } catch (altError) {
+              console.log('Alternative balance method failed:', altError)
+            }
+          }
           
           // Store ETH balance for all ETH-related keys
           balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
@@ -360,7 +400,42 @@ const TokenSwap = () => {
                 balances['ETH'] = ethBalanceFormatted
                 balances['NATIVE_ETH'] = ethBalanceFormatted
               } else {
-                throw new Error('No alternative balance loading method available')
+                // Try using a different RPC endpoint for Base network
+                console.log('🔍 Trying Base RPC endpoint for balance...')
+                try {
+                  const baseRpcUrl = 'https://mainnet.base.org'
+                  const response = await fetch(baseRpcUrl, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      jsonrpc: '2.0',
+                      method: 'eth_getBalance',
+                      params: [address, 'latest'],
+                      id: 1
+                    })
+                  })
+                  
+                  const data = await response.json()
+                  if (data.result) {
+                    const ethBalanceWei = BigInt(data.result)
+                    const ethBalanceFormatted = (Number(ethBalanceWei) / Math.pow(10, 18)).toFixed(6)
+                    console.log('✅ ETH balance loaded via Base RPC:', ethBalanceFormatted)
+                    
+                    balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
+                    balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted
+                    balances[ZERO_ADDRESS] = ethBalanceFormatted
+                    balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted
+                    balances['ETH'] = ethBalanceFormatted
+                    balances['NATIVE_ETH'] = ethBalanceFormatted
+                  } else {
+                    throw new Error('No result from Base RPC')
+                  }
+                } catch (rpcError) {
+                  console.error('Base RPC balance loading failed:', rpcError)
+                  throw new Error('No alternative balance loading method available')
+                }
               }
             } catch (altError) {
               console.error('Alternative balance loading failed:', altError)
