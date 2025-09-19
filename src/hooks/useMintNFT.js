@@ -409,8 +409,8 @@ export const useMintNFT = () => {
       console.log('📊 Current gas price:', Number(currentGasPrice) / 1e9, 'gwei')
     } catch (error) {
       console.warn('⚠️ Failed to get current gas price, using fallback:', error)
-      // Fallback to very low gas price for Base
-      currentGasPrice = 1000000n // 0.001 gwei
+      // Fallback to reasonable gas price for Base
+      currentGasPrice = 1000000000n // 1 gwei
     }
 
     try {
@@ -535,7 +535,7 @@ export const useMintNFT = () => {
             from: address,
             data: deployData, // Already has 0x prefix
             value: '0x0', // Hex string with 0x prefix
-            gas: '0x2dc6c', // 187,500 gas limit (0x2dc6c in hex)
+            gas: '0x3d090', // 250,000 gas limit (0x3d090 in hex)
             gasPrice: '0x' + currentGasPrice.toString(16), // Legacy gas price
             // NO 'to' field for contract deployment - this prevents eth_call issues
             // NO type field - use legacy transaction to avoid EIP-1559 issues
@@ -555,7 +555,7 @@ export const useMintNFT = () => {
           deployTxHash = await sendTransaction(config, {
             data: deployData,
             value: 0n, // BigInt
-            gas: 187500n, // Gas limit for contract deployment
+            gas: 250000n, // Gas limit for contract deployment
             gasPrice: currentGasPrice, // Legacy gas price
             type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
             // @ts-expect-error - viem/wagmi forward eder
@@ -567,7 +567,7 @@ export const useMintNFT = () => {
         deployTxHash = await sendTransaction(config, {
           data: deployData,
           value: 0n, // BigInt
-          gas: 187500n, // Gas limit for contract deployment
+          gas: 250000n, // Gas limit for contract deployment
           gasPrice: currentGasPrice, // Legacy gas price
           type: 'legacy', // Use legacy transaction to avoid EIP-1559 issues
           // @ts-expect-error - viem/wagmi forward eder
