@@ -6,27 +6,7 @@ import { getXP } from '../utils/xpUtils'
 // Farcaster Mini App SDK Provider Helper
 async function getMiniAppProvider() {
   try {
-    // Check multiple possible Farcaster SDK locations
-    const possibleSDKs = [
-      window.farcaster?.wallet?.getEthereumProvider,
-      window.__farcaster?.wallet?.getEthereumProvider,
-      window.parent?.farcaster?.wallet?.getEthereumProvider,
-      window.parent?.__farcaster?.wallet?.getEthereumProvider
-    ]
-    
-    for (const sdk of possibleSDKs) {
-      if (typeof sdk === 'function') {
-        try {
-          const provider = await sdk()
-          console.log('✅ Farcaster SDK provider found:', !!provider)
-          return provider
-        } catch (error) {
-          console.log('SDK provider call failed:', error)
-        }
-      }
-    }
-    
-    // Check if we're in Farcaster environment by user agent
+    // Check if we're in Farcaster environment first
     const userAgent = navigator.userAgent || ''
     const isFarcasterEnv = userAgent.includes('Farcaster') || 
                           userAgent.includes('farcaster') ||
@@ -34,18 +14,52 @@ async function getMiniAppProvider() {
                           document.referrer.includes('farcaster')
     
     if (isFarcasterEnv) {
-      console.log('🔍 Farcaster environment detected but SDK not found')
-      console.log('Available objects:', {
-        window_farcaster: !!window.farcaster,
-        window___farcaster: !!window.__farcaster,
-        parent_farcaster: !!window.parent?.farcaster,
-        parent___farcaster: !!window.parent?.__farcaster,
-        userAgent: userAgent
-      })
+      console.log('🔍 Farcaster environment detected')
+      
+      // Try to access Farcaster SDK safely
+      try {
+        // Check window.farcaster first (most common)
+        if (window.farcaster?.wallet?.getEthereumProvider) {
+          const provider = await window.farcaster.wallet.getEthereumProvider()
+          console.log('✅ Farcaster SDK provider found (window.farcaster):', !!provider)
+          return provider
+        }
+        
+        // Check window.__farcaster (alternative)
+        if (window.__farcaster?.wallet?.getEthereumProvider) {
+          const provider = await window.__farcaster.wallet.getEthereumProvider()
+          console.log('✅ Farcaster SDK provider found (window.__farcaster):', !!provider)
+          return provider
+        }
+        
+        // Check if we can access parent frame safely
+        try {
+          if (window.parent && window.parent !== window) {
+            if (window.parent.farcaster?.wallet?.getEthereumProvider) {
+              const provider = await window.parent.farcaster.wallet.getEthereumProvider()
+              console.log('✅ Farcaster SDK provider found (parent.farcaster):', !!provider)
+              return provider
+            }
+          }
+        } catch (parentError) {
+          console.log('Parent frame access blocked (expected in Farcaster):', parentError.message)
+        }
+        
+        console.log('🔍 Farcaster environment detected but SDK not found')
+        console.log('Available objects:', {
+          window_farcaster: !!window.farcaster,
+          window___farcaster: !!window.__farcaster,
+          userAgent: userAgent,
+          referrer: document.referrer
+        })
+        
+      } catch (sdkError) {
+        console.log('Farcaster SDK access error:', sdkError.message)
+      }
     }
     
   } catch (error) {
-    console.log('Farcaster SDK detection error:', error)
+    console.log('Farcaster SDK detection error:', error.message)
   }
   
   // Fallback to window.ethereum for web
@@ -154,22 +168,28 @@ const TokenSwap = () => {
         } catch (error) {
           console.error('Failed to request accounts:', error)
           
-          // Don't fail completely, just warn
-          console.warn('eth_requestAccounts failed, continuing anyway...')
-          
-          // Try to get accounts without requesting
-          try {
-            const accounts = await provider.request({ method: 'eth_accounts' })
-            if (accounts && accounts.length > 0) {
-              console.log('✅ Found existing accounts:', accounts)
-            } else {
+          // In Farcaster, user might have already connected via Wagmi
+          if (isFarcasterEnv) {
+            console.log('🔍 Farcaster environment - checking Wagmi connection...')
+            // Don't fail, let Wagmi handle the connection
+          } else {
+            // Don't fail completely, just warn
+            console.warn('eth_requestAccounts failed, continuing anyway...')
+            
+            // Try to get accounts without requesting
+            try {
+              const accounts = await provider.request({ method: 'eth_accounts' })
+              if (accounts && accounts.length > 0) {
+                console.log('✅ Found existing accounts:', accounts)
+              } else {
+                setError('Please connect your wallet to continue.')
+                return
+              }
+            } catch (accountsError) {
+              console.error('Failed to get accounts:', accountsError)
               setError('Please connect your wallet to continue.')
               return
             }
-          } catch (accountsError) {
-            console.error('Failed to get accounts:', accountsError)
-            setError('Please connect your wallet to continue.')
-            return
           }
         }
         
@@ -275,7 +295,11 @@ const TokenSwap = () => {
           isWindowEthereum: ethereumProvider === window.ethereum,
           isFarcasterSDK: !!(window.farcaster?.wallet?.getEthereumProvider),
           isFarcasterSDKAlt: !!(window.__farcaster?.wallet?.getEthereumProvider),
-          providerType: ethereumProvider?.constructor?.name || 'Unknown'
+          providerType: ethereumProvider?.constructor?.name || 'Unknown',
+          providerMethods: ethereumProvider ? Object.getOwnPropertyNames(ethereumProvider) : [],
+          isFarcasterEnv: isFarcaster,
+          wagmiConnected: isConnected,
+          wagmiAddress: address
         })
         
         // Load ETH balance using proper provider
@@ -291,23 +315,56 @@ const TokenSwap = () => {
           
           console.log('ETH Balance - Raw:', ethBalanceHex, 'Wei:', ethBalanceWei.toString(), 'Formatted:', ethBalanceFormatted)
           
-            // Store ETH balance for all ETH-related keys
-            balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
-            balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted
-            balances[ZERO_ADDRESS] = ethBalanceFormatted
-            balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH
-            balances['ETH'] = ethBalanceFormatted
-            balances['NATIVE_ETH'] = ethBalanceFormatted
+          // Store ETH balance for all ETH-related keys
+          balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
+          balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted
+          balances[ZERO_ADDRESS] = ethBalanceFormatted
+          balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted // WETH
+          balances['ETH'] = ethBalanceFormatted
+          balances['NATIVE_ETH'] = ethBalanceFormatted
           
         } catch (ethError) {
           console.error('Error loading ETH balance:', ethError)
-          const defaultEth = '0.000000'
-          balances[NATIVE_ETH_ADDRESS] = defaultEth
-          balances[NATIVE_ETH_ADDRESS_ALT] = defaultEth
-          balances[ZERO_ADDRESS] = defaultEth
-          balances['0x4200000000000000000000000000000000000006'] = defaultEth
-          balances['ETH'] = defaultEth
-          balances['NATIVE_ETH'] = defaultEth
+          
+          // In Farcaster, try alternative approach
+          if (isFarcaster) {
+            console.log('🔍 Farcaster environment - trying alternative balance loading...')
+            try {
+              // Try using Wagmi's public client if available
+              const publicClient = window.wagmiPublicClient
+              if (publicClient) {
+                const balance = await publicClient.getBalance({ address })
+                const ethBalanceFormatted = (Number(balance) / Math.pow(10, 18)).toFixed(6)
+                console.log('✅ ETH balance loaded via Wagmi public client:', ethBalanceFormatted)
+                
+                balances[NATIVE_ETH_ADDRESS] = ethBalanceFormatted
+                balances[NATIVE_ETH_ADDRESS_ALT] = ethBalanceFormatted
+                balances[ZERO_ADDRESS] = ethBalanceFormatted
+                balances['0x4200000000000000000000000000000000000006'] = ethBalanceFormatted
+                balances['ETH'] = ethBalanceFormatted
+                balances['NATIVE_ETH'] = ethBalanceFormatted
+              } else {
+                throw new Error('No alternative balance loading method available')
+              }
+            } catch (altError) {
+              console.error('Alternative balance loading failed:', altError)
+              const defaultEth = '0.000000'
+              balances[NATIVE_ETH_ADDRESS] = defaultEth
+              balances[NATIVE_ETH_ADDRESS_ALT] = defaultEth
+              balances[ZERO_ADDRESS] = defaultEth
+              balances['0x4200000000000000000000000000000000000006'] = defaultEth
+              balances['ETH'] = defaultEth
+              balances['NATIVE_ETH'] = defaultEth
+            }
+          } else {
+            const defaultEth = '0.000000'
+            balances[NATIVE_ETH_ADDRESS] = defaultEth
+            balances[NATIVE_ETH_ADDRESS_ALT] = defaultEth
+            balances[ZERO_ADDRESS] = defaultEth
+            balances['0x4200000000000000000000000000000000000006'] = defaultEth
+            balances['ETH'] = defaultEth
+            balances['NATIVE_ETH'] = defaultEth
+          }
         }
 
         // Load ERC20 token balances
