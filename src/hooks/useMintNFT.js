@@ -410,7 +410,7 @@ export const useMintNFT = () => {
   const [error, setError] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
 
-  const mintNFT = async (imageFile) => {
+  const mintNFT = async (imageFile, name, symbol, description) => {
     if (!address) {
       throw new Error('Wallet not connected')
     }
@@ -610,7 +610,7 @@ export const useMintNFT = () => {
         // Don't throw here, mint was successful
       }
 
-      setSuccessMessage(`✅ BaseHub NFT minted successfully! Contract: ${contractAddress}`)
+      setSuccessMessage(`✅ NFT "${name}" (${symbol}) minted successfully! Contract: ${contractAddress}`)
 
       return {
         txHash: mintTxHash,

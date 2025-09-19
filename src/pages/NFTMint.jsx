@@ -77,11 +77,20 @@ const NFTMint = () => {
   
   const [formData, setFormData] = useState({
     image: null,
-    imagePreview: null
+    imagePreview: null,
+    name: '',
+    symbol: '',
+    description: ''
   })
 
 
-  // Remove handleInputChange since we don't need text inputs anymore
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0]
@@ -118,8 +127,23 @@ const NFTMint = () => {
       return
     }
 
+    if (!formData.name.trim()) {
+      alert('Please enter NFT name')
+      return
+    }
+
+    if (!formData.symbol.trim()) {
+      alert('Please enter NFT symbol')
+      return
+    }
+
+    if (!formData.description.trim()) {
+      alert('Please enter NFT description')
+      return
+    }
+
     try {
-      await mintNFT(formData.image)
+      await mintNFT(formData.image, formData.name, formData.symbol, formData.description)
     } catch (err) {
       console.error('NFT mint failed:', err)
     }
@@ -180,28 +204,62 @@ const NFTMint = () => {
               </div>
             </div>
 
-            {/* NFT Contract Info */}
+            {/* NFT Details */}
             <div className="form-group">
-              <div className="auto-info">
-                <div className="info-item">
-                  <span className="info-icon">🏷️</span>
-                  <span className="info-label">Name:</span>
-                  <span className="info-value">BaseHub</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-icon">🔤</span>
-                  <span className="info-label">Symbol:</span>
-                  <span className="info-value">BHUB</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-icon">💰</span>
-                  <span className="info-label">Mint Price:</span>
-                  <span className="info-value">0.0001 ETH</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-icon">📝</span>
-                  <span className="info-label">Description:</span>
-                  <span className="info-value">BaseHub NFT Collection</span>
+              <label className="form-label">
+                <span className="label-icon">🏷️</span>
+                NFT Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Enter your NFT name"
+                className="form-input"
+                maxLength={50}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">🔤</span>
+                NFT Symbol *
+              </label>
+              <input
+                type="text"
+                name="symbol"
+                value={formData.symbol}
+                onChange={handleInputChange}
+                placeholder="Enter your NFT symbol (e.g., MYNFT)"
+                className="form-input"
+                maxLength={10}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">
+                <span className="label-icon">📝</span>
+                Description *
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Describe your NFT"
+                className="form-textarea"
+                maxLength={200}
+                rows={3}
+              />
+            </div>
+
+            {/* Mint Price Info */}
+            <div className="form-group">
+              <div className="price-info">
+                <div className="price-item">
+                  <span className="price-icon">💰</span>
+                  <span className="price-label">Mint Price:</span>
+                  <span className="price-value">0.0001 ETH</span>
                 </div>
               </div>
             </div>
@@ -225,7 +283,7 @@ const NFTMint = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || !formData.image}
+              disabled={isLoading || !formData.image || !formData.name.trim() || !formData.symbol.trim() || !formData.description.trim()}
               className="mint-button"
             >
               {isLoading ? (
@@ -808,40 +866,33 @@ const styles = `
     }
   }
 
-  .auto-info {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  .price-info {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
     border-radius: 12px;
-    padding: 20px;
-    border: 1px solid #cbd5e1;
+    padding: 16px;
+    border: 1px solid #f59e0b;
   }
 
-  .info-item {
+  .price-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 12px;
-    padding: 8px 0;
+    justify-content: center;
   }
 
-  .info-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .info-icon {
+  .price-icon {
     font-size: 18px;
-    width: 24px;
-    text-align: center;
   }
 
-  .info-label {
+  .price-label {
     font-weight: 600;
-    color: #374151;
-    min-width: 80px;
+    color: #92400e;
   }
 
-  .info-value {
-    color: #6b7280;
-    font-weight: 500;
+  .price-value {
+    color: #b45309;
+    font-weight: 700;
+    font-size: 16px;
   }
 `
 
