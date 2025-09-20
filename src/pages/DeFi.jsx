@@ -2,7 +2,6 @@ import React from 'react'
 import { useAccount } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRightLeft, TrendingUp, CreditCard, Coins } from 'lucide-react'
-// OnchainKit components (React 18 compatible)
 import { SwapDefault } from '@coinbase/onchainkit/swap'
 import { Earn } from '@coinbase/onchainkit/earn'
 import { Buy } from '@coinbase/onchainkit/buy'
@@ -41,6 +40,9 @@ const DeFi = () => {
     image: 'https://base.org/favicon.ico',
     chainId: 8453,
   }
+
+  // All available tokens for swapping
+  const availableTokens = [eth, usdc, bhub]
 
   return (
     <div className="defi-page">
@@ -164,8 +166,9 @@ const DeFi = () => {
           
           {isConnected ? (
             <SwapDefault
-              from={[eth, usdc, bhub]}
-              to={[eth, usdc, bhub]}
+              from={availableTokens}
+              to={availableTokens}
+              experimental={{ useAggregator: false }}
             />
           ) : (
             <div style={{
