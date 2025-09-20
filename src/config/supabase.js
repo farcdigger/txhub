@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Supabase configuration - REQUIRED for production
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://agouyrjgstsbijnowvwv.supabase.co'
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFnb3V5cmpnc3RzYmlqbm93dnd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ3MzQ4NzQsImV4cCI6MjA1MDMxMDg3NH0.9C6336de09973362d'
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('❌ Supabase configuration missing! Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in environment variables')
@@ -17,8 +17,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   },
   global: {
     headers: {
-      'X-Client-Info': 'basehub-farcaster@1.0.0'
+      'X-Client-Info': 'basehub-farcaster@1.0.0',
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`
     }
+  },
+  db: {
+    schema: 'public'
   }
 })
 
