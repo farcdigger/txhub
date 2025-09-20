@@ -1,7 +1,6 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
-// import { Swap } from '@coinbase/onchainkit/swap'
-// Token type definition for Base network
+import { Swap } from '@coinbase/onchainkit/swap'
 
 const SwapTest = () => {
   const { isConnected } = useAccount()
@@ -44,70 +43,16 @@ const SwapTest = () => {
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Token Swap</h2>
       <div style={{
-        padding: '40px',
-        textAlign: 'center',
-        background: 'rgba(249, 250, 251, 0.8)',
-        borderRadius: '12px',
-        border: '1px solid #e5e7eb'
+        background: 'rgba(255, 255, 255, 0.95)',
+        borderRadius: '16px',
+        padding: '20px',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
       }}>
-        <h3 style={{ marginBottom: '20px', color: '#1f2937' }}>Token Swap Platforms</h3>
-        <p style={{ marginBottom: '20px', color: '#6b7280' }}>Use these platforms for token swapping:</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-          <a
-            href="https://app.uniswap.org/swap?chain=base"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-              color: 'white',
-              padding: '16px 20px',
-              borderRadius: '12px',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              display: 'block'
-            }}
-          >
-            🔄 Uniswap
-            <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>ETH/USDC/BHUB</div>
-          </a>
-          <a
-            href="https://app.1inch.io/#/1/swap/ETH/USDC"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: 'white',
-              padding: '16px 20px',
-              borderRadius: '12px',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              display: 'block'
-            }}
-          >
-            🎯 1inch
-            <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>Best Prices</div>
-          </a>
-          <a
-            href="https://app.sushi.com/swap"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: 'white',
-              padding: '16px 20px',
-              borderRadius: '12px',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              display: 'block'
-            }}
-          >
-            🍣 SushiSwap
-            <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>Multi-chain</div>
-          </a>
-        </div>
+        <Swap
+          from={[eth]}
+          to={[usdc]}
+        />
       </div>
     </div>
   )
