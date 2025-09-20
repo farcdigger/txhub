@@ -6,7 +6,7 @@ import { SwapDefault } from '@coinbase/onchainkit/swap'
 import { Earn } from '@coinbase/onchainkit/earn'
 import { Buy } from '@coinbase/onchainkit/buy'
 import { FundCard } from '@coinbase/onchainkit/fund'
-import type { Token } from '@coinbase/onchainkit/token'
+// Token type definition for Base network
 import EmbedMeta from '../components/EmbedMeta'
 
 const DeFi = () => {
@@ -14,7 +14,7 @@ const DeFi = () => {
   const navigate = useNavigate()
 
   // Base network tokens
-  const eth: Token = {
+  const eth = {
     name: 'ETH',
     address: '',
     symbol: 'ETH',
@@ -23,7 +23,7 @@ const DeFi = () => {
     chainId: 8453,
   }
 
-  const usdc: Token = {
+  const usdc = {
     name: 'USDC',
     address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
     symbol: 'USDC',
@@ -32,7 +32,7 @@ const DeFi = () => {
     chainId: 8453,
   }
 
-  const bhub: Token = {
+  const bhub = {
     name: 'BHUB Token',
     address: '0xB2b2c587E51175a2aE4713d8Ea68A934a8527a4b',
     symbol: 'BHUB',

@@ -1,13 +1,13 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
 import { SwapDefault } from '@coinbase/onchainkit/swap'
-import type { Token } from '@coinbase/onchainkit/token'
+// Token type definition for Base network
 
 const SwapTest = () => {
   const { isConnected } = useAccount()
 
   // Base network tokens
-  const eth: Token = {
+  const eth = {
     name: 'ETH',
     address: '',
     symbol: 'ETH',
@@ -16,7 +16,7 @@ const SwapTest = () => {
     chainId: 8453,
   }
 
-  const usdc: Token = {
+  const usdc = {
     name: 'USDC',
     address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
     symbol: 'USDC',
