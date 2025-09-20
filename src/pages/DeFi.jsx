@@ -2,11 +2,10 @@ import React from 'react'
 import { useAccount } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRightLeft, TrendingUp, CreditCard, Coins } from 'lucide-react'
-// OnchainKit components temporarily disabled
-// import { Swap } from '@coinbase/onchainkit/swap'
-// import { Earn } from '@coinbase/onchainkit/earn'
-// import { Buy } from '@coinbase/onchainkit/buy'
-// import { FundCard } from '@coinbase/onchainkit/fund'
+import { Swap } from '@coinbase/onchainkit/swap'
+import { Earn } from '@coinbase/onchainkit/earn'
+import { Buy } from '@coinbase/onchainkit/buy'
+import { FundCard } from '@coinbase/onchainkit/fund'
 // Token type definition for Base network
 import EmbedMeta from '../components/EmbedMeta'
 
@@ -165,71 +164,147 @@ const DeFi = () => {
             </div>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-            {/* Swap Tokens */}
-            <a
-              href="https://app.uniswap.org/swap?chain=base"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <div className="game-card" style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)' }}>
-                <div className="game-icon" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
-                  <ArrowRightLeft size={24} color="white" />
-                </div>
-                <h3 style={{ color: 'white', fontSize: '18px', marginBottom: '8px' }}>Swap Tokens</h3>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>Exchange one token for another on Uniswap.</p>
+          {isConnected ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+              {/* Token Swap Component */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+              }}>
+                <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
+                  🔄 Token Swap
+                </h3>
+                <Swap
+                  from={availableTokens}
+                  to={availableTokens}
+                />
               </div>
-            </a>
 
-            {/* Earn Yield */}
-            <a
-              href="https://app.morpho.org/base/earn"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <div className="game-card" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
-                <div className="game-icon" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
-                  <TrendingUp size={24} color="white" />
-                </div>
-                <h3 style={{ color: 'white', fontSize: '18px', marginBottom: '8px' }}>Earn Yield</h3>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>Deposit assets to earn interest on Morpho.</p>
+              {/* Yield Farming Component */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+              }}>
+                <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
+                  📈 Earn Yield
+                </h3>
+                <Earn />
               </div>
-            </a>
 
-            {/* Buy Crypto */}
-            <a
-              href="https://www.coinbase.com/buy-crypto"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <div className="game-card" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }}>
-                <div className="game-icon" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
-                  <CreditCard size={24} color="white" />
-                </div>
-                <h3 style={{ color: 'white', fontSize: '18px', marginBottom: '8px' }}>Buy Crypto</h3>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>Purchase crypto with fiat on Coinbase.</p>
+              {/* Buy Crypto Component */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+              }}>
+                <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
+                  💳 Buy Crypto
+                </h3>
+                <Buy />
               </div>
-            </a>
 
-            {/* Fund Wallet */}
-            <a
-              href="https://www.coinbase.com/wallet"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: 'none' }}
-            >
-              <div className="game-card" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
-                <div className="game-icon" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
-                  <Coins size={24} color="white" />
-                </div>
-                <h3 style={{ color: 'white', fontSize: '18px', marginBottom: '8px' }}>Fund Wallet</h3>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>Add funds to your wallet.</p>
+              {/* Fund Wallet Component */}
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+              }}>
+                <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
+                  🏦 Fund Wallet
+                </h3>
+                <FundCard />
               </div>
-            </a>
-          </div>
+            </div>
+          ) : (
+            <div style={{
+              padding: '40px',
+              textAlign: 'center',
+              background: 'rgba(249, 250, 251, 0.8)',
+              borderRadius: '12px',
+              border: '1px solid #e5e7eb'
+            }}>
+              <h3 style={{ color: '#1f2937', marginBottom: '16px' }}>Connect Your Wallet</h3>
+              <p style={{ color: '#6b7280', marginBottom: '20px' }}>
+                Connect your wallet to access DeFi features like token swapping, yield farming, and more.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                <a
+                  href="https://app.uniswap.org/swap?chain=base"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+                    color: 'white',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}
+                >
+                  🔄 Uniswap Swap
+                </a>
+                <a
+                  href="https://app.morpho.org/base/earn"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}
+                >
+                  📈 Morpho Earn
+                </a>
+                <a
+                  href="https://www.coinbase.com/buy-crypto"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                    color: 'white',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}
+                >
+                  💳 Buy Crypto
+                </a>
+                <a
+                  href="https://www.coinbase.com/wallet"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                  }}
+                >
+                  🏦 Fund Wallet
+                </a>
+              </div>
+            </div>
+          )}
 
           {!isConnected && (
             <div style={{

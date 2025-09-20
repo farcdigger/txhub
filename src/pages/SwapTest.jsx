@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
-// import { Swap } from '@coinbase/onchainkit/swap'
+import { Swap } from '@coinbase/onchainkit/swap'
 // Token type definition for Base network
 
 const SwapTest = () => {
@@ -43,48 +43,66 @@ const SwapTest = () => {
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Token Swap</h2>
-      <div style={{
-        padding: '40px',
-        textAlign: 'center',
-        background: 'rgba(249, 250, 251, 0.8)',
-        borderRadius: '12px',
-        border: '1px solid #e5e7eb'
-      }}>
-        <h3>Token Swap</h3>
-        <p style={{ marginBottom: '20px' }}>Use external DeFi platforms for token swapping:</p>
-        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-          <a
-            href="https://app.uniswap.org/swap?chain=base"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-              color: 'white',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}
-          >
-            Uniswap
-          </a>
-          <a
-            href="https://app.1inch.io/#/1/swap/ETH/USDC"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: 'white',
-              padding: '12px 24px',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}
-          >
-            1inch
-          </a>
+      {isConnected ? (
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: '16px',
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
+            🔄 Token Swap
+          </h3>
+          <Swap
+            from={[eth]}
+            to={[usdc]}
+          />
         </div>
-      </div>
+      ) : (
+        <div style={{
+          padding: '40px',
+          textAlign: 'center',
+          background: 'rgba(249, 250, 251, 0.8)',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h3>Connect Wallet to Swap</h3>
+          <p style={{ marginBottom: '20px' }}>Please connect your wallet to use the swap feature.</p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <a
+              href="https://app.uniswap.org/swap?chain=base"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: 'bold'
+              }}
+            >
+              Uniswap
+            </a>
+            <a
+              href="https://app.1inch.io/#/1/swap/ETH/USDC"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: 'bold'
+              }}
+            >
+              1inch
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
