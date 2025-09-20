@@ -2,10 +2,11 @@ import React from 'react'
 import { useAccount } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRightLeft, TrendingUp, CreditCard, Coins } from 'lucide-react'
-import { Swap } from '@coinbase/onchainkit/swap'
-import { Earn } from '@coinbase/onchainkit/earn'
-import { Buy } from '@coinbase/onchainkit/buy'
-import { FundCard } from '@coinbase/onchainkit/fund'
+// OnchainKit components temporarily disabled
+// import { Swap } from '@coinbase/onchainkit/swap'
+// import { Earn } from '@coinbase/onchainkit/earn'
+// import { Buy } from '@coinbase/onchainkit/buy'
+// import { FundCard } from '@coinbase/onchainkit/fund'
 // Token type definition for Base network
 import EmbedMeta from '../components/EmbedMeta'
 
@@ -164,12 +165,73 @@ const DeFi = () => {
             </div>
           </div>
           
-          {isConnected ? (
-            <Swap
-              from={availableTokens}
-              to={availableTokens}
-            />
-          ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+            {/* Swap Tokens */}
+            <a
+              href="https://app.uniswap.org/swap?chain=base"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              <div className="game-card" style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)' }}>
+                <div className="game-icon" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
+                  <ArrowRightLeft size={24} color="white" />
+                </div>
+                <h3 style={{ color: 'white', fontSize: '18px', marginBottom: '8px' }}>Swap Tokens</h3>
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>Exchange one token for another on Uniswap.</p>
+              </div>
+            </a>
+
+            {/* Earn Yield */}
+            <a
+              href="https://app.morpho.org/base/earn"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              <div className="game-card" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+                <div className="game-icon" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
+                  <TrendingUp size={24} color="white" />
+                </div>
+                <h3 style={{ color: 'white', fontSize: '18px', marginBottom: '8px' }}>Earn Yield</h3>
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>Deposit assets to earn interest on Morpho.</p>
+              </div>
+            </a>
+
+            {/* Buy Crypto */}
+            <a
+              href="https://www.coinbase.com/buy-crypto"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              <div className="game-card" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }}>
+                <div className="game-icon" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
+                  <CreditCard size={24} color="white" />
+                </div>
+                <h3 style={{ color: 'white', fontSize: '18px', marginBottom: '8px' }}>Buy Crypto</h3>
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>Purchase crypto with fiat on Coinbase.</p>
+              </div>
+            </a>
+
+            {/* Fund Wallet */}
+            <a
+              href="https://www.coinbase.com/wallet"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              <div className="game-card" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
+                <div className="game-icon" style={{ background: 'rgba(255, 255, 255, 0.2)' }}>
+                  <Coins size={24} color="white" />
+                </div>
+                <h3 style={{ color: 'white', fontSize: '18px', marginBottom: '8px' }}>Fund Wallet</h3>
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>Add funds to your wallet.</p>
+              </div>
+            </a>
+          </div>
+
+          {!isConnected && (
             <div style={{
               padding: '40px',
               textAlign: 'center',
