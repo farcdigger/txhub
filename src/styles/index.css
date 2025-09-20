@@ -1409,3 +1409,52 @@ body {
   border-color: rgba(239, 68, 68, 0.5);
   transform: translateY(-1px);
 }
+
+/* DeFi Page Styles */
+.defi-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  padding: 20px;
+  margin-top: 0 !important;
+  padding-top: 60px !important;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.defi-page .card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  margin-bottom: 24px;
+}
+
+.defi-page .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* OnchainKit Component Styling */
+.defi-page [data-testid="swap-default"] {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.defi-page [data-testid="earn"] {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.defi-page [data-testid="buy"] {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.defi-page [data-testid="fund-card"] {
+  border-radius: 16px;
+  overflow: hidden;
+}

@@ -14,6 +14,7 @@
     "deploy:local": "hardhat run scripts/deploy.js --network hardhat"
   },
   "dependencies": {
+    "@coinbase/onchainkit": "^1.0.2",
     "@farcaster/miniapp-sdk": "^0.1.10",
     "@farcaster/miniapp-wagmi-connector": "^1.0.0",
     "@supabase/supabase-js": "^2.57.4",

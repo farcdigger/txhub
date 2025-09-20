@@ -4,7 +4,7 @@ import { useAccount, useDisconnect } from 'wagmi'
 import { getLeaderboard, getXP } from '../utils/xpUtils'
 import { useTransactions } from '../hooks/useTransactions'
 import EmbedMeta from '../components/EmbedMeta'
-import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp, Image, Flame } from 'lucide-react'
+import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp, Image, Flame, Building2 } from 'lucide-react'
 
 const Home = () => {
   const { address, isConnected } = useAccount()
@@ -282,6 +282,16 @@ const Home = () => {
       color: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
       xpReward: '10+ XP',
       bonusXP: 'Exponential growth'
+    },
+    {
+      id: 'defi',
+      title: 'DeFi Hub',
+      description: 'Swap tokens, earn yield, buy crypto',
+      icon: <Building2 size={20} />,
+      path: '/defi',
+      color: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+      xpReward: '50 XP',
+      bonusXP: 'Per transaction'
     },
   ]
 

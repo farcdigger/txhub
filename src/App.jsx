@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiProvider, useConnect, useAccount } from 'wagmi'
 import { HelmetProvider } from 'react-helmet-async'
+import { OnchainKitProvider } from '@coinbase/onchainkit'
 import { FarcasterProvider, useFarcaster } from './contexts/FarcasterContext'
 import { config } from './config/wagmi'
 import FarcasterXPDisplay from './components/FarcasterXPDisplay'
@@ -18,6 +19,7 @@ import DeployToken from './pages/DeployToken'
 import NFTMint from './pages/NFTMint'
 import TokenSwap from './pages/TokenSwap'
 import DailyStreak from './pages/DailyStreak'
+import DeFi from './pages/DeFi'
 import './styles/index.css'
 
 const queryClient = new QueryClient()
@@ -102,6 +104,7 @@ function AppContent() {
             <Route path="/nft" element={<NFTMint />} />
             <Route path="/swap" element={<TokenSwap />} />
             <Route path="/daily-streak" element={<DailyStreak />} />
+            <Route path="/defi" element={<DeFi />} />
           </Routes>
         </main>
       </div>
@@ -115,9 +118,15 @@ function App() {
     <HelmetProvider>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
-          <FarcasterProvider>
-            <AppContent />
-          </FarcasterProvider>
+          <OnchainKitProvider
+            apiKey="your-client-api-key"
+            chain={8453} // Base mainnet
+            initialChainId={8453}
+          >
+            <FarcasterProvider>
+              <AppContent />
+            </FarcasterProvider>
+          </OnchainKitProvider>
         </QueryClientProvider>
       </WagmiProvider>
     </HelmetProvider>
