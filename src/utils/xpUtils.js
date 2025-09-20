@@ -21,7 +21,26 @@ export const addXP = async (walletAddress, xpAmount) => {
 
     if (fetchError && fetchError.code !== 'PGRST116') {
       console.error('❌ Error fetching player:', fetchError)
-      throw fetchError
+      console.log('🔄 Retrying with different approach...')
+      
+      // Retry with different query approach
+      const { data: retryData, error: retryError } = await supabase
+        .from('players')
+        .select('*')
+        .eq('wallet_address', walletAddress)
+      
+      if (retryError) {
+        console.error('❌ Retry also failed:', retryError)
+        throw retryError
+      }
+      
+      // Use first result if found
+      if (retryData && retryData.length > 0) {
+        const existingPlayer = retryData[0]
+        console.log('✅ Retry successful, found player:', existingPlayer.wallet_address)
+      } else {
+        console.log('ℹ️ No existing player found, will create new one')
+      }
     }
 
     console.log('🔍 Player lookup result:', { existingPlayer, fetchError: fetchError?.code })

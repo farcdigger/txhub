@@ -19,11 +19,18 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     headers: {
       'X-Client-Info': 'basehub-farcaster@1.0.0',
       'apikey': supabaseKey,
-      'Authorization': `Bearer ${supabaseKey}`
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
     }
   },
   db: {
     schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
   }
 })
 
