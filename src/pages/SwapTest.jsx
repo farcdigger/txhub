@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
-import { SwapDefault } from '@coinbase/onchainkit/swap'
+import { Swap } from '@coinbase/onchainkit/swap'
 
 const SwapTest = () => {
   const { isConnected } = useAccount()
@@ -39,7 +39,7 @@ const SwapTest = () => {
           <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
             🔄 OnchainKit Swap
           </h3>
-          <SwapDefault
+          <Swap
             from={[eth]}
             to={[usdc]}
           />

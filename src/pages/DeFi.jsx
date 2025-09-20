@@ -2,7 +2,7 @@ import React from 'react'
 import { useAccount } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { SwapDefault } from '@coinbase/onchainkit/swap'
+import { Swap } from '@coinbase/onchainkit/swap'
 import EmbedMeta from '../components/EmbedMeta'
 
 const DeFi = () => {
@@ -91,7 +91,7 @@ const DeFi = () => {
             <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
               🔄 OnchainKit Swap
             </h3>
-            <SwapDefault
+            <Swap
               from={[eth]}
               to={[usdc]}
             />
