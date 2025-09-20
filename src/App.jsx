@@ -120,11 +120,12 @@ function App() {
     <HelmetProvider>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
-          <OnchainKitProvider apiKey="Al1MeOxtVe32i7vc9mBiUO8vx9MgGuUp">
+          {/* OnchainKitProvider temporarily disabled due to name error */}
+          {/* <OnchainKitProvider apiKey="Al1MeOxtVe32i7vc9mBiUO8vx9MgGuUp"> */}
             <FarcasterProvider>
               <AppContent />
             </FarcasterProvider>
-          </OnchainKitProvider>
+          {/* </OnchainKitProvider> */}
         </QueryClientProvider>
       </WagmiProvider>
     </HelmetProvider>
