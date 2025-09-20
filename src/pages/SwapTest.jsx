@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
-// import { Swap } from '@coinbase/onchainkit/swap'
+import { Swap } from '@coinbase/onchainkit/swap'
 
 const SwapTest = () => {
   const { isConnected } = useAccount()
@@ -27,19 +27,35 @@ const SwapTest = () => {
   return (
     <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px' }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Token Swap</h2>
-      <div style={{
-        padding: '40px',
-        textAlign: 'center',
-        background: 'rgba(249, 250, 251, 0.8)',
-        borderRadius: '12px',
-        border: '1px solid #e5e7eb'
-      }}>
-        <h3 style={{ marginBottom: '20px', color: '#1f2937' }}>Swap Platforms</h3>
-        <p style={{ marginBottom: '20px', color: '#6b7280' }}>
-          Use these platforms for token swapping on Base network:
-        </p>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+      
+      {isConnected ? (
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: '16px',
+          padding: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
+            🔄 OnchainKit Swap
+          </h3>
+          <Swap
+            from={[eth]}
+            to={[usdc]}
+          />
+        </div>
+      ) : (
+        <div style={{
+          padding: '40px',
+          textAlign: 'center',
+          background: 'rgba(249, 250, 251, 0.8)',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{ marginBottom: '20px', color: '#1f2937' }}>Connect Wallet to Swap</h3>
+          <p style={{ marginBottom: '20px', color: '#6b7280' }}>
+            Please connect your wallet to use the swap feature.
+          </p>
           <a
             href="https://app.uniswap.org/swap?chain=base"
             target="_blank"
@@ -47,52 +63,16 @@ const SwapTest = () => {
             style={{
               background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
               color: 'white',
-              padding: '16px 20px',
-              borderRadius: '12px',
+              padding: '12px 24px',
+              borderRadius: '8px',
               textDecoration: 'none',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              display: 'block'
+              fontWeight: 'bold'
             }}
           >
-            🔄 Uniswap
-            <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>ETH ↔ USDC</div>
-          </a>
-          
-          <a
-            href="https://app.1inch.io/#/1/swap/ETH/USDC"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: 'white',
-              padding: '16px 20px',
-              borderRadius: '12px',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              display: 'block'
-            }}
-          >
-            🎯 1inch
-            <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>Best Prices</div>
+            🔄 Use Uniswap Instead
           </a>
         </div>
-        
-        {isConnected && (
-          <div style={{
-            marginTop: '20px',
-            padding: '16px',
-            background: 'rgba(16, 185, 129, 0.1)',
-            borderRadius: '8px',
-            border: '1px solid rgba(16, 185, 129, 0.2)'
-          }}>
-            <p style={{ color: '#059669', margin: 0, fontSize: '14px' }}>
-              ✅ Wallet Connected: Ready to swap!
-            </p>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   )
 }

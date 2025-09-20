@@ -120,8 +120,7 @@ function App() {
     <HelmetProvider>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
-          {/* OnchainKitProvider temporarily disabled due to name error */}
-          {/* <OnchainKitProvider 
+          <OnchainKitProvider 
             apiKey="Al1MeOxtVe32i7vc9mBiUO8vx9MgGuUp"
             chain={{
               id: 8453,
@@ -140,11 +139,11 @@ function App() {
                 default: { name: 'BaseScan', url: 'https://basescan.org' },
               },
             }}
-          > */}
+          >
             <FarcasterProvider>
               <AppContent />
             </FarcasterProvider>
-          {/* </OnchainKitProvider> */}
+          </OnchainKitProvider>
         </QueryClientProvider>
       </WagmiProvider>
     </HelmetProvider>
