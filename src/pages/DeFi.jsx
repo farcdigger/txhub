@@ -2,6 +2,7 @@ import React from 'react'
 import { useAccount } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRightLeft, TrendingUp, CreditCard, Coins } from 'lucide-react'
+// OnchainKit components (React 18 compatible)
 import { SwapDefault } from '@coinbase/onchainkit/swap'
 import { Earn } from '@coinbase/onchainkit/earn'
 import { Buy } from '@coinbase/onchainkit/buy'
