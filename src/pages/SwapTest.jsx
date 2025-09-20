@@ -30,19 +30,41 @@ const SwapTest = () => {
       
       {isConnected ? (
         <div style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          borderRadius: '16px',
-          padding: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+          borderRadius: '20px',
+          padding: '24px',
+          border: '2px solid rgba(59, 130, 246, 0.1)',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.05)',
+          backdropFilter: 'blur(10px)',
+          maxWidth: '450px',
+          margin: '0 auto'
         }}>
-          <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
-            🔄 OnchainKit Swap
-          </h3>
-          <Swap
-            from={[eth]}
-            to={[usdc]}
-          />
+          <div style={{ 
+            textAlign: 'center', 
+            marginBottom: '20px',
+            padding: '12px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+            borderRadius: '12px',
+            color: 'white'
+          }}>
+            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>
+              🔄 OnchainKit Swap
+            </h3>
+            <p style={{ margin: '4px 0 0 0', fontSize: '14px', opacity: 0.9 }}>
+              ETH ↔ USDC on Base Network
+            </p>
+          </div>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '16px',
+            border: '1px solid #e5e7eb'
+          }}>
+            <Swap
+              from={[eth]}
+              to={[usdc]}
+            />
+          </div>
         </div>
       ) : (
         <div style={{
