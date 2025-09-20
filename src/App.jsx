@@ -120,11 +120,31 @@ function App() {
     <HelmetProvider>
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
-          <OnchainKitProvider apiKey="Al1MeOxtVe32i7vc9mBiUO8vx9MgGuUp">
+          {/* OnchainKitProvider temporarily disabled due to name error */}
+          {/* <OnchainKitProvider 
+            apiKey="Al1MeOxtVe32i7vc9mBiUO8vx9MgGuUp"
+            chain={{
+              id: 8453,
+              name: 'Base',
+              network: 'base',
+              nativeCurrency: {
+                decimals: 18,
+                name: 'Ethereum',
+                symbol: 'ETH',
+              },
+              rpcUrls: {
+                default: { http: ['https://mainnet.base.org'] },
+                public: { http: ['https://mainnet.base.org'] },
+              },
+              blockExplorers: {
+                default: { name: 'BaseScan', url: 'https://basescan.org' },
+              },
+            }}
+          > */}
             <FarcasterProvider>
               <AppContent />
             </FarcasterProvider>
-          </OnchainKitProvider>
+          {/* </OnchainKitProvider> */}
         </QueryClientProvider>
       </WagmiProvider>
     </HelmetProvider>

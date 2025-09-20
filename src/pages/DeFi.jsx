@@ -2,7 +2,7 @@ import React from 'react'
 import { useAccount } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { Swap } from '@coinbase/onchainkit/swap'
+// import { Swap } from '@coinbase/onchainkit/swap'
 import EmbedMeta from '../components/EmbedMeta'
 
 const DeFi = () => {
@@ -80,34 +80,19 @@ const DeFi = () => {
           </p>
         </div>
         
-        {isConnected ? (
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: '16px',
-            padding: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h3 style={{ marginBottom: '16px', color: '#1f2937', fontSize: '18px', fontWeight: 'bold' }}>
-              🔄 OnchainKit Swap
-            </h3>
-            <Swap
-              from={[eth]}
-              to={[usdc]}
-            />
-          </div>
-        ) : (
-          <div style={{
-            padding: '40px',
-            textAlign: 'center',
-            background: 'rgba(249, 250, 251, 0.8)',
-            borderRadius: '12px',
-            border: '1px solid #e5e7eb'
-          }}>
-            <h3 style={{ color: '#1f2937', marginBottom: '16px' }}>Connect Your Wallet</h3>
-            <p style={{ color: '#6b7280', marginBottom: '20px' }}>
-              Connect your wallet to access the token swap feature.
-            </p>
+        <div style={{
+          padding: '40px',
+          textAlign: 'center',
+          background: 'rgba(249, 250, 251, 0.8)',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <h3 style={{ color: '#1f2937', marginBottom: '16px' }}>Token Swap</h3>
+          <p style={{ color: '#6b7280', marginBottom: '20px' }}>
+            Swap ETH and USDC tokens on Base network using these platforms.
+          </p>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', maxWidth: '600px', margin: '0 auto' }}>
             <a
               href="https://app.uniswap.org/swap?chain=base"
               target="_blank"
@@ -115,17 +100,71 @@ const DeFi = () => {
               style={{
                 background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
                 color: 'white',
-                padding: '12px 24px',
-                borderRadius: '8px',
+                padding: '16px 24px',
+                borderRadius: '12px',
                 textDecoration: 'none',
                 fontWeight: 'bold',
-                display: 'inline-block'
+                textAlign: 'center',
+                display: 'block'
               }}
             >
-              🔄 Use Uniswap Instead
+              🔄 Uniswap
+              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>ETH ↔ USDC</div>
+            </a>
+            
+            <a
+              href="https://app.1inch.io/#/1/swap/ETH/USDC"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                color: 'white',
+                padding: '16px 24px',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                display: 'block'
+              }}
+            >
+              🎯 1inch
+              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>Best Prices</div>
+            </a>
+            
+            <a
+              href="https://app.sushi.com/swap"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: 'white',
+                padding: '16px 24px',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                display: 'block'
+              }}
+            >
+              🍣 SushiSwap
+              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>Multi-chain</div>
             </a>
           </div>
-        )}
+          
+          {isConnected && (
+            <div style={{
+              marginTop: '20px',
+              padding: '16px',
+              background: 'rgba(16, 185, 129, 0.1)',
+              borderRadius: '8px',
+              border: '1px solid rgba(16, 185, 129, 0.2)'
+            }}>
+              <p style={{ color: '#059669', margin: 0, fontSize: '14px' }}>
+                ✅ Wallet Connected: Ready to swap!
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
