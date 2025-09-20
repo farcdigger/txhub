@@ -4,7 +4,7 @@ import { useAccount, useDisconnect } from 'wagmi'
 import { getLeaderboard, getXP } from '../utils/xpUtils'
 import { useTransactions } from '../hooks/useTransactions'
 import EmbedMeta from '../components/EmbedMeta'
-import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp, Image } from 'lucide-react'
+import { Gamepad2, MessageSquare, Coins, Zap, Dice1, Dice6, Trophy, User, Star, Medal, Award, TrendingUp, Image, Flame } from 'lucide-react'
 
 const Home = () => {
   const { address, isConnected } = useAccount()
@@ -272,6 +272,16 @@ const Home = () => {
       color: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
       xpReward: '30 XP',
       bonusXP: '+0.3% Revenue'
+    },
+    {
+      id: 'daily-streak',
+      title: 'Daily Streak',
+      description: 'Claim daily and earn exponential XP',
+      icon: <Flame size={20} />,
+      path: '/daily-streak',
+      color: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
+      xpReward: '10+ XP',
+      bonusXP: 'Exponential growth'
     },
   ]
 

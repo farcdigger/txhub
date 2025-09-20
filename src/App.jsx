@@ -17,6 +17,7 @@ import Leaderboard from './pages/Leaderboard'
 import DeployToken from './pages/DeployToken'
 import NFTMint from './pages/NFTMint'
 import TokenSwap from './pages/TokenSwap'
+import DailyStreak from './pages/DailyStreak'
 import './styles/index.css'
 
 const queryClient = new QueryClient()
@@ -100,6 +101,7 @@ function AppContent() {
             <Route path="/deploy" element={<DeployToken />} />
             <Route path="/nft" element={<NFTMint />} />
             <Route path="/swap" element={<TokenSwap />} />
+            <Route path="/daily-streak" element={<DailyStreak />} />
           </Routes>
         </main>
       </div>
