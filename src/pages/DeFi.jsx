@@ -2,7 +2,7 @@ import React from 'react'
 import { useAccount } from 'wagmi'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRightLeft, TrendingUp, CreditCard, Coins } from 'lucide-react'
-import { SwapDefault } from '@coinbase/onchainkit/swap'
+import { Swap } from '@coinbase/onchainkit/swap'
 import { Earn } from '@coinbase/onchainkit/earn'
 import { Buy } from '@coinbase/onchainkit/buy'
 import { FundCard } from '@coinbase/onchainkit/fund'
@@ -165,10 +165,9 @@ const DeFi = () => {
           </div>
           
           {isConnected ? (
-            <SwapDefault
+            <Swap
               from={availableTokens}
               to={availableTokens}
-              experimental={{ useAggregator: false }}
             />
           ) : (
             <div style={{

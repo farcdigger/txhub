@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
-import { SwapDefault } from '@coinbase/onchainkit/swap'
+import { Swap } from '@coinbase/onchainkit/swap'
 // Token type definition for Base network
 
 const SwapTest = () => {
@@ -43,7 +43,7 @@ const SwapTest = () => {
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Token Swap</h2>
-      <SwapDefault
+      <Swap
         from={[eth]}
         to={[usdc]}
       />
