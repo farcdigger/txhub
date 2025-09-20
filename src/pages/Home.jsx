@@ -902,10 +902,10 @@ const styles = `
 
   .games-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-top: 20px;
-    max-width: 600px;
+    max-width: 900px;
     margin-left: auto;
     margin-right: auto;
   }
