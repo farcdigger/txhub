@@ -33,6 +33,55 @@ body {
   animation: spin 1s linear infinite;
 }
 
+/* OnchainKit Theme Overrides */
+@layer base {
+  [data-ock-theme='default-dark'] {
+    /* Modern Uniswap-style dark theme */
+    --ock-font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --ock-radius-default: 1rem;
+    --ock-radius-inner: 0.5rem;
+
+    /* Foreground Colors */
+    --ock-foreground: #ffffff;
+    --ock-foreground-muted: #8b8b8b;
+    --ock-foreground-inverse: #1a1a1a;
+    --ock-foreground-disabled: #6b7280;
+
+    /* Background Colors - Modern Dark */
+    --ock-background: #1a1a1a;
+    --ock-background-hover: #2d2d2d;
+    --ock-background-active: #404040;
+    --ock-background-alternate: #1a1a1a;
+    --ock-background-alternate-hover: #2d2d2d;
+    --ock-background-alternate-active: #404040;
+    --ock-background-inverse: #2d2d2d;
+    --ock-background-inverse-hover: #404040;
+    --ock-background-inverse-active: #525252;
+    --ock-background-reverse: #ffffff;
+
+    /* Primary Colors - Uniswap Pink/Orange */
+    --ock-primary: #ff007a;
+    --ock-primary-hover: #ff6b35;
+    --ock-primary-active: #e6006b;
+    --ock-primary-washed: rgba(255, 0, 122, 0.1);
+    --ock-primary-disabled: #6b7280;
+
+    /* Secondary Colors */
+    --ock-secondary: #2d2d2d;
+    --ock-secondary-hover: #404040;
+    --ock-secondary-active: #525252;
+
+    /* State Colors */
+    --ock-error: #ff4757;
+    --ock-warning: #ffa502;
+    --ock-success: #2ed573;
+    --ock-success-background: rgba(46, 213, 115, 0.1);
+
+    /* Lines */
+    --ock-line: #2d2d2d;
+  }
+}
+
 /* Wallet Connection Styles */
 .connect-wallet-btn {
   display: flex;

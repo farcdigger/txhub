@@ -100,82 +100,13 @@ const DeFi = () => {
         
         {isConnected ? (
           <div style={{
-            background: '#1a1a1a',
-            borderRadius: '24px',
-            padding: '0',
-            border: '1px solid #2d2d2d',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
             maxWidth: '420px',
-            margin: '0 auto',
-            overflow: 'hidden'
+            margin: '0 auto'
           }}>
-            {/* Modern Uniswap-style Header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-              padding: '20px 24px',
-              borderBottom: '1px solid #2d2d2d',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  background: 'linear-gradient(135deg, #ff007a 0%, #ff6b35 100%)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '16px'
-                }}>
-                  🔄
-                </div>
-                <div>
-                  <h3 style={{ 
-                    margin: 0, 
-                    fontSize: '18px', 
-                    fontWeight: '600',
-                    color: '#ffffff',
-                    lineHeight: '1.2'
-                  }}>
-                    Swap
-                  </h3>
-                  <p style={{ 
-                    margin: '2px 0 0 0', 
-                    fontSize: '12px', 
-                    color: '#8b8b8b',
-                    lineHeight: '1.2'
-                  }}>
-                    Trade tokens
-                  </p>
-                </div>
-              </div>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                background: '#2d2d2d',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                border: '1px solid #404040'
-              }}>
-                ⚙️
-              </div>
-            </div>
-
-            {/* Swap Component Container */}
-            <div style={{
-              background: '#1a1a1a',
-              padding: '0'
-            }}>
-              <Swap
-                from={[eth]}
-                to={[usdc]}
-              />
-            </div>
+            <Swap
+              from={[eth]}
+              to={[usdc]}
+            />
           </div>
         ) : (
           <div style={{

@@ -139,6 +139,12 @@ function App() {
                 default: { name: 'BaseScan', url: 'https://basescan.org' },
               },
             }}
+            config={{
+              appearance: {
+                mode: 'dark', // Force dark mode for modern look
+                theme: 'default', // Use default theme with dark mode
+              },
+            }}
           >
             <FarcasterProvider>
               <AppContent />
