@@ -29,88 +29,147 @@ const DeFi = () => {
   }
 
   return (
-    <div className="defi-page">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)',
+      padding: '20px'
+    }}>
       <EmbedMeta 
         title="DeFi Hub - BaseHub"
         description="Swap tokens on Base network."
         buttonText="Go to DeFi Hub"
       />
 
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px', maxWidth: '420px', margin: '0 auto 32px auto' }}>
         <button
           onClick={() => navigate('/')}
           style={{
-            background: 'none',
-            border: 'none',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
             color: 'white',
-            fontSize: '16px',
+            fontSize: '14px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            padding: '0',
-            marginRight: 'auto'
+            padding: '8px 16px',
+            borderRadius: '12px',
+            marginRight: 'auto',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+          }}
+          onMouseOut={(e) => {
+            e.target.style.background = 'rgba(255, 255, 255, 0.1)'
           }}
         >
-          <ArrowLeft size={20} /> Back to Home
+          <ArrowLeft size={16} /> Back to Home
         </button>
       </div>
 
-      <div className="card">
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{
-            fontSize: '32px',
-            marginBottom: '8px'
-          }}>
-            🔄
-          </div>
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: 'bold',
-            marginBottom: '8px',
-            color: '#1f2937'
-          }}>
-            Token Swap
-          </h2>
-          <p style={{
-            color: '#6b7280',
-            fontSize: '14px'
-          }}>
-            Swap between ETH and USDC tokens
-          </p>
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{
+          fontSize: '48px',
+          marginBottom: '16px',
+          background: 'linear-gradient(135deg, #ff007a 0%, #ff6b35 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}>
+          🔄
         </div>
+        <h1 style={{
+          fontSize: '32px',
+          fontWeight: '700',
+          marginBottom: '8px',
+          color: '#ffffff',
+          letterSpacing: '-0.02em'
+        }}>
+          DeFi Hub
+        </h1>
+        <p style={{
+          color: '#8b8b8b',
+          fontSize: '16px',
+          margin: '0'
+        }}>
+          Trade tokens on Base network
+        </p>
+      </div>
         
         {isConnected ? (
           <div style={{
-            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-            borderRadius: '20px',
-            padding: '24px',
-            border: '2px solid rgba(59, 130, 246, 0.1)',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.05)',
-            backdropFilter: 'blur(10px)',
-            maxWidth: '450px',
-            margin: '0 auto'
+            background: '#1a1a1a',
+            borderRadius: '24px',
+            padding: '0',
+            border: '1px solid #2d2d2d',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            maxWidth: '420px',
+            margin: '0 auto',
+            overflow: 'hidden'
           }}>
-            <div style={{ 
-              textAlign: 'center', 
-              marginBottom: '20px',
-              padding: '12px',
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-              borderRadius: '12px',
-              color: 'white'
-            }}>
-              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>
-                🔄 OnchainKit Swap
-              </h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '14px', opacity: 0.9 }}>
-                ETH ↔ USDC on Base Network
-              </p>
-            </div>
+            {/* Modern Uniswap-style Header */}
             <div style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: '16px',
-              border: '1px solid #e5e7eb'
+              background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+              padding: '20px 24px',
+              borderBottom: '1px solid #2d2d2d',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  background: 'linear-gradient(135deg, #ff007a 0%, #ff6b35 100%)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '16px'
+                }}>
+                  🔄
+                </div>
+                <div>
+                  <h3 style={{ 
+                    margin: 0, 
+                    fontSize: '18px', 
+                    fontWeight: '600',
+                    color: '#ffffff',
+                    lineHeight: '1.2'
+                  }}>
+                    Swap
+                  </h3>
+                  <p style={{ 
+                    margin: '2px 0 0 0', 
+                    fontSize: '12px', 
+                    color: '#8b8b8b',
+                    lineHeight: '1.2'
+                  }}>
+                    Trade tokens
+                  </p>
+                </div>
+              </div>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                background: '#2d2d2d',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                border: '1px solid #404040'
+              }}>
+                ⚙️
+              </div>
+            </div>
+
+            {/* Swap Component Container */}
+            <div style={{
+              background: '#1a1a1a',
+              padding: '0'
             }}>
               <Swap
                 from={[eth]}
